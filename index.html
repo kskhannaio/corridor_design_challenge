@@ -622,18 +622,20 @@ const SCENES = [
       const n = r => C.filter(c => c.rating === r).length;
       const known = C.filter(c => c.rating !== 'verify'), todo = C.filter(c => c.rating === 'verify');
       const seg = (r, col) => `<i style="width:${n(r) / C.length * 100}%;background:${col}"></i>`;
-      const item = c => `<details class="chk r-${c.rating}"><summary><span class="ic"></span><span>${esc(c.question)}</span><span class="rt">${esc(sc.ratings[c.rating].replace(' on the walk', ''))}</span></summary>
-        <div class="fold-body">${esc(c.finding)}<br><em>${esc(c.source)}</em></div></details>`;
+      const item = c => `<details class="chk r-${c.rating}"><summary><span class="ic"></span><span>${esc(c.question)}</span><span class="rt">${esc(sc.ratings[c.rating])}</span></summary>
+        <div class="fold-body">${c.rating === 'verify' && c.suggested ? `<strong>Suggested from maps and documents: ${esc(sc.ratings[c.suggested])}.</strong> ` : ''}${esc(c.finding)}<br><em>${esc(c.source)}</em></div></details>`;
+      const lede = known.length
+        ? `The guidebook's site checklist. ${known.length} of ${C.length} items have been checked; the rest still need review.`
+        : `The guidebook's site checklist. Nothing has been checked yet — each item shows what maps and documents suggest, for the team to confirm or change.`;
       return `
         <h2 class="headline">Is the site ready for a trial? ${known.length} of ${C.length} checks done</h2>
-        <p class="lede">The guidebook's site checklist. Most of the street is a good fit; the flyover construction is the one strong
-        reason for caution. The rest needs a walk along the road — ideally at the morning or evening rush.</p>
+        <p class="lede">${lede}</p>
         <div class="progress">${seg('favourable', '#2f9e44')}${seg('acceptable', '#e8a200')}${seg('not_favourable', '#c92a2a')}</div>
         <div class="tally"><span style="--c:#2f9e44">${n('favourable')} good</span><span style="--c:#e8a200">${n('acceptable')} okay</span>
-          <span style="--c:#c92a2a">${n('not_favourable')} a concern</span><span style="--c:#adb5bd">${todo.length} to check</span></div>
-        <h3>To check on the walk</h3>${todo.map(item).join('')}
-        <h3>Already known</h3>${known.map(item).join('')}
-        <p class="small" style="margin-top:12px">Tap a row for the evidence. Ratings live in <code>data/scorecard.json</code> — update it after the walk.</p>`;
+          <span style="--c:#c92a2a">${n('not_favourable')} a concern</span><span style="--c:#adb5bd">${todo.length} not checked</span></div>
+        ${todo.length ? `<h3>Not checked yet</h3>${todo.map(item).join('')}` : ''}
+        ${known.length ? `<h3>Checked</h3>${known.map(item).join('')}` : ''}
+        <p class="small" style="margin-top:12px">Tap a row for the evidence. Ratings live in <code>data/scorecard.json</code> — set each item's <code>rating</code> once checked.</p>`;
     } },
 ];
 
@@ -763,7 +765,7 @@ document.getElementById('about-open').onclick = () => {
       <li>The contract is a tender: chainages and designs may change.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
       <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
-      <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items still need the walk.</li></ul>
+      <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items are not yet checked.</li></ul>
     <h3>For developers</h3>
     <p class="small">Data lives in <code>data/</code>; rebuild scripts are in <code>scripts/</code> (each has usage notes at the top).</p>`;
   about.showModal();

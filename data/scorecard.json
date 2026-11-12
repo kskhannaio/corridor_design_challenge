@@ -4,29 +4,32 @@
     "favourable": "Favourable",
     "acceptable": "Acceptable",
     "not_favourable": "Not favourable",
-    "verify": "To verify on the walk"
+    "verify": "Not checked"
   },
   "criteria": [
     {
       "id": "uses",
       "question": "What are the building uses along the stretch?",
-      "rating": "favourable",
+      "rating": "verify",
       "finding": "Commercial frontage, a school (Sri Sathyanarayana HPS), public buildings (IIA, BBMP Madiwala office, CPWD), transit stops and Madiwala Park. Religious buildings (Masjid-e-Noor, Ayyappa Swamy Temple) count as acceptable.",
-      "source": "OSM areas of interest"
+      "source": "OSM areas of interest",
+      "suggested": "favourable"
     },
     {
       "id": "network",
       "question": "What is the street network type of the chosen stretch?",
-      "rating": "acceptable",
+      "rating": "verify",
       "finding": "A stretch with termini points: Koramangala Water Tank junction (A) to Madiwala Underpass junction (B). Not a loop.",
-      "source": "Map"
+      "source": "Map",
+      "suggested": "acceptable"
     },
     {
       "id": "intersection",
       "question": "Does the stretch have an intersection?",
-      "rating": "favourable",
+      "rating": "verify",
       "finding": "Yes, two signalised junctions, one at each end.",
-      "source": "OSM traffic signals"
+      "source": "OSM traffic signals",
+      "suggested": "favourable"
     },
     {
       "id": "surface",
@@ -38,23 +41,26 @@
     {
       "id": "construction",
       "question": "Is there ongoing construction activity along the street?",
-      "rating": "not_favourable",
+      "rating": "verify",
       "finding": "Yes. The Ejipura flyover's RE-wall approach already runs down the middle from 45 to 225 m, and B-SMILE's elevated-corridor contract (tender, Oct 2026) puts twin 8.5 m viaducts over 0-360 m, a 7 m up-ramp over 0-190 m and an elevated rotary at Madiwala junction, with construction in 2026-28.",
-      "source": "B-SMILE contract Schedules A & B; OSM; satellite imagery"
+      "source": "B-SMILE contract Schedules A & B; OSM; satellite imagery",
+      "suggested": "not_favourable"
     },
     {
       "id": "shoulder",
       "question": "What is the condition of the road shoulder?",
-      "rating": "favourable",
+      "rating": "verify",
       "finding": "RCC covered drains on both sides along 0-400 m - the equivalent of a paved gutter. Check their condition and covers on the walk.",
-      "source": "B-SMILE contract, Schedule A inventory"
+      "source": "B-SMILE contract, Schedule A inventory",
+      "suggested": "favourable"
     },
     {
       "id": "sidewalk",
       "question": "Is there a sidewalk along the stretch?",
-      "rating": "acceptable",
+      "rating": "verify",
       "finding": "Present but not continuous: surveyed footpaths are 1.0-3.8 m wide, and there is none on either side at 200 m (beside the RE wall). Most stretches are below the 2.5 m IRC 103 standard for mixed-use streets.",
-      "source": "B-SMILE contract, Schedule A inventory - verify on the walk"
+      "source": "B-SMILE contract, Schedule A inventory - verify on the walk",
+      "suggested": "acceptable"
     },
     {
       "id": "kerb",
@@ -80,9 +86,10 @@
     {
       "id": "hotspots",
       "question": "Are there activity hotspots (ATM, tea shop, eatery, bus stop, vendors)?",
-      "rating": "favourable",
+      "rating": "verify",
       "finding": "Yes: Madivala Masjid and Koramangala Water Tank bus stops, ATMs and eateries near Junction B, Indira Canteen. Vendors still to be recorded on the walk.",
-      "source": "OSM areas of interest"
+      "source": "OSM areas of interest",
+      "suggested": "favourable"
     },
     {
       "id": "conflict",
@@ -98,5 +105,6 @@
       "finding": "Observe at peak hour.",
       "source": "Site walk"
     }
-  ]
+  ],
+  "review_note": "All items reset to 'verify' for manual review. 'suggested' holds the rating proposed from maps and documents; set 'rating' to favourable / acceptable / not_favourable once checked."
 }
