@@ -1,0 +1,3173 @@
+{
+"type": "FeatureCollection",
+"features": [
+{
+"type": "Feature",
+"properties": {
+"name": "Citibank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 0,
+"ring": 300,
+"osm": "node/6534631815"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618009,
+12.924526
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madivala Masjid",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 10,
+"ring": 300,
+"osm": "node/1837005146"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618541,
+12.924887
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Poorvika",
+"category": "Commercial",
+"type": "Electronics",
+"dist_m": 10,
+"ring": 300,
+"osm": "node/2700229004"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618499,
+12.924596
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Toilets",
+"category": "Public amenities",
+"type": "Toilets",
+"dist_m": 10,
+"ring": 300,
+"osm": "node/4691599027"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618036,
+12.924424
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Ayyappa Swamy Temple",
+"category": "Religious",
+"type": "Hindu",
+"dist_m": 20,
+"ring": 300,
+"osm": "node/748866082"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618119,
+12.924283
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Fabindia",
+"category": "Commercial",
+"type": "Clothes",
+"dist_m": 20,
+"ring": 300,
+"osm": "node/2746542444"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619467,
+12.924978
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Cross Words",
+"category": "Commercial",
+"type": "Books",
+"dist_m": 20,
+"ring": 300,
+"osm": "node/3490669799"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619276,
+12.925313
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sanjeevanam",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 20,
+"ring": 300,
+"osm": "node/3507444982"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619453,
+12.925422
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Go Native Koramangala",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 20,
+"ring": 300,
+"osm": "node/13964762819"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619068,
+12.924729
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madiwala Park",
+"category": "Recreational",
+"type": "Park",
+"dist_m": 20,
+"ring": 300,
+"osm": "way/323458335"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617805,
+12.924693
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Masjid-e-Noor",
+"category": "Religious",
+"type": "Muslim",
+"dist_m": 20,
+"ring": 300,
+"osm": "way/343961638"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618357,
+12.924938
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sai Neeta Travels",
+"category": "Commercial",
+"type": "Travel agent",
+"dist_m": 30,
+"ring": 300,
+"osm": "node/4690894373"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618172,
+12.924986
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala Water Tank",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 30,
+"ring": 300,
+"osm": "node/6021739947"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620599,
+12.927564
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sri Sathyanarayana HPS Madival",
+"category": "Institutional",
+"type": "School",
+"dist_m": 30,
+"ring": 300,
+"osm": "node/6348996832"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618574,
+12.924473
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "R.R Cycle Junction",
+"category": "Recreational",
+"type": "Sports centre",
+"dist_m": 40,
+"ring": 300,
+"osm": "node/4487958594"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61849,
+12.924307
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala Water Tank",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 50,
+"ring": 300,
+"osm": "node/2405375993"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621173,
+12.927819
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "BWSSB Payment Kiosk",
+"category": "Public amenities",
+"type": "Government office",
+"dist_m": 50,
+"ring": 300,
+"osm": "node/3016090360"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621218,
+12.927785
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "R R International Bikes",
+"category": "Commercial",
+"type": "Bicycle",
+"dist_m": 50,
+"ring": 300,
+"osm": "node/5800791044"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618513,
+12.924215
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Chamundi Hi Tech Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 50,
+"ring": 300,
+"osm": "node/7514681681"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617785,
+12.924092
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Government Veterinary Hospital",
+"category": "Public amenities",
+"type": "Veterinary",
+"dist_m": 60,
+"ring": 300,
+"osm": "way/803346375"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617492,
+12.924809
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Metro",
+"category": "Commercial",
+"type": "Shoes",
+"dist_m": 70,
+"ring": 300,
+"osm": "node/5402307926"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618621,
+12.924064
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sri Lakshmi Venkateswara Medicals",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 70,
+"ring": 300,
+"osm": "node/12285338812"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618357,
+12.923961
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Shoba super market",
+"category": "Commercial",
+"type": "Supermarket",
+"dist_m": 70,
+"ring": 300,
+"osm": "node/13316687535"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61832,
+12.923905
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Indian Institute of Astrophysics",
+"category": "Institutional",
+"type": "Research institute",
+"dist_m": 70,
+"ring": 300,
+"osm": "way/41184092"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621333,
+12.926487
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Indira Canteen",
+"category": "Public amenities",
+"type": "Public canteen",
+"dist_m": 70,
+"ring": 300,
+"osm": "way/803346374"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617365,
+12.924744
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "BBMP Madiwala Branch",
+"category": "Public amenities",
+"type": "Government office",
+"dist_m": 80,
+"ring": 300,
+"osm": "way/347483939"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617516,
+12.925147
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Central Public Works Department",
+"category": "Public amenities",
+"type": "Government office",
+"dist_m": 90,
+"ring": 300,
+"osm": "way/1083590206"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620961,
+12.925146
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Surya Diagnostics and Health Services",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 100,
+"ring": 300,
+"osm": "node/4446924573"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617088,
+12.924283
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Varalakshmi Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 100,
+"ring": 300,
+"osm": "node/6938790393"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617097,
+12.924624
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "State Bank of India",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 110,
+"ring": 300,
+"osm": "node/1472015388"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621901,
+12.927395
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sunshine Cafe",
+"category": "Commercial",
+"type": "Cafe",
+"dist_m": 110,
+"ring": 300,
+"osm": "node/12260569934"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618438,
+12.925846
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Federal Bank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 120,
+"ring": 300,
+"osm": "node/1471891610"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617339,
+12.92541
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Olivia Inn & Suites",
+"category": "Commercial",
+"type": "Hotel",
+"dist_m": 120,
+"ring": 300,
+"osm": "node/7294299977"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618556,
+12.923542
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Agarwal Eye Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 130,
+"ring": 300,
+"osm": "node/1472015890"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62213,
+12.927342
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "KPN Travels",
+"category": "Commercial",
+"type": "Travel agent",
+"dist_m": 130,
+"ring": 300,
+"osm": "node/4219268030"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617606,
+12.925702
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Clumax Diagnostic Center",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 130,
+"ring": 300,
+"osm": "node/4445201629"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.6196,
+12.923887
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "SRS Travels",
+"category": "Commercial",
+"type": "Travel agent",
+"dist_m": 140,
+"ring": 300,
+"osm": "node/4210806234"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617511,
+12.925738
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Khalsa Public LPS Madivala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 140,
+"ring": 300,
+"osm": "node/6536936978"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618714,
+12.923379
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kaveri Speciality Hospital",
+"category": "Healthcare",
+"type": "Clinic",
+"dist_m": 140,
+"ring": 300,
+"osm": "node/6944290484"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619311,
+12.923677
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Devi Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 140,
+"ring": 300,
+"osm": "node/7579924738"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619863,
+12.923944
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Parveen Travels",
+"category": "Commercial",
+"type": "Travel agent",
+"dist_m": 150,
+"ring": 300,
+"osm": "node/4219258756"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617453,
+12.925868
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Central Government Touring Officers Guest House",
+"category": "Commercial",
+"type": "Guest house",
+"dist_m": 160,
+"ring": 300,
+"osm": "way/347418314"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621353,
+12.924728
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Venkateshwara Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 170,
+"ring": 300,
+"osm": "node/1472735174"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617083,
+12.925784
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Map Sales Office",
+"category": "Commercial",
+"type": "Books",
+"dist_m": 170,
+"ring": 300,
+"osm": "node/3304764045"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622252,
+12.926373
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "MAS",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 180,
+"ring": 300,
+"osm": "node/1470516028"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617061,
+12.925875
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Ayyappa Temple",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 180,
+"ring": 300,
+"osm": "node/2509428536"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617142,
+12.92594
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Canara Bank",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 180,
+"ring": 300,
+"osm": "node/7036015201"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619196,
+12.923241
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Child-Care Montessori",
+"category": "Institutional",
+"type": "Kindergarten",
+"dist_m": 180,
+"ring": 300,
+"osm": "node/12236165326"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621697,
+12.928886
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Nirmaya Spa in Madiwala",
+"category": "Commercial",
+"type": "Beauty",
+"dist_m": 180,
+"ring": 300,
+"osm": "node/12553304870"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617019,
+12.925855
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala Water Tank",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 190,
+"ring": 300,
+"osm": "node/1070361737"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621485,
+12.929131
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Vijaya Shree Diagnostics",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 190,
+"ring": 300,
+"osm": "node/1472248473"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622609,
+12.927108
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Atlas Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 190,
+"ring": 300,
+"osm": "node/1473821768"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61691,
+12.925908
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Pick N Save The Wholesale Market",
+"category": "Commercial",
+"type": "Supermarket",
+"dist_m": 190,
+"ring": 300,
+"osm": "node/4489723447"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617492,
+12.922887
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala Water Tank",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 190,
+"ring": 300,
+"osm": "node/6019408126"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622598,
+12.92694
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Shri Balamuri Mahaganapati Temple",
+"category": "Religious",
+"type": "Hindu",
+"dist_m": 200,
+"ring": 300,
+"osm": "node/4691598842"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619235,
+12.923087
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "ICICI Bank",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 200,
+"ring": 300,
+"osm": "node/14133768382"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618992,
+12.92299
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Friends Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 210,
+"ring": 300,
+"osm": "node/3922276284"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617175,
+12.926326
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St. John ' Medical College Blood Bank",
+"category": "Healthcare",
+"type": "Blood bank",
+"dist_m": 210,
+"ring": 300,
+"osm": "node/6882713314"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620146,
+12.929243
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Royal Comforts",
+"category": "Commercial",
+"type": "Hotel",
+"dist_m": 230,
+"ring": 300,
+"osm": "node/1472017110"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616817,
+12.926251
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Trust Chemists & Druggists Ltd",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 230,
+"ring": 300,
+"osm": "node/4441888253"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616857,
+12.926338
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Indian TVS",
+"category": "Commercial",
+"type": "Motorcycle",
+"dist_m": 230,
+"ring": 300,
+"osm": "node/7036023470"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619402,
+12.922892
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Volkswagen City Store",
+"category": "Commercial",
+"type": "Car",
+"dist_m": 230,
+"ring": 300,
+"osm": "node/12031617546"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621892,
+12.929337
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Federal Bank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 240,
+"ring": 300,
+"osm": "node/10688121234"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616794,
+12.926346
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sri Venkateshwara Hospitals",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 250,
+"ring": 300,
+"osm": "node/6938758526"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61674,
+12.926471
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St Johns Post Office",
+"category": "Public amenities",
+"type": "Post office",
+"dist_m": 260,
+"ring": 300,
+"osm": "node/363758557"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621454,
+12.929819
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "SL Bhatia Medicine Museum",
+"category": "Recreational",
+"type": "Museum",
+"dist_m": 260,
+"ring": 300,
+"osm": "node/10238264070"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620952,
+12.929853
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bank of Baroda",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 280,
+"ring": 300,
+"osm": "node/2285466693"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621549,
+12.929913
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "GUHPS Madivala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 280,
+"ring": 300,
+"osm": "node/6349007390"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619154,
+12.922181
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Pope Paul VI Auditorium",
+"category": "Recreational",
+"type": "Theatre",
+"dist_m": 280,
+"ring": 300,
+"osm": "node/10238264073"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621002,
+12.930033
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Anjaneya Temple",
+"category": "Religious",
+"type": "Hindu",
+"dist_m": 290,
+"ring": 300,
+"osm": "node/2115432127"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619443,
+12.922296
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Government office",
+"category": "Public amenities",
+"type": "Government office",
+"dist_m": 290,
+"ring": 300,
+"osm": "way/1125892177"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621445,
+12.923197
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Nilgiri's",
+"category": "Commercial",
+"type": "Supermarket",
+"dist_m": 300,
+"ring": 500,
+"osm": "node/1615735026"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623636,
+12.926697
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "TVS",
+"category": "Commercial",
+"type": "Car",
+"dist_m": 300,
+"ring": 500,
+"osm": "node/4485323002"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623687,
+12.926872
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Puma",
+"category": "Commercial",
+"type": "Clothes",
+"dist_m": 300,
+"ring": 300,
+"osm": "node/4487228564"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616492,
+12.926823
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Pay & Use Toilet",
+"category": "Public amenities",
+"type": "Toilets",
+"dist_m": 300,
+"ring": 500,
+"osm": "node/12187048816"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615659,
+12.923106
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Vemana Institute of Technology",
+"category": "Institutional",
+"type": "College",
+"dist_m": 300,
+"ring": 300,
+"osm": "way/134223205"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622578,
+12.929623
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "R R International Bikes",
+"category": "Commercial",
+"type": "Sports",
+"dist_m": 310,
+"ring": 500,
+"osm": "node/4487963577"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619397,
+12.922002
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "HDFC Bank",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 310,
+"ring": 500,
+"osm": "node/7294299976"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619502,
+12.922074
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Shanti Sagar",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 320,
+"ring": 500,
+"osm": "node/1474442618"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615277,
+12.925631
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "RS Madivala School",
+"category": "Institutional",
+"type": "School",
+"dist_m": 320,
+"ring": 500,
+"osm": "node/6702757188"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615072,
+12.924586
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Apollo Pharmacy",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 320,
+"ring": 500,
+"osm": "node/12187048818"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615012,
+12.924879
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "RJS Institute of Management Studies",
+"category": "Institutional",
+"type": "College",
+"dist_m": 320,
+"ring": 500,
+"osm": "way/134223490"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623004,
+12.929462
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Padmavathi HPS Madivala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 330,
+"ring": 500,
+"osm": "node/6536937302"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614953,
+12.924639
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "KFC",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 340,
+"ring": 500,
+"osm": "node/2700229002"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620007,
+12.921983
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Om Sakthi Adiparashakthi Temple",
+"category": "Religious",
+"type": "Hindu",
+"dist_m": 340,
+"ring": 500,
+"osm": "node/12187048820"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615491,
+12.922672
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St.John's Medical College Hospital",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 340,
+"ring": 500,
+"osm": "relation/17069662"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618593,
+12.929648
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kallada Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 350,
+"ring": 500,
+"osm": "node/1471886877"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616183,
+12.927128
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Ohris",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 350,
+"ring": 500,
+"osm": "node/1474102127"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620302,
+12.922039
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bus stop",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 350,
+"ring": 500,
+"osm": "node/3240631520"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623952,
+12.926159
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Invitation Restaurant and Bar",
+"category": "Commercial",
+"type": "Bar",
+"dist_m": 350,
+"ring": 500,
+"osm": "node/5350092822"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616276,
+12.92724
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Green Trends Unisex Hair & Style Salon",
+"category": "Commercial",
+"type": "Hairdresser",
+"dist_m": 350,
+"ring": 500,
+"osm": "node/13722041001"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614806,
+12.923852
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Adigas",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/1474819117"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620121,
+12.921875
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "A1 Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5349525423"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616229,
+12.927298
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sleigh Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5349525424"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616182,
+12.927275
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Comfy",
+"category": "Commercial",
+"type": "Hotel",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5349525425"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616159,
+12.927292
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "SRS Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5349548321"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.6162,
+12.927287
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "RP Wines",
+"category": "Commercial",
+"type": "Wine",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5350114421"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616225,
+12.927342
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "KPN Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/5350114522"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61619,
+12.927333
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bank of India",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/10295532250"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623911,
+12.925948
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Maruthi Spirit Zone",
+"category": "Commercial",
+"type": "Alcohol",
+"dist_m": 360,
+"ring": 500,
+"osm": "node/12187048821"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614855,
+12.923402
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St. John's Grounds",
+"category": "Recreational",
+"type": "Sports centre",
+"dist_m": 360,
+"ring": 500,
+"osm": "way/389344289"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617091,
+12.927753
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Market Square Value Mall",
+"category": "Commercial",
+"type": "Mall",
+"dist_m": 370,
+"ring": 500,
+"osm": "node/2910639885"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620311,
+12.921904
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kottakkal Aruna Vaidya Sala",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 370,
+"ring": 500,
+"osm": "node/5349525426"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616201,
+12.92738
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "KBS Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 370,
+"ring": 500,
+"osm": "node/5350114521"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616177,
+12.927381
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Market Square Mall",
+"category": "Commercial",
+"type": "Mall",
+"dist_m": 370,
+"ring": 500,
+"osm": "way/239585279"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620384,
+12.921902
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "RJS Polytechnic",
+"category": "Institutional",
+"type": "College",
+"dist_m": 370,
+"ring": 500,
+"osm": "relation/1804672"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623861,
+12.929077
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Silver Metro",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/1474103046"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620493,
+12.921876
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Cafe Coffee Day",
+"category": "Commercial",
+"type": "Cafe",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/2531029517"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62286,
+12.930361
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Anand Diagnostic Laboratory",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/4447025891"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623173,
+12.930142
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kalpana Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/5350114523"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616142,
+12.927473
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Our Lady Fathima HPS, B T M Layout W No 65",
+"category": "Institutional",
+"type": "School",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/6408950782"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615631,
+12.921973
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Dba Reddy Janasangha Koramangala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/6536328458"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.624038,
+12.928966
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "City Clinic",
+"category": "Healthcare",
+"type": "Clinic",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/6944161560"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616005,
+12.927367
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Aloe Spa",
+"category": "Commercial",
+"type": "Beauty",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/12553261624"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620557,
+12.921826
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Southern Spa Madiwala",
+"category": "Commercial",
+"type": "Beauty",
+"dist_m": 380,
+"ring": 500,
+"osm": "node/12553319439"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620269,
+12.921729
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "GMPS Madivala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 380,
+"ring": 500,
+"osm": "way/348458016"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620993,
+12.922016
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Balaji Medicals",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/1473082673"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616091,
+12.927575
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Naturals Unisex Salon And Spa",
+"category": "Commercial",
+"type": "Beauty",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/4488531162"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62056,
+12.921752
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Universal Tours and Travels",
+"category": "Commercial",
+"type": "Travel agency",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/5350089622"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616104,
+12.927565
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sanchethi Jewellers and Bankers",
+"category": "Commercial",
+"type": "Jewelry",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/5350114524"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.616037,
+12.927462
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Krupanidhi HS",
+"category": "Institutional",
+"type": "School",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/6702462302"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618841,
+12.921088
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Davanam Sarovar Portico Suites",
+"category": "Commercial",
+"type": "Mall",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/7164323510"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620318,
+12.921697
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Max",
+"category": "Commercial",
+"type": "Clothes",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/12144440753"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620474,
+12.921719
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "DBM & RJS School",
+"category": "Institutional",
+"type": "School",
+"dist_m": 390,
+"ring": 500,
+"osm": "node/12369374732"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.624079,
+12.929148
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sandhya",
+"category": "Recreational",
+"type": "Cinema",
+"dist_m": 390,
+"ring": 500,
+"osm": "way/349699764"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617851,
+12.920947
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Government Model Primary School",
+"category": "Institutional",
+"type": "School",
+"dist_m": 390,
+"ring": 500,
+"osm": "way/1125892176"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621014,
+12.921951
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "McDonald's",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 400,
+"ring": 500,
+"osm": "node/1474343930"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620269,
+12.921596
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "New Surya Sweets",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 400,
+"ring": 500,
+"osm": "node/2694347072"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614362,
+12.925029
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kanti Sweets",
+"category": "Commercial",
+"type": "Confectionery",
+"dist_m": 400,
+"ring": 500,
+"osm": "node/11106992211"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622983,
+12.930491
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Zafaran - Mandi & Grill",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 400,
+"ring": 500,
+"osm": "node/14302300915"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.615016,
+12.926732
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madiwala Market",
+"category": "Commercial",
+"type": "Seafood",
+"dist_m": 410,
+"ring": 500,
+"osm": "node/1473298102"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622572,
+12.922615
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Sagar Fast Food",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 410,
+"ring": 500,
+"osm": "node/2542686704"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622972,
+12.930592
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "South Indian Bank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 410,
+"ring": 500,
+"osm": "node/4457715091"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618181,
+12.930134
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Syndicate Bank",
+"category": "Commercial",
+"type": "Bank",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/2547432010"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623025,
+12.930686
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Ambur Biriyani",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/2700229003"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622641,
+12.930844
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Axis Bank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/3072178335"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614465,
+12.923043
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bank of Baroda",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/4457715192"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618137,
+12.930161
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala CPWD Quarters",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/5983491272"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.624617,
+12.926173
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St. Johns hospital Emergency ward",
+"category": "Healthcare",
+"type": "Hospital",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/8428403226"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618616,
+12.930594
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramanagala BDA Complex",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/10066958371"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622221,
+12.931007
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kanti Sweets",
+"category": "Commercial",
+"type": "Confectionery",
+"dist_m": 420,
+"ring": 500,
+"osm": "node/11662314077"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614436,
+12.923014
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Srinivasa Temple",
+"category": "Religious",
+"type": "Hindu",
+"dist_m": 420,
+"ring": 500,
+"osm": "way/1442271947"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614655,
+12.926519
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Federal Bank",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 430,
+"ring": 500,
+"osm": "node/4457765089"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618306,
+12.930467
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Pai Mobiles",
+"category": "Commercial",
+"type": "Mobile phone",
+"dist_m": 430,
+"ring": 500,
+"osm": "node/11662314078"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614385,
+12.922937
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Food Triangle",
+"category": "Commercial",
+"type": "Supermarket",
+"dist_m": 440,
+"ring": 500,
+"osm": "node/2542686705"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623075,
+12.930864
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Castle Multicuisine Restaurant",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 440,
+"ring": 500,
+"osm": "node/13721928951"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614432,
+12.92272
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madiwala Market",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 450,
+"ring": 500,
+"osm": "node/1473298101"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621198,
+12.921494
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kaveri Convent HPS Madivala",
+"category": "Institutional",
+"type": "School",
+"dist_m": 450,
+"ring": 500,
+"osm": "node/6536815092"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.619781,
+12.920783
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "CGHS Dispensary No.7",
+"category": "Healthcare",
+"type": "Clinic",
+"dist_m": 450,
+"ring": 500,
+"osm": "node/6939418124"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.624502,
+12.925152
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Mayur Andra Style Restaraunt",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 450,
+"ring": 500,
+"osm": "node/7164319496"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620137,
+12.920951
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madivala",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 450,
+"ring": 500,
+"osm": "node/12328471498"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621121,
+12.921454
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Tasty Restaurant",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 460,
+"ring": 500,
+"osm": "node/1470532623"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614208,
+12.922771
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Utsav",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 460,
+"ring": 500,
+"osm": "node/1615727952"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622854,
+12.931197
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Koramangala BDA Complex",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 460,
+"ring": 500,
+"osm": "node/2405375289"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622603,
+12.931295
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Railway Ticket Booking Center",
+"category": "Commercial",
+"type": "Yes",
+"dist_m": 470,
+"ring": 500,
+"osm": "node/5915230911"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62277,
+12.931266
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "New Christ Convent HPS Madival",
+"category": "Institutional",
+"type": "School",
+"dist_m": 470,
+"ring": 500,
+"osm": "node/6536947501"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617305,
+12.920359
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "S.M.S. Nursing Home",
+"category": "Healthcare",
+"type": "Clinic",
+"dist_m": 470,
+"ring": 500,
+"osm": "node/6948201258"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620178,
+12.920831
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Nahdi Mandi",
+"category": "Commercial",
+"type": "Restaurant",
+"dist_m": 470,
+"ring": 500,
+"osm": "node/12144440751"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620164,
+12.920774
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Eyrie Nest",
+"category": "Commercial",
+"type": "Hotel",
+"dist_m": 470,
+"ring": 500,
+"osm": "node/12144440752"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620094,
+12.920729
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St. John's Auditorium",
+"category": "Recreational",
+"type": "Theatre",
+"dist_m": 470,
+"ring": 500,
+"osm": "way/347446544"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.621809,
+12.931608
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madiwala Traffic Police Station",
+"category": "Public amenities",
+"type": "Police",
+"dist_m": 470,
+"ring": 500,
+"osm": "way/348457970"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62067,
+12.921012
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St. John's Medical College",
+"category": "Institutional",
+"type": "College",
+"dist_m": 470,
+"ring": 500,
+"osm": "relation/15699927"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617127,
+12.929679
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "State Bank of India",
+"category": "Commercial",
+"type": "Atm",
+"dist_m": 480,
+"ring": 500,
+"osm": "node/1615734800"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.625053,
+12.925688
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St.John's Utility Complex",
+"category": "Commercial",
+"type": "Bakery",
+"dist_m": 480,
+"ring": 500,
+"osm": "node/4563420692"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.618044,
+12.930817
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "St Johns opticians and hearing aid",
+"category": "Commercial",
+"type": "Optician",
+"dist_m": 480,
+"ring": 500,
+"osm": "node/4805856923"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.6179,
+12.930656
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Bakes and Shakes",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 480,
+"ring": 500,
+"osm": "node/4805858621"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617931,
+12.930759
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Madiwala Market",
+"category": "Commercial",
+"type": "Marketplace",
+"dist_m": 480,
+"ring": 500,
+"osm": "way/343961637"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.623746,
+12.922951
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Medico Social Centre",
+"category": "Religious",
+"type": "Christian",
+"dist_m": 480,
+"ring": 500,
+"osm": "way/1354222898"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.614514,
+12.927239
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Akshaya Ladies Hostel",
+"category": "Commercial",
+"type": "Hostel",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/1474444113"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.613845,
+12.922771
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "MedPlus",
+"category": "Healthcare",
+"type": "Pharmacy",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/2542702362"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.62331,
+12.931217
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Maruti Suzuki",
+"category": "Commercial",
+"type": "Car",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/4772955933"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.622807,
+12.931532
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Aashirwaad Restaurant - Pure Veg",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/4805858622"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.61808,
+12.931021
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Coastal Bay - Non Veg",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/4805862921"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.617972,
+12.930848
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Big Guys: Wings & More",
+"category": "Commercial",
+"type": "Fast food",
+"dist_m": 490,
+"ring": 500,
+"osm": "node/12862846454"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.625096,
+12.925648
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Kudremukha Colony",
+"category": "Transit",
+"type": "Bus stop",
+"dist_m": 500,
+"ring": 500,
+"osm": "node/10855370148"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.625275,
+12.925886
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"name": "Jamia Masjid",
+"category": "Religious",
+"type": "Muslim",
+"dist_m": 500,
+"ring": 500,
+"osm": "way/323696996"
+},
+"geometry": {
+"type": "Point",
+"coordinates": [
+77.620134,
+12.920503
+]
+}
+}
+]
+}

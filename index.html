@@ -39,6 +39,16 @@
   .seg button { border: 0; background: transparent; color: var(--ink); padding: 6px 12px; font: inherit; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
   label.chk { display: flex; gap: 8px; align-items: center; margin-top: 10px; cursor: pointer; }
+  .ring-list label.chk { margin-top: 6px; }
+  .hint { font-size: 12px; margin: -2px 0 8px; }
+  .cat-list { display: grid; gap: 2px; margin-top: 8px; }
+  .cat-list label.chk { margin-top: 4px; }
+  .cat-list .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cat-list .dot { width: 11px; height: 11px; }
+  .cat-actions { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  button.link { border: 0; background: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; cursor: pointer; }
+  .ring { width: 22px; height: 0; border-top: 3px dotted var(--ink); flex: none; }
+  .ring.r500 { opacity: .55; }
   .src { font-size: 12px; margin-top: 14px; color: var(--muted); }
   .maplibregl-popup-content { background: var(--panel); color: var(--ink); border-radius: 8px; font: 13px/1.4 system-ui, sans-serif; }
   .maplibregl-popup-tip { border-top-color: var(--panel) !important; border-bottom-color: var(--panel) !important; }
@@ -70,28 +80,42 @@
     <li><span class="jn">A</span>Koramangala Water Tank Jn</li>
     <li><span class="jn">B</span>Madiwala Underpass Jn</li>
   </ul>
-  <ul class="legend" id="cat-legend" style="margin-top:10px"></ul>
+
+  <h2>Areas of interest</h2>
+  <p class="hint">Landmark categories from the guidebook's neighbourhood mapping step, shown within the walking catchment ticked below.</p>
+  <div class="cat-list" id="cat-list"></div>
+  <div class="cat-actions"><button id="cat-all" class="link">Show all</button> · <button id="cat-none" class="link">Hide all</button></div>
+
+  <h2>Walking catchment</h2>
+  <div class="ring-list">
+    <label class="chk"><input type="checkbox" id="tg-r300" checked><span class="ring"></span>300 m from the road · ~4 min walk</label>
+    <label class="chk"><input type="checkbox" id="tg-r500" checked><span class="ring r500"></span>500 m from the road · ~7 min walk</label>
+  </div>
 
   <h2>Basemap</h2>
   <div class="seg" role="group" aria-label="Basemap">
     <button id="bm-map" aria-pressed="true">Map</button>
     <button id="bm-sat" aria-pressed="false">Satellite</button>
   </div>
-  <label class="chk"><input type="checkbox" id="tg-ctx" checked> Show landmarks</label>
 
   <p class="src">Road geometry &amp; landmarks: © OpenStreetMap contributors. Method: DULT <em>Guidebook for Tactical Urbanism</em> (2022) &amp; GIZ/MoHUA <em>Tactical Urbanism Guidebook</em> (2020).</p>
 </aside>
 
 <script>
+// Neighbourhood mapping categories (GIZ/MoHUA Tactical Urbanism Guidebook, "Connecting places and people")
 const CATS = {
-  'Bus stop':               '#2a7de1',
-  'School':                 '#f2a900',
-  'Religious':              '#8e5bd6',
-  'Health':                 '#d6336c',
-  'Public / institutional': '#2f9e6b',
-  'Park':                   '#5cb85c',
-  'Commercial':             '#8a8780',
+  'Transit':          '#2a7de1',
+  'Institutional':    '#e8a200',
+  'Healthcare':       '#d6336c',
+  'Religious':        '#8e5bd6',
+  'Recreational':     '#2f9e44',
+  'Public amenities': '#0c8599',
+  'Commercial':       '#8a8780',
 };
+const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
+const ringOn = { 300: true, 500: true };
+// areas of interest extend to the largest ticked walking catchment (none ticked → none shown)
+const poiRange = () => ringOn[500] ? 500 : ringOn[300] ? 300 : -1;
 
 const STYLE_MAP = 'https://tiles.openfreemap.org/styles/liberty';
 const SAT_SOURCE = {
@@ -110,16 +134,36 @@ const map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 
-// legend for landmark categories
-document.getElementById('cat-legend').innerHTML = Object.entries(CATS)
-  .map(([k, c]) => `<li><span class="dot" style="background:${c}"></span>${k}</li>`).join('');
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
-let stretch, context;
+// areas-of-interest toggles: one checkbox per category, with a count for the ticked catchment
+const catList = document.getElementById('cat-list');
+catList.innerHTML = Object.entries(CATS).map(([k, c]) =>
+  `<label class="chk"><input type="checkbox" data-cat="${k}" checked><span class="dot" style="background:${c}"></span>${k}<span class="n" data-n="${k}"></span></label>`).join('');
+
+function poiFilter() {
+  return ['all',
+    ['in', ['get', 'category'], ['literal', Object.keys(CATS).filter(k => catOn[k])]],
+    ['<=', ['get', 'dist_m'], poiRange()]];
+}
+function refreshPoi() {
+  for (const k of Object.keys(CATS)) {
+    const n = poi ? poi.features.filter(f => f.properties.category === k && f.properties.dist_m <= poiRange()).length : '';
+    catList.querySelector(`[data-n="${k}"]`).textContent = n;
+    catList.querySelector(`[data-cat="${k}"]`).checked = catOn[k];
+  }
+  ['poi', 'poi-label'].forEach(id => map.getLayer(id) && map.setFilter(id,
+    id === 'poi' ? poiFilter() : ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']]));
+}
+
+let stretch, poi, catchments;
 const load = Promise.all([
   fetch('data/stretch.geojson').then(r => r.json()),
-  fetch('data/context.geojson').then(r => r.json()),
-]).then(([s, c]) => {
-  stretch = s; context = c;
+  fetch('data/poi.geojson').then(r => r.json()),
+  fetch('data/catchments.geojson').then(r => r.json()),
+]).then(([s, c, k]) => {
+  stretch = s; poi = c; catchments = k;
+  refreshPoi();
   const cw = s.features.filter(f => f.properties.kind === 'carriageway');
   const avg = cw.reduce((a, f) => a + f.properties.length_m, 0) / cw.length;
   document.getElementById('len').textContent = `≈ ${Math.round(avg)} m per carriageway`;
@@ -129,12 +173,29 @@ const load = Promise.all([
 function addOverlays() {
   if (!stretch) return;
   if (!map.getSource('stretch')) map.addSource('stretch', { type: 'geojson', data: stretch });
-  if (!map.getSource('context')) map.addSource('context', { type: 'geojson', data: context });
+  if (!map.getSource('poi')) map.addSource('poi', { type: 'geojson', data: poi });
   if (!map.getSource('sat')) map.addSource('sat', SAT_SOURCE);
 
   const firstSymbol = map.getStyle().layers.find(l => l.type === 'symbol')?.id;
   if (!map.getLayer('sat')) map.addLayer({ id: 'sat', type: 'raster', source: 'sat',
     layout: { visibility: satOn ? 'visible' : 'none' } }, firstSymbol);
+
+  // walking catchments (drawn beneath the study stretch)
+  if (!map.getSource('catchments')) map.addSource('catchments', { type: 'geojson', data: catchments });
+  for (const r of [500, 300]) {
+    const f = ['==', ['get', 'radius_m'], r];
+    const vis = ringOn[r] ? 'visible' : 'none';
+    map.addLayer({ id: `ring-${r}-casing`, type: 'line', source: 'catchments', filter: f, layout: { visibility: vis },
+      paint: { 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': 0.55 } });
+    map.addLayer({ id: `ring-${r}`, type: 'line', source: 'catchments', filter: f,
+      layout: { visibility: vis, 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': '#1d1d1b', 'line-opacity': r === 300 ? 0.9 : 0.55,
+        'line-width': 2.5, 'line-dasharray': [0, 2] } });
+    map.addLayer({ id: `ring-${r}-label`, type: 'symbol', source: 'catchments', filter: f,
+      layout: { visibility: vis, 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-field': ['get', 'label'],
+        'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-offset': [0, -0.9] },
+      paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 } });
+  }
 
   const isCW = ['==', ['get', 'kind'], 'carriageway'];
   map.addLayer({ id: 'stretch-halo', type: 'line', source: 'stretch', filter: isCW,
@@ -149,16 +210,18 @@ function addOverlays() {
       'text-keep-upright': false, 'text-allow-overlap': true },
     paint: { 'text-color': '#ffffff' } });
 
-  map.addLayer({ id: 'ctx', type: 'circle', source: 'context',
-    layout: { visibility: ctxOn ? 'visible' : 'none' },
+  // areas of interest: commercial drawn smaller so the civic/transit layers read first
+  map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(),
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 3.5, 19, 8],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'],
+        14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
+        19, ['match', ['get', 'category'], 'Commercial', 6, 9]],
       'circle-color': ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888'],
       'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
-  map.addLayer({ id: 'ctx-label', type: 'symbol', source: 'context', minzoom: 17.2,
-    filter: ['!=', ['get', 'category'], 'Commercial'],
-    layout: { visibility: ctxOn ? 'visible' : 'none', 'text-field': ['get', 'name'], 'text-size': 11,
-      'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-max-width': 9,
+  map.addLayer({ id: 'poi-label', type: 'symbol', source: 'poi', minzoom: 16.3,
+    filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
+    layout: { 'text-field': ['get', 'name'], 'text-size': 11,
+      'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 9,
       'text-font': ['Noto Sans Regular'] },
     paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
 }
@@ -175,14 +238,16 @@ load.then(([s]) => {
         `<strong>${f.properties.id} · ${f.properties.name}</strong><br><span class="pop-k">${f.properties.note}</span>`))
       .addTo(map);
   });
+  // frame the road plus the outermost catchment so both rings are in view on load
   const b = new maplibregl.LngLatBounds();
   s.features.forEach(f => (f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates).forEach(c => b.extend(c)));
+  catchments.features.forEach(f => f.geometry.coordinates[0].forEach(c => b.extend(c)));
   const mobile = innerWidth <= 640;
   map.fitBounds(b, { padding: mobile ? { top: 40, bottom: innerHeight * 0.5, left: 30, right: 30 }
                                      : { top: 60, bottom: 60, left: 380, right: 60 }, maxZoom: 18, duration: 0 });
 });
 
-let satOn = false, ctxOn = true;
+let satOn = false;
 map.on('style.load', () => load.then(addOverlays));
 
 const btnMap = document.getElementById('bm-map'), btnSat = document.getElementById('bm-sat');
@@ -193,10 +258,21 @@ function setSat(on) {
 }
 btnMap.onclick = () => setSat(false);
 btnSat.onclick = () => setSat(true);
-document.getElementById('tg-ctx').onchange = e => {
-  ctxOn = e.target.checked;
-  ['ctx', 'ctx-label'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ctxOn ? 'visible' : 'none'));
-};
+catList.addEventListener('change', e => {
+  const k = e.target.dataset.cat;
+  if (k) { catOn[k] = e.target.checked; refreshPoi(); }
+});
+document.getElementById('cat-all').onclick = () => { Object.keys(catOn).forEach(k => catOn[k] = true); refreshPoi(); };
+document.getElementById('cat-none').onclick = () => { Object.keys(catOn).forEach(k => catOn[k] = false); refreshPoi(); };
+
+for (const r of [300, 500]) {
+  document.getElementById(`tg-r${r}`).onchange = e => {
+    ringOn[r] = e.target.checked;
+    [`ring-${r}-casing`, `ring-${r}`, `ring-${r}-label`].forEach(id =>
+      map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ringOn[r] ? 'visible' : 'none'));
+    refreshPoi();
+  };
+}
 
 // popups
 map.on('click', 'stretch-line', e => {
@@ -204,12 +280,13 @@ map.on('click', 'stretch-line', e => {
   new maplibregl.Popup().setLngLat(e.lngLat).setHTML(
     `<strong>${p.name}</strong><br>${p.direction}<br><span class="pop-k">${p.lanes} lanes · one-way · ${p.length_m} m · ${p.osm_id}</span>`).addTo(map);
 });
-map.on('click', 'ctx', e => {
+map.on('click', 'poi', e => {
   const p = e.features[0].properties;
-  new maplibregl.Popup({ offset: 8 }).setLngLat(e.lngLat).setHTML(
-    `<strong>${p.name}</strong><br><span class="pop-k">${p.category}</span>`).addTo(map);
+  new maplibregl.Popup({ offset: 8 }).setLngLat(e.features[0].geometry.coordinates).setHTML(
+    `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(p.category)}` +
+    `<br><span class="pop-k">≈ ${p.dist_m} m from the road · <a href="https://www.openstreetmap.org/${esc(p.osm)}" target="_blank" rel="noopener">OSM</a></span>`).addTo(map);
 });
-['stretch-line', 'ctx'].forEach(id => {
+['stretch-line', 'poi'].forEach(id => {
   map.on('mouseenter', id, () => map.getCanvas().style.cursor = 'pointer');
   map.on('mouseleave', id, () => map.getCanvas().style.cursor = '');
 });
