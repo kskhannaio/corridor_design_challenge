@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Madiwala 100 Ft Road</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  :root {
+    --bg: #f6f4ef; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a65; --line: #e3e0d8;
+    --study: #e4572e; --study-halo: rgba(228, 87, 46, .18);
+    --jn: #1d1d1b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --jn:#f0eee8; }
+  }
+  :root[data-theme="dark"] { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --jn:#f0eee8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  #map { position: absolute; inset: 0; }
+  .panel { position: absolute; top: 16px; left: 16px; width: 320px; max-height: calc(100% - 32px); overflow: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12); z-index: 2; }
+  .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+  h1 { font-size: 18px; margin: 0 0 6px; line-height: 1.25; }
+  p { margin: 0 0 12px; color: var(--muted); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 14px; }
+  dt { color: var(--muted); } dd { margin: 0; font-variant-numeric: tabular-nums; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 8px; }
+  .legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .sw { width: 22px; height: 6px; border-radius: 3px; background: var(--study); flex: none; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
+  .jn { width: 18px; height: 18px; border-radius: 50%; background: var(--jn); color: var(--panel); font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--ink); padding: 6px 12px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+  label.chk { display: flex; gap: 8px; align-items: center; margin-top: 10px; cursor: pointer; }
+  .src { font-size: 12px; margin-top: 14px; color: var(--muted); }
+  .maplibregl-popup-content { background: var(--panel); color: var(--ink); border-radius: 8px; font: 13px/1.4 system-ui, sans-serif; }
+  .maplibregl-popup-tip { border-top-color: var(--panel) !important; border-bottom-color: var(--panel) !important; }
+  .pop-k { color: var(--muted); font-size: 12px; }
+  .jn-marker { width: 26px; height: 26px; border-radius: 50%; background: #1d1d1b; color: #fff; font: 700 13px system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
+  @media (max-width: 640px) {
+    .panel { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; max-height: 45%; }
+  }
+</style>
+</head>
+<body>
+<div id="map" role="region" aria-label="Map of the study stretch"></div>
+
+<aside class="panel">
+  <p class="eyebrow">Tactical urbanism · Stage 1 · Site selection</p>
+  <h1>100 Ft Road (Mahayogi Vemana Rd), Madiwala</h1>
+  <p>Study stretch between the Koramangala Water Tank junction and the Madiwala Underpass junction on Hosur Road.</p>
+  <dl>
+    <dt>Length</dt><dd id="len">—</dd>
+    <dt>Section</dt><dd>Divided, 2 + 2 lanes, one-way pairs</dd>
+    <dt>Junctions</dt><dd>2 (both ends)</dd>
+    <dt>Bus stops</dt><dd>Both directions</dd>
+  </dl>
+
+  <h2>Legend</h2>
+  <ul class="legend">
+    <li><span class="sw"></span>Study stretch (both carriageways)</li>
+    <li><span class="jn">A</span>Koramangala Water Tank Jn</li>
+    <li><span class="jn">B</span>Madiwala Underpass Jn</li>
+  </ul>
+  <ul class="legend" id="cat-legend" style="margin-top:10px"></ul>
+
+  <h2>Basemap</h2>
+  <div class="seg" role="group" aria-label="Basemap">
+    <button id="bm-map" aria-pressed="true">Map</button>
+    <button id="bm-sat" aria-pressed="false">Satellite</button>
+  </div>
+  <label class="chk"><input type="checkbox" id="tg-ctx" checked> Show landmarks</label>
+
+  <p class="src">Road geometry &amp; landmarks: © OpenStreetMap contributors. Method: DULT <em>Guidebook for Tactical Urbanism</em> (2022) &amp; GIZ/MoHUA <em>Tactical Urbanism Guidebook</em> (2020).</p>
+</aside>
+
+<script>
+const CATS = {
+  'Bus stop':               '#2a7de1',
+  'School':                 '#f2a900',
+  'Religious':              '#8e5bd6',
+  'Health':                 '#d6336c',
+  'Public / institutional': '#2f9e6b',
+  'Park':                   '#5cb85c',
+  'Commercial':             '#8a8780',
+};
+
+const STYLE_MAP = 'https://tiles.openfreemap.org/styles/liberty';
+const SAT_SOURCE = {
+  type: 'raster', tileSize: 256, maxzoom: 19,
+  tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+  attribution: 'Imagery © Esri, Maxar, Earthstar Geographics'
+};
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: STYLE_MAP,
+  center: [77.6195, 12.926],
+  zoom: 16.6,
+  attributionControl: { compact: true }
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+
+// legend for landmark categories
+document.getElementById('cat-legend').innerHTML = Object.entries(CATS)
+  .map(([k, c]) => `<li><span class="dot" style="background:${c}"></span>${k}</li>`).join('');
+
+let stretch, context;
+const load = Promise.all([
+  fetch('data/stretch.geojson').then(r => r.json()),
+  fetch('data/context.geojson').then(r => r.json()),
+]).then(([s, c]) => {
+  stretch = s; context = c;
+  const cw = s.features.filter(f => f.properties.kind === 'carriageway');
+  const avg = cw.reduce((a, f) => a + f.properties.length_m, 0) / cw.length;
+  document.getElementById('len').textContent = `≈ ${Math.round(avg)} m per carriageway`;
+  return [s, c];
+});
+
+function addOverlays() {
+  if (!stretch) return;
+  if (!map.getSource('stretch')) map.addSource('stretch', { type: 'geojson', data: stretch });
+  if (!map.getSource('context')) map.addSource('context', { type: 'geojson', data: context });
+  if (!map.getSource('sat')) map.addSource('sat', SAT_SOURCE);
+
+  const firstSymbol = map.getStyle().layers.find(l => l.type === 'symbol')?.id;
+  if (!map.getLayer('sat')) map.addLayer({ id: 'sat', type: 'raster', source: 'sat',
+    layout: { visibility: satOn ? 'visible' : 'none' } }, firstSymbol);
+
+  const isCW = ['==', ['get', 'kind'], 'carriageway'];
+  map.addLayer({ id: 'stretch-halo', type: 'line', source: 'stretch', filter: isCW,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#e4572e', 'line-opacity': 0.22,
+      'line-width': ['interpolate', ['exponential', 2], ['zoom'], 14, 10, 19, 70] } });
+  map.addLayer({ id: 'stretch-line', type: 'line', source: 'stretch', filter: isCW,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#e4572e', 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2.5, 19, 7] } });
+  map.addLayer({ id: 'stretch-arrows', type: 'symbol', source: 'stretch', filter: isCW,
+    layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'text-field': '>', 'text-size': 13, 'text-font': ['Noto Sans Bold'],
+      'text-keep-upright': false, 'text-allow-overlap': true },
+    paint: { 'text-color': '#ffffff' } });
+
+  map.addLayer({ id: 'ctx', type: 'circle', source: 'context',
+    layout: { visibility: ctxOn ? 'visible' : 'none' },
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 3.5, 19, 8],
+      'circle-color': ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888'],
+      'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
+  map.addLayer({ id: 'ctx-label', type: 'symbol', source: 'context', minzoom: 17.2,
+    filter: ['!=', ['get', 'category'], 'Commercial'],
+    layout: { visibility: ctxOn ? 'visible' : 'none', 'text-field': ['get', 'name'], 'text-size': 11,
+      'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-max-width': 9,
+      'text-font': ['Noto Sans Regular'] },
+    paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
+}
+
+// junction markers (DOM, survive style swaps)
+load.then(([s]) => {
+  s.features.filter(f => f.properties.kind === 'junction').forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'jn-marker'; el.textContent = f.properties.id;
+    el.setAttribute('aria-label', f.properties.name);
+    new maplibregl.Marker({ element: el })
+      .setLngLat(f.geometry.coordinates)
+      .setPopup(new maplibregl.Popup({ offset: 16 }).setHTML(
+        `<strong>${f.properties.id} · ${f.properties.name}</strong><br><span class="pop-k">${f.properties.note}</span>`))
+      .addTo(map);
+  });
+  const b = new maplibregl.LngLatBounds();
+  s.features.forEach(f => (f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates).forEach(c => b.extend(c)));
+  const mobile = innerWidth <= 640;
+  map.fitBounds(b, { padding: mobile ? { top: 40, bottom: innerHeight * 0.5, left: 30, right: 30 }
+                                     : { top: 60, bottom: 60, left: 380, right: 60 }, maxZoom: 18, duration: 0 });
+});
+
+let satOn = false, ctxOn = true;
+map.on('style.load', () => load.then(addOverlays));
+
+const btnMap = document.getElementById('bm-map'), btnSat = document.getElementById('bm-sat');
+function setSat(on) {
+  satOn = on;
+  btnMap.setAttribute('aria-pressed', String(!on)); btnSat.setAttribute('aria-pressed', String(on));
+  if (map.getLayer('sat')) map.setLayoutProperty('sat', 'visibility', on ? 'visible' : 'none');
+}
+btnMap.onclick = () => setSat(false);
+btnSat.onclick = () => setSat(true);
+document.getElementById('tg-ctx').onchange = e => {
+  ctxOn = e.target.checked;
+  ['ctx', 'ctx-label'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ctxOn ? 'visible' : 'none'));
+};
+
+// popups
+map.on('click', 'stretch-line', e => {
+  const p = e.features[0].properties;
+  new maplibregl.Popup().setLngLat(e.lngLat).setHTML(
+    `<strong>${p.name}</strong><br>${p.direction}<br><span class="pop-k">${p.lanes} lanes · one-way · ${p.length_m} m · ${p.osm_id}</span>`).addTo(map);
+});
+map.on('click', 'ctx', e => {
+  const p = e.features[0].properties;
+  new maplibregl.Popup({ offset: 8 }).setLngLat(e.lngLat).setHTML(
+    `<strong>${p.name}</strong><br><span class="pop-k">${p.category}</span>`).addTo(map);
+});
+['stretch-line', 'ctx'].forEach(id => {
+  map.on('mouseenter', id, () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', id, () => map.getCanvas().style.cursor = '');
+});
+</script>
+</body>
+</html>

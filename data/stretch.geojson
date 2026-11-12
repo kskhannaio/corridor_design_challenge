@@ -1,0 +1,183 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "name": "Mahayogi Vemana Road (100 Ft Rd)",
+    "direction": "Southbound (towards Madiwala / Hosur Rd)",
+    "lanes": 2,
+    "oneway": true,
+    "length_m": 466,
+    "osm_id": "way/111814614"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.620899,
+      12.9272267
+     ],
+     [
+      77.6204316,
+      12.925982
+     ],
+     [
+      77.6203664,
+      12.9258085
+     ],
+     [
+      77.6203441,
+      12.9257492
+     ],
+     [
+      77.6201569,
+      12.9255148
+     ],
+     [
+      77.6201379,
+      12.9254909
+     ],
+     [
+      77.6200898,
+      12.9254422
+     ],
+     [
+      77.6200089,
+      12.9253882
+     ],
+     [
+      77.619846,
+      12.9252826
+     ],
+     [
+      77.6185737,
+      12.9247611
+     ],
+     [
+      77.6183237,
+      12.9246425
+     ],
+     [
+      77.618251,
+      12.9246054
+     ],
+     [
+      77.6180426,
+      12.9244848
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "name": "Mahayogi Vemana Road (100 Ft Rd)",
+    "direction": "Northbound (towards Koramangala Water Tank)",
+    "lanes": 2,
+    "oneway": true,
+    "length_m": 483,
+    "osm_id": "way/133763768"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.6179924,
+      12.9245641
+     ],
+     [
+      77.6182077,
+      12.9246842
+     ],
+     [
+      77.6187994,
+      12.9249368
+     ],
+     [
+      77.6196979,
+      12.9253587
+     ],
+     [
+      77.6197775,
+      12.9253911
+     ],
+     [
+      77.6199272,
+      12.9254987
+     ],
+     [
+      77.6199902,
+      12.9255403
+     ],
+     [
+      77.6200295,
+      12.9255663
+     ],
+     [
+      77.6200541,
+      12.9256006
+     ],
+     [
+      77.6201989,
+      12.9258029
+     ],
+     [
+      77.6202175,
+      12.9258503
+     ],
+     [
+      77.6207581,
+      12.927227
+     ],
+     [
+      77.6208361,
+      12.9274056
+     ],
+     [
+      77.6208578,
+      12.9274554
+     ],
+     [
+      77.6208789,
+      12.9275058
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "junction",
+    "id": "A",
+    "name": "Koramangala Water Tank Junction",
+    "note": "Sarjapura Rd \u00b7 100 Ft Rd \u00b7 Ejipura flyover landing (u/c)"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.620965,
+     12.927461
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "junction",
+    "id": "B",
+    "name": "Madiwala Underpass Junction",
+    "note": "Hosur Rd \u00b7 Madiwala underpass \u00b7 100 Ft Rd"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618093,
+     12.924584
+    ]
+   }
+  }
+ ]
+}
