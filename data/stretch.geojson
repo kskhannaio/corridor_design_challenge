@@ -5,16 +5,31 @@
    "type": "Feature",
    "properties": {
     "kind": "carriageway",
-    "name": "Mahayogi Vemana Road (100 Ft Rd)",
-    "direction": "Southbound (towards Madiwala / Hosur Rd)",
+    "side": "AB",
+    "name": "100 Feet Road (Mahayogi Vemana Road)",
+    "direction": "Towards Madiwala Underpass Junction (B)",
+    "from": "A",
+    "to": "B",
     "lanes": 2,
     "oneway": true,
-    "length_m": 466,
-    "osm_id": "way/111814614"
+    "length_m": 468,
+    "osm_ways": [
+     "way/1335925202",
+     "way/1387944292",
+     "way/111814614"
+    ]
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
+     [
+      77.6209908,
+      12.9274643
+     ],
+     [
+      77.6209692,
+      12.9274085
+     ],
      [
       77.620899,
       12.9272267
@@ -62,10 +77,6 @@
      [
       77.618251,
       12.9246054
-     ],
-     [
-      77.6180426,
-      12.9244848
      ]
     ]
    }
@@ -74,20 +85,21 @@
    "type": "Feature",
    "properties": {
     "kind": "carriageway",
-    "name": "Mahayogi Vemana Road (100 Ft Rd)",
-    "direction": "Northbound (towards Koramangala Water Tank)",
+    "side": "AB",
+    "name": "100 Feet Road (Mahayogi Vemana Road)",
+    "direction": "Towards Koramangala Water Tank Junction (A)",
+    "from": "B",
+    "to": "A",
     "lanes": 2,
     "oneway": true,
-    "length_m": 483,
-    "osm_id": "way/133763768"
+    "length_m": 450,
+    "osm_ways": [
+     "way/133763768"
+    ]
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
-     [
-      77.6179924,
-      12.9245641
-     ],
      [
       77.6182077,
       12.9246842
@@ -139,10 +151,318 @@
      [
       77.6208578,
       12.9274554
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "side": "BC",
+    "name": "Hosur Road",
+    "direction": "Towards St John's Junction (C)",
+    "from": "B",
+    "to": "C",
+    "lanes": 4,
+    "oneway": true,
+    "length_m": 644,
+    "osm_ways": [
+     "way/464465166",
+     "way/172853383",
+     "way/688824219",
+     "way/239438926",
+     "way/1459499822"
+    ]
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.6179924,
+      12.9245641
+     ],
+     [
+      77.6179553,
+      12.9246266
+     ],
+     [
+      77.6176814,
+      12.9250887
+     ],
+     [
+      77.6173739,
+      12.9255734
+     ],
+     [
+      77.6172519,
+      12.9257676
+     ],
+     [
+      77.6171909,
+      12.925979
+     ],
+     [
+      77.617103,
+      12.9261271
+     ],
+     [
+      77.616588,
+      12.9269951
+     ],
+     [
+      77.6160664,
+      12.9278594
+     ],
+     [
+      77.6156751,
+      12.9284946
+     ],
+     [
+      77.6152112,
+      12.9292918
+     ],
+     [
+      77.6151599,
+      12.92938
+     ],
+     [
+      77.6150603,
+      12.9295316
+     ],
+     [
+      77.61503,
+      12.9295762
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "side": "BC",
+    "name": "Hosur Road",
+    "direction": "Towards Madiwala Underpass Junction (B)",
+    "from": "C",
+    "to": "B",
+    "lanes": 3,
+    "oneway": true,
+    "length_m": 675,
+    "osm_ways": [
+     "way/638928399",
+     "way/1459499823",
+     "way/160334705",
+     "way/172853381",
+     "way/1223486358"
+    ]
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.6149477,
+      12.9298694
+     ],
+     [
+      77.6150337,
+      12.929752
+     ],
+     [
+      77.6151298,
+      12.9296206
+     ],
+     [
+      77.6151658,
+      12.9295715
+     ],
+     [
+      77.6153,
+      12.9293925
+     ],
+     [
+      77.6154226,
+      12.929187
+     ],
+     [
+      77.6171742,
+      12.9262516
+     ],
+     [
+      77.6172816,
+      12.9260375
+     ],
+     [
+      77.6174456,
+      12.9258541
+     ],
+     [
+      77.6178168,
+      12.925288
+     ],
+     [
+      77.6181514,
+      12.9247789
+     ],
+     [
+      77.6181681,
+      12.9247475
+     ],
+     [
+      77.6181962,
+      12.924702
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "side": "CA",
+    "name": "Sarjapura Road",
+    "direction": "Towards Koramangala Water Tank Junction (A)",
+    "from": "C",
+    "to": "A",
+    "lanes": 3,
+    "oneway": true,
+    "length_m": 695,
+    "osm_ways": [
+     "way/1031526547",
+     "way/1110164312",
+     "way/1290479888",
+     "way/1387944291"
+    ]
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.6149477,
+      12.9298694
+     ],
+     [
+      77.6152165,
+      12.9297548
+     ],
+     [
+      77.6155949,
+      12.9296113
+     ],
+     [
+      77.6160012,
+      12.9294716
+     ],
+     [
+      77.6161925,
+      12.9294086
+     ],
+     [
+      77.6175203,
+      12.9289096
+     ],
+     [
+      77.6176734,
+      12.9288504
+     ],
+     [
+      77.618962,
+      12.9283525
+     ],
+     [
+      77.6195392,
+      12.9281294
+     ],
+     [
+      77.6203089,
+      12.927832
+     ],
+     [
+      77.620768,
+      12.9276546
+     ],
+     [
+      77.6207932,
+      12.9276451
+     ],
+     [
+      77.6208265,
+      12.9276325
+     ],
+     [
+      77.6209204,
+      12.9275971
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "carriageway",
+    "side": "CA",
+    "name": "Sarjapura Road",
+    "direction": "Towards St John's Junction (C)",
+    "from": "A",
+    "to": "C",
+    "lanes": 2,
+    "oneway": true,
+    "length_m": 675,
+    "osm_ways": [
+     "way/1110164316",
+     "way/1110164315"
+    ]
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      77.6209908,
+      12.9274643
      ],
      [
       77.6208789,
       12.9275058
+     ],
+     [
+      77.6207545,
+      12.9275576
+     ],
+     [
+      77.620616,
+      12.9276081
+     ],
+     [
+      77.6193863,
+      12.9281077
+     ],
+     [
+      77.6182675,
+      12.9285287
+     ],
+     [
+      77.6174874,
+      12.9288204
+     ],
+     [
+      77.6160208,
+      12.9293703
+     ],
+     [
+      77.6159128,
+      12.9294046
+     ],
+     [
+      77.6155636,
+      12.9295234
+     ],
+     [
+      77.6153767,
+      12.929553
+     ],
+     [
+      77.6151658,
+      12.9295715
      ]
     ]
    }
@@ -176,6 +496,22 @@
     "coordinates": [
      77.618093,
      12.924584
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "kind": "junction",
+    "id": "C",
+    "name": "St John's Junction",
+    "note": "Hosur Rd \u00b7 Sarjapura Rd \u00b7 Tavarekere Main Rd \u00b7 St John's Hospital bus stand"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.614971,
+     12.929885
     ]
    }
   }

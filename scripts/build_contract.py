@@ -19,7 +19,8 @@ JUNCTION_ZONE = 20
 
 C = json.load(open(os.path.join(DATA, 'contract.json')))
 X = json.load(open(os.path.join(DATA, 'crossings.geojson')))
-line = next(f for f in X['features'] if f['properties']['kind'] == 'centreline')['geometry']['coordinates']
+# the contract's survey covers side A-B (100 Ft Road) only
+line = next(f for f in X['features'] if f['properties']['kind'] == 'centreline' and f['properties'].get('side') == 'AB')['geometry']['coordinates']
 
 lat0 = 12.926
 R = 6371008.8
@@ -57,7 +58,7 @@ def band(a, b, width):
     return [[U(p) for p in ring]]
 
 feats = []
-F = lambda geom, **props: feats.append({"type": "Feature", "properties": props, "geometry": geom})
+F = lambda geom, **props: feats.append({"type": "Feature", "properties": {**props, 'side': 'AB'}, "geometry": geom})
 
 w = C['re_wall']
 F({"type": "Polygon", "coordinates": band(w['from'], w['to'], w['width'])}, kind='re_wall',

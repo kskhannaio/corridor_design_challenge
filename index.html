@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Madiwala 100 Ft Road</title>
-<meta name="description" content="A tactical urbanism study of 100 Feet Road (Mahayogi Vemana Road) between the Koramangala Water Tank junction and Madiwala underpass, Bengaluru.">
+<title>Madiwala Loop Study</title>
+<meta name="description" content="A tactical urbanism study of the Madiwala loop in Bengaluru: 100 Feet Road, Hosur Road and Sarjapura Road between the Water Tank, Madiwala underpass and St John's junctions.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
@@ -85,7 +85,7 @@
   .sw-need { width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 3px solid var(--violet); }
   .sw-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #1d1d1b; }
   .sw-ring { width: 22px; height: 0; border-top: 3px dotted var(--ink); }
-  .sw-cons { width: 22px; height: 8px; border-radius: 2px; background: repeating-linear-gradient(135deg, #8a5a2b 0 3px, #f0c27b 3px 6px); }
+  .sw-cons { width: 22px; height: 8px; border-radius: 2px; background: repeating-linear-gradient(90deg, #1d1d1b 0 4px, #f59f00 4px 8px); box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px var(--line); }
   .jn { width: 18px; height: 18px; border-radius: 50%; background: #1d1d1b; color: #fff; font-size: 11px; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center; flex: none; }
 
@@ -126,6 +126,13 @@
   ul.xkey { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
   ul.xkey li { display: flex; align-items: center; gap: 5px; }
   ul.xkey i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
+  table.sidetab { width: 100%; border-collapse: collapse; font-size: 13px; margin: 0 0 14px; font-variant-numeric: tabular-nums; }
+  table.sidetab th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); }
+  table.sidetab td { padding: 6px 6px 6px 0; border-bottom: 1px dashed var(--line); }
+  table.sidetab tr[data-side] { cursor: pointer; }
+  table.sidetab tr[data-side]:hover td { background: var(--soft); }
+  h4.grp { font-size: 13px; margin: 10px 0 2px; }
+  h4.grp:first-child { margin-top: 0; }
   .callout { background: var(--soft); border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 0 0 14px; }
 
   /* site check */
@@ -210,7 +217,7 @@
   <div class="story-head">
     <div>
       <p class="eyebrow">Tactical urbanism study · Bengaluru</p>
-      <h1>100 Feet Road, Madiwala</h1>
+      <h1>The Madiwala loop</h1>
     </div>
     <button class="tour-btn" id="tour-btn" title="Take a quick tour of this page">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg>
@@ -241,7 +248,7 @@
   <label><input type="checkbox" data-g="crossings"> Crossings &amp; gaps</label>
   <label><input type="checkbox" data-g="footpaths"> Footpath widths</label>
   <label><input type="checkbox" data-g="wall"> Flyover ramp wall</label>
-  <label><input type="checkbox" data-g="construction"> Flyover construction</label>
+  <label><input type="checkbox" data-g="construction"> Ejipura flyover (under construction)</label>
   <h4>Walking distance from the road</h4>
   <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
@@ -266,7 +273,14 @@
 /* =====================================================================
    Content settings — plain-language names used across the page
    ===================================================================== */
-const SIDE = { SE: 'IIA side', NW: 'Masjid side' };          // road sides, as locals would name them
+const SIDE = { SE: 'IIA side', NW: 'Masjid side' };          // sides of 100 Ft Road in the contract's footpath survey
+// the three sides of the loop; 'inside' faces the middle of the triangle
+const ROADS = {
+  AB: { name: '100 Feet Road', from: 'A', to: 'B', inside: 'Masjid side', outside: 'IIA side' },
+  BC: { name: 'Hosur Road', from: 'B', to: 'C', inside: "east side (St John's grounds)", outside: 'west side (Maruthi Nagar)' },
+  CA: { name: 'Sarjapura Road', from: 'C', to: 'A', inside: "south side (St John's grounds)", outside: "north side (St John's Hospital)" },
+};
+const JN = { A: 'Water Tank junction', B: 'Madiwala underpass', C: "St John's junction" };
 const CATS = {                                                // GIZ guidebook neighbourhood-mapping categories
   'Transit': '#2a7de1', 'Institutional': '#e8a200', 'Healthcare': '#d6336c', 'Religious': '#8e5bd6',
   'Recreational': '#2f9e44', 'Public amenities': '#0c8599', 'Commercial': '#8a8780',
@@ -276,7 +290,9 @@ const CAT_LABEL = { 'Transit': 'Bus stops', 'Institutional': 'Schools & institut
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const fmt = n => Number(n).toLocaleString('en-IN');
-const fromA = m => `${m} m from the Water Tank junction`;
+const fromStart = (side, m) => `${m} m from the ${JN[ROADS[side].from]}`;
+const fromA = m => fromStart('AB', m);
+const roadSide = (side, where) => ROADS[side]?.[where] || where;
 
 /* =====================================================================
    Map
@@ -294,7 +310,7 @@ const GROUPS = {
   crossings:    ['ct-zone', 'xg-gap', 'xg-gap-label', 'xg-desire', 'xg-tick', 'xg-tick-label', 'xg-gen', 'xg-cross'],
   footpaths:    ['ct-fp', 'ct-fp-label'],
   wall:         ['ct-wall'],
-  construction: ['cons-casing', 'cons'],
+  construction: ['cons-casing', 'cons', 'cons-stripes', 'cons-label'],
   places:       ['poi', 'poi-label'],
   r300:         ['ring-300-casing', 'ring-300', 'ring-300-label'],
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
@@ -353,10 +369,18 @@ function addOverlays() {
   }
 
   // flyover construction (OSM)
-  map.addLayer({ id: 'cons-casing', type: 'line', source: 'construction', layout: hidden,
-    paint: { 'line-color': '#f0c27b', 'line-width': ['interpolate', ['linear'], ['zoom'], 15, 5, 19, 16], 'line-opacity': 0.85 } });
-  map.addLayer({ id: 'cons', type: 'line', source: 'construction', layout: hidden,
-    paint: { 'line-color': '#8a5a2b', 'line-width': ['interpolate', ['linear'], ['zoom'], 15, 5, 19, 16], 'line-dasharray': [0.4, 0.4], 'line-opacity': 0.9 } });
+  // Ejipura flyover works: amber/black hazard stripes on a white casing so it reads on both base maps
+  const consW = ['interpolate', ['linear'], ['zoom'], 13, 4, 15, 7, 19, 18];
+  map.addLayer({ id: 'cons-casing', type: 'line', source: 'construction', layout: { ...hidden, 'line-cap': 'butt', 'line-join': 'round' },
+    paint: { 'line-color': '#ffffff', 'line-width': ['+', consW, 4], 'line-opacity': 0.95 } });
+  map.addLayer({ id: 'cons', type: 'line', source: 'construction', layout: { ...hidden, 'line-cap': 'butt', 'line-join': 'round' },
+    paint: { 'line-color': '#f59f00', 'line-width': consW } });
+  map.addLayer({ id: 'cons-stripes', type: 'line', source: 'construction', layout: { ...hidden, 'line-cap': 'butt', 'line-join': 'round' },
+    paint: { 'line-color': '#1d1d1b', 'line-width': consW, 'line-dasharray': [0.6, 0.6] } });
+  map.addLayer({ id: 'cons-label', type: 'symbol', source: 'construction', filter: ['get', 'elevated'], minzoom: 14,
+    layout: { ...hidden, 'symbol-placement': 'line', 'symbol-spacing': 350, 'text-field': 'Ejipura flyover · under construction',
+      'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-offset': [0, -1.4], 'text-max-angle': 30 },
+    paint: { 'text-color': '#7a4a00', 'text-halo-color': '#fff', 'text-halo-width': 2 } });
 
   // flyover ramp wall and crossing zones (contract)
   map.addLayer({ id: 'ct-wall', type: 'fill', source: 'contract', filter: K('re_wall'), layout: hidden,
@@ -456,22 +480,25 @@ const POPUPS = {
     (p.hours ? `<br><strong>Open:</strong> ${esc(p.hours)}${p.hours_note ? `<br><span class="pop-k">${esc(p.hours_note)}</span>` : ''}` : '') +
     `<br><span class="pop-k">${p.listed ? 'Business listing, not checked on the ground' : 'Mapped place'} · from ${placeSources(p)}</span>`]; },
   'xg-cross': f => { const p = f.properties; return [f.geometry.coordinates,
-    `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : 'Traffic signals, but no marked pedestrian crossing on the map — to check on the walk'}`]; },
+    `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : esc(p.type.replace(' in OSM', ' on the map')) + ' — to check on the walk'}` +
+    `<br><span class="pop-k">${esc(ROADS[p.side].name)}</span>`]; },
   'xg-gen': f => { const p = f.properties; return [f.geometry.coordinates,
-    `<strong>${esc(p.name)}</strong><br>People cross the road to reach this<br><span class="pop-k">${fromA(p.chainage_m)} · ${esc(SIDE[p.side.split(' ')[0]] || p.side)}</span>`]; },
+    `<strong>${esc(p.name)}</strong><br>People cross ${esc(ROADS[p.side].name)} to reach this<br><span class="pop-k">${fromStart(p.side, p.chainage_m)} · ${esc(roadSide(p.side, p.road_side))}</span>`]; },
   'ct-fp': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${p.fp_m ? `Footpath ${p.fp_m} m wide` : 'No footpath'}</strong> · ${esc(SIDE[p.side])}<br>${fromA(p.chainage_m)}` +
     `<br><span class="pop-k">Standard for a busy mixed-use street: 2.5 m. Measured in the flyover contract's survey.</span>`]; },
-  'xg-tick': f => [f.geometry.coordinates, `<strong>${fromA(f.properties.chainage_m)}</strong>`],
+  'xg-tick': f => [f.geometry.coordinates, `<strong>${esc(ROADS[f.properties.side].name)}</strong><br>${fromStart(f.properties.side, f.properties.chainage_m)}`],
   'ct-wall': (f, e) => [e.lngLat, `<strong>Flyover ramp wall</strong><br>A solid ${f.properties.width_m} m wall of packed earth down the middle of the road, ${f.properties.from_m}–${f.properties.to_m} m from the Water Tank junction. No one can cross here.`],
   'xg-gap': (f, e) => { const p = f.properties; return [e.lngLat,
-    `<strong>${p.length_m} m with no crossing</strong><br><span class="pop-k">The guidebook asks for one every 80–150 m on a busy street like this.</span>`]; },
+    `<strong>${p.length_m} m of ${esc(ROADS[p.side].name)} with no crossing</strong><br><span class="pop-k">The guidebook asks for one every 80–150 m on a busy street like this.</span>`]; },
   'ct-zone': (f, e) => { const p = f.properties; return [e.lngLat, p.status === 'feasible'
     ? `<strong>A crossing is possible here</strong><br><span class="pop-k">${p.from_m}–${p.to_m} m from the Water Tank junction. The middle of the road is open, so a crossing with a safe island in the middle can fit.</span>`
     : `<strong>No crossing possible</strong><br><span class="pop-k">The flyover ramp wall fills the middle of the road here.</span>`]; },
   'stretch-line': (f, e) => { const p = f.properties; return [e.lngLat,
-    `<strong>100 Feet Road (Mahayogi Vemana Road)</strong><br>${esc(p.direction)}<br><span class="pop-k">${p.lanes} lanes, one-way · ${p.length_m} m</span>`]; },
-  'cons': (f, e) => [e.lngLat, `<strong>${esc(f.properties.name)}</strong><br>${f.properties.elevated ? 'Raised section' : 'Ramp / works at street level'}`],
+    `<strong>${esc(p.name)}</strong><br>${esc(p.direction)}<br><span class="pop-k">${p.lanes ? p.lanes + ' lanes, ' : ''}one-way · ${p.length_m} m</span>`]; },
+  'cons': (f, e) => [e.lngLat, `<strong>Ejipura flyover — under construction</strong><br>${f.properties.elevated ? 'Raised section, heading north-east to Ejipura' : 'Ramp coming down to street level'}` +
+    `<br><span class="pop-k">From OpenStreetMap · ${OSM(f.properties.osm)}</span>`],
+  'cons-stripes': (f, e) => POPUPS.cons(f, e),
 };
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
@@ -492,6 +519,8 @@ const pad = () => innerWidth <= 720
 const boundsOf = coords => coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
 const roadCoords = () => D.stretch.features.flatMap(f => f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates);
 const fitRoad = () => map.fitBounds(boundsOf(roadCoords()), { padding: pad(), maxZoom: 18, duration: 900 });
+const fitSide = sid => map.fitBounds(boundsOf(D.stretch.features.filter(f => f.properties.side === sid).flatMap(f => f.geometry.coordinates)),
+  { padding: pad(), maxZoom: 18, duration: 900 });
 const flyTo = ll => map.flyTo({ center: ll, zoom: 18.3, padding: pad(), duration: 900 });
 const key = items => `<ul class="key">${items.map(([sw, t]) => `<li>${sw}<span>${t}</span></li>`).join('')}</ul>`;
 const fold = (title, html, open = false, count = '') =>
@@ -499,11 +528,17 @@ const fold = (title, html, open = false, count = '') =>
 let sectionMarker;
 
 function gapStats() {
-  const gaps = D.crossings.features.filter(f => f.properties.kind === 'gap').map(f => f.properties);
-  const longest = Math.max(...gaps.map(g => g.length_m));
-  const need = gaps.reduce((a, g) => a + g.crossings_needed, 0);
+  const X = D.crossings.features.map(f => f.properties);
+  const gaps = X.filter(p => p.kind === 'gap');
+  const sides = Object.keys(ROADS).map(sid => {
+    const g = gaps.filter(p => p.side === sid);
+    return { sid, name: ROADS[sid].name, len: X.find(p => p.kind === 'centreline' && p.side === sid).length_m,
+      longest: Math.max(...g.map(p => p.length_m)), need: g.reduce((a, p) => a + p.crossings_needed, 0),
+      midblock: X.filter(p => p.kind === 'crossing' && p.side === sid && p.verified && p.name === 'Mid-block crossing').length };
+  });
   const feas = D.contractGeo.features.find(f => f.properties.kind === 'zone' && f.properties.status === 'feasible').properties;
-  return { longest, need, feas, wall: D.contract.re_wall };
+  return { sides, longest: Math.max(...sides.map(s => s.longest)), need: sides.reduce((a, s) => a + s.need, 0),
+    loop: sides.reduce((a, s) => a + s.len, 0), midblock: sides.reduce((a, s) => a + s.midblock, 0), feas, wall: D.contract.re_wall };
 }
 function fpStats() {
   const v = D.contract.inventory.rows.flatMap(r => [r.fp_lhs, r.fp_rhs]);
@@ -516,26 +551,29 @@ function trafficStats() {
 
 const SCENES = [
   { id: 'overview', tab: 'Overview',
-    layers: { r300: true, r500: true, places: true },
+    layers: { r300: true, r500: true, places: true, construction: true },
     view: () => map.fitBounds(boundsOf(D.catchments.features.flatMap(f => f.geometry.coordinates[0])), { padding: pad(), duration: 900 }),
     render() {
       const g = gapStats(), fp = fpStats();
       const near = D.poi.features.filter(f => f.properties.dist_m <= 500);
       const byCat = Object.keys(CATS).map(k => [k, near.filter(f => f.properties.category === k).length]);
       return `
-        <h2 class="headline">A short, busy road about to be reshaped by a flyover</h2>
-        <p class="lede">This 460 m stretch links the <strong>Water Tank junction (A)</strong> to the <strong>Madiwala underpass (B)</strong>.
-        It has a school, a mosque, a temple, bus stops on both sides and a government research campus — exactly the kind of street the
-        tactical urbanism guidebooks say to test first. A tolled flyover is due to be built over it from 2026.</p>
+        <h2 class="headline">A busy loop of streets about to be reshaped by a flyover</h2>
+        <p class="lede">A ${(g.loop / 1000).toFixed(1)} km loop around Madiwala: <strong>100 Feet Road</strong> from the Water Tank junction (A) to the
+        Madiwala underpass (B), <strong>Hosur Road</strong> up to St John's junction (C), and <strong>Sarjapura Road</strong> back to A.
+        Along it are St John's Hospital, a school, mosques and temples, bus stops and busy shops — and inside it, the St John's
+        sports grounds. Loops like this are what the tactical urbanism guidebooks say to test first. A tolled flyover is due over
+        part of it from 2026.</p>
         <div class="kpis">
-          <button class="kpi" data-go="crossing"><b>${g.longest} m</b><span>with no safe place to cross<small>The guidebook asks for one every 80–150 m</small></span></button>
-          <button class="kpi" data-go="footpaths"><b>${fp.below}/${fp.total}</b><span>footpath measurements below standard<small>No footpath at all at ${fp.none.join(', ')} m</small></span></button>
+          <button class="kpi" data-go="crossing"><b>${g.need}</b><span>safe crossings missing around the loop<small>No mid-block crossing on any side; the guidebook asks for one every 80–150 m</small></span></button>
+          <button class="kpi" data-go="footpaths"><b>${fp.below}/${fp.total}</b><span>footpath measurements below standard on 100 Ft Road<small>No footpath at all at ${fp.none.join(', ')} m; the other sides are still to be measured</small></span></button>
           <button class="kpi" data-go="street"><b>~½</b><span>of today's traffic expected to move up to the flyover<small>A chance to give street space back to people</small></span></button>
         </div>
         ${key([
-          ['<span class="sw sw-road"></span>', 'The study road'],
-          ['<span class="jn">A</span>', 'Water Tank junction · <span class="jn">B</span> Madiwala underpass'],
-          ['<span class="sw sw-ring"></span>', '4 and 7 minute walk from the road'],
+          ['<span class="sw sw-road"></span>', 'The study loop'],
+          ['<span class="jn">A</span>', 'Water Tank · <span class="jn">B</span> Madiwala underpass · <span class="jn">C</span> St John\'s'],
+          ['<span class="sw sw-ring"></span>', '4 and 7 minute walk from the loop'],
+          ['<span class="sw sw-cons"></span>', 'Ejipura flyover, under construction'],
           ['<span class="sw sw-dot" style="background:#2a7de1;border-color:#fff"></span>', 'Places nearby, coloured by type'],
           ['<span class="sw sw-dot" style="background:#fff;border-color:#2a7de1"></span>', 'Ring: business listing, not checked on the ground'],
         ])}
@@ -549,17 +587,19 @@ const SCENES = [
   { id: 'crossing', tab: 'Crossing',
     layers: { crossings: true, wall: true },
     view: fitRoad,
+    side: null,
     render() {
       const g = gapStats();
       const gens = D.crossings.features.filter(f => f.properties.kind === 'generator');
       return `
-        <h2 class="headline">${g.longest} m with no safe place to cross</h2>
-        <p class="lede">The only crossings are at the two junctions. In between are a bus stop, a mosque and a school that people
-        cross to reach every day. The guidebook asks for a crossing every <strong>80–150 m</strong> on a street like this — at least
-        <strong>${g.need} more</strong>.</p>
-        <p class="lede">The flyover ramp wall fills the middle of the road for the first stretch, so new crossings can only go
-        <strong>${g.feas.from_m}–${g.feas.to_m} m</strong> from the Water Tank junction — which is where most people need them.
-        The flyover contract adds crossings only at the junctions.</p>
+        <h2 class="headline">No safe place to cross between the junctions — on any side</h2>
+        <p class="lede">All the mapped crossings are at the three junctions. In between are bus stops, St John's Hospital, a mosque and
+        a school that people cross to reach every day. The guidebook asks for a crossing every <strong>80–150 m</strong> on streets like
+        these — that's <strong>${g.need} missing</strong> around the loop.</p>
+        <table class="sidetab"><tr><th>Road</th><th>Length</th><th>No crossing for</th><th>Missing</th></tr>
+          ${g.sides.map(s => `<tr data-side="${s.sid}"><td><b>${s.sid[0]}–${s.sid[1]}</b> ${esc(s.name)}</td><td>${s.len} m</td><td>${s.longest} m</td><td><b>${s.need}</b></td></tr>`).join('')}</table>
+        <p class="lede">On 100 Feet Road the flyover ramp wall fills the middle of the road, so new crossings there can only go
+        <strong>${g.feas.from_m}–${g.feas.to_m} m</strong> from the Water Tank junction. The flyover contract adds crossings only at junctions.</p>
         ${key([
           ['<span class="sw sw-gap"></span>', 'Stretch with no crossing'],
           ['<span class="sw sw-ok"></span>', 'A new crossing could go here'],
@@ -567,13 +607,15 @@ const SCENES = [
           ['<span class="sw sw-need"></span>', 'Places people cross the road to reach'],
           ['<span class="sw sw-cross"></span>', 'Zebra crossing · <span class="sw sw-jn" style="margin-left:4px"></span>&nbsp;junction, crossing unclear'],
         ])}
-        ${fold('Where people need to cross', `<ol class="rows">${gens.map(f => {
-          const p = f.properties, wall = p.chainage_m > g.wall.from && p.chainage_m < g.wall.to;
-          return `<li data-ll="${f.geometry.coordinates}"><span class="at">${p.chainage_m} m</span><span><span class="nm">${esc(p.name)}</span>
-            <br><span class="meta">${esc(SIDE[p.side.split(' ')[0]] || p.side)}${wall ? ' · beside the ramp wall' : ''}</span></span></li>`; }).join('')}</ol>
-          <p class="small" style="margin-top:8px">Distances are from the Water Tank junction. Tap a row to zoom in.</p>`, true, gens.length)}
+        ${fold('Where people need to cross', Object.keys(ROADS).map(sid => {
+          const rows = gens.filter(f => f.properties.side === sid);
+          return `<h4 class="grp">${sid[0]}–${sid[1]} · ${esc(ROADS[sid].name)} <span class="meta">from the ${esc(JN[ROADS[sid].from])}</span></h4><ol class="rows">${rows.map(f => {
+            const p = f.properties, wall = sid === 'AB' && p.chainage_m > g.wall.from && p.chainage_m < g.wall.to;
+            return `<li data-ll="${f.geometry.coordinates}"><span class="at">${p.chainage_m} m</span><span><span class="nm">${esc(p.name)}</span>
+              <br><span class="meta">${esc(roadSide(sid, p.road_side))}${wall ? ' · beside the ramp wall' : ''}</span></span></li>`; }).join('')}</ol>`; }).join('') +
+          `<p class="small" style="margin-top:8px">Distances are along each road from its first junction. Tap a row to zoom in.</p>`, false, gens.length)}
         ${fold('How we know this', `<ul>
-          <li>Existing crossings and side streets: OpenStreetMap. The zebra at junction A is mapped; junction B has signals but no mapped crossing — to check on the walk.</li>
+          <li>Existing crossings and side streets: OpenStreetMap. Zebras at junction A are mapped; junctions B and C have signals but no mapped crossing on these roads — to check on the walk.</li>
           <li>Ramp wall (${g.wall.from}–${g.wall.to} m, ${g.wall.width} m wide): B-SMILE flyover contract, Schedule A.</li>
           <li>Crossing spacing of 80–150 m for mixed-use streets: GIZ/MoHUA Tactical Urbanism Guidebook (after IRC 103).</li>
           <li>Places people cross to reach: bus stops, side streets and destinations within 80 m of the road.</li></ul>`)}`;
@@ -581,13 +623,13 @@ const SCENES = [
 
   { id: 'footpaths', tab: 'Footpaths',
     layers: { footpaths: true, wall: true },
-    view: fitRoad,
+    view: () => fitSide('AB'),
     render() {
       const fp = fpStats(), rows = D.contract.inventory.rows;
       const cls = v => v == null ? 'f-unknown' : v === 0 ? 'f-none' : v < 1.8 ? 'f-low' : v < 2.5 ? 'f-mid' : 'f-ok';
       const cell = (r, v) => `<div class="cell ${cls(v)}" data-ch="${r.ch}" title="${fromA(r.ch)}">${v === 0 ? '—' : v == null ? '?' : v.toFixed(1)}</div>`;
       return `
-        <h2 class="headline">Footpaths are narrow — and vanish beside the ramp wall</h2>
+        <h2 class="headline">100 Feet Road's footpaths are narrow — and vanish beside the ramp wall</h2>
         <p class="lede">Footpaths were measured every 100 m. <strong>${fp.below} of ${fp.total}</strong> measurements are narrower than the
         2.5 m a busy street needs, and at <strong>${fp.none.join(', ')} m</strong> there is no footpath on either side, so people walk in the road.</p>
         <div class="strip">
@@ -595,7 +637,8 @@ const SCENES = [
           <span class="lab">${SIDE.NW}</span>${rows.map(r => cell(r, r.fp_rhs)).join('')}
           <span class="lab">${SIDE.SE}</span>${rows.map(r => cell(r, r.fp_lhs)).join('')}
         </div>
-        <p class="small" style="margin:0 0 14px">Footpath width in metres, by distance from the Water Tank junction. Tap a cell to see it on the map.</p>
+        <p class="small" style="margin:0 0 14px">Footpath width in metres, by distance from the Water Tank junction. Tap a cell to see it on the map.
+        Hosur Road and Sarjapura Road weren't part of this survey — the site walk will measure them.</p>
         ${key([
           ['<span class="sw sw-dot" style="background:#2f9e44"></span>', '2.5 m or more — meets the standard'],
           ['<span class="sw sw-dot" style="background:#fab005"></span>', '1.8–2.5 m — too narrow for a busy street'],
@@ -623,6 +666,10 @@ const SCENES = [
         <h2 class="headline">The flyover contract disagrees with itself</h2>
         <p class="lede">Its drawing keeps almost all the road for vehicles. Its written text describes a much narrower road with
         wider footpaths. The street-level design is still to be finalised — a low-cost trial now can show which works.</p>
+        ${key([
+          ['<span class="sw sw-cons"></span>', 'Ejipura flyover, under construction — lands at the Water Tank junction (A)'],
+          ['<span class="sw sw-wall"></span>', 'Its ramp wall down the middle of 100 Feet Road'],
+        ])}
         ${sectionsHTML()}
         <div class="callout"><strong>Why a narrower road could work:</strong> about ${fmt(tr.t.adt_2025)} vehicles a day use this corridor now.
         The flyover's traffic study expects ${fmt(tr.t.diverted_tollable)}–${fmt(tr.t.diverted_od)} of them to use the tolled flyover from ${tr.t.toll_from},
@@ -651,6 +698,7 @@ const SCENES = [
       return `
         <h2 class="headline">Is the site ready for a trial? ${known.length} of ${C.length} checks done</h2>
         <p class="lede">${lede}</p>
+        ${key([['<span class="sw sw-cons"></span>', 'Ejipura flyover, under construction — see the construction question below']])}
         <div class="progress">${seg('favourable', '#2f9e44')}${seg('acceptable', '#e8a200')}${seg('not_favourable', '#c92a2a')}</div>
         <div class="tally"><span style="--c:#2f9e44">${n('favourable')} good</span><span style="--c:#e8a200">${n('acceptable')} okay</span>
           <span style="--c:#c92a2a">${n('not_favourable')} a concern</span><span style="--c:#adb5bd">${todo.length} not checked</span></div>
@@ -662,7 +710,7 @@ const SCENES = [
 
 // street-section helpers
 function sectionPoint() {
-  const t = D.crossings.features.filter(f => f.properties.kind === 'tick');
+  const t = D.crossings.features.filter(f => f.properties.kind === 'tick' && f.properties.side === 'AB');
   const a = t.find(f => f.properties.chainage_m === 300).geometry.coordinates, b = t.find(f => f.properties.chainage_m === 350).geometry.coordinates;
   const k = (D.contract.sections.ch - 300) / 50;
   return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
@@ -734,6 +782,7 @@ document.getElementById('prev').onclick = () => { const i = SCENES.indexOf(curre
 document.getElementById('next').onclick = () => { const i = SCENES.indexOf(current); if (i < SCENES.length - 1) show(SCENES[i + 1].id); };
 body.addEventListener('click', e => {
   const go = e.target.closest('[data-go]'); if (go) return show(go.dataset.go);
+  const side = e.target.closest('[data-side]'); if (side) return fitSide(side.dataset.side);
   const row = e.target.closest('[data-ll]'); if (row) return flyTo(row.dataset.ll.split(',').map(Number));
   const cell = e.target.closest('[data-ch]');
   if (cell) { const f = D.contractGeo.features.find(f => f.properties.kind === 'survey' && f.properties.chainage_m === +cell.dataset.ch); if (f) flyTo(f.geometry.coordinates); }
@@ -773,9 +822,10 @@ document.getElementById('about-open').onclick = () => {
   const c = D.contract?.source || {};
   document.getElementById('about-body').innerHTML = `
     <h3>What this is</h3>
-    <p>A study of 100 Feet Road (Mahayogi Vemana Road) between the Koramangala Water Tank junction (A) and the Madiwala underpass (B),
-    following the site-selection and site-appraisal steps of two tactical urbanism guidebooks. Distances along the road are measured
-    from junction A.</p>
+    <p>A study of the Madiwala loop — 100 Feet Road (Mahayogi Vemana Road) from the Koramangala Water Tank junction (A) to the
+    Madiwala underpass (B), Hosur Road from B to St John's junction (C), and Sarjapura Road from C back to A — following the
+    site-selection and site-appraisal steps of two tactical urbanism guidebooks. Distances along each road are measured from its
+    first junction (A, B or C).</p>
     <h3>Sources</h3><ul>
       <li>Directorate of Urban Land Transport (DULT), Govt. of Karnataka — <em>Guidebook for Tactical Urbanism</em>, 2022.</li>
       <li>GIZ / MoHUA — <em>A Tactical Urbanism Guidebook</em>, 2020 (site scoring sheet, crossing spacing, footpath widths after IRC 103).</li>
@@ -788,6 +838,7 @@ document.getElementById('about-open').onclick = () => {
       <li>Places from business listings (shown as rings) are not checked on the ground; some may have closed or be slightly misplaced.</li>
       <li>No source covers street vendors, tea stalls or informal stops — the site walk will add them.</li>
       <li>The contract is a tender: chainages and designs may change.</li>
+      <li>The contract's width survey covers 100 Feet Road (A–B) only; Hosur Road and Sarjapura Road need measuring on the walk.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
       <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
       <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items are not yet checked.</li></ul>
@@ -815,7 +866,7 @@ function startTour() {
     onDestroyed: markTourSeen,
     steps: [
       { popover: { title: 'Welcome',
-          description: 'This page studies a 460 m stretch of 100 Feet Road in Madiwala and asks how it could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
+          description: 'This page studies a loop of three busy roads around Madiwala — 100 Feet Road, Hosur Road and Sarjapura Road — and asks how they could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
       { element: '#tabs', popover: { title: 'Five short chapters', side: 'bottom', align: 'start',
           description: 'Each tab tells one part of the story — the road, crossing it, its footpaths, the flyover plans and whether it is ready for a trial. The map changes to match.' } },
       { element: '.kpis', popover: { title: 'The key findings', side: phone ? 'top' : 'right', align: 'start',

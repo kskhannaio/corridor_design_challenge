@@ -11,23 +11,23 @@
       "id": "uses",
       "question": "What are the building uses along the stretch?",
       "rating": "verify",
-      "finding": "Commercial frontage, a school (Sri Sathyanarayana HPS), public buildings (IIA, BBMP Madiwala office, CPWD), transit stops and Madiwala Park. Religious buildings (Masjid-e-Noor, Ayyappa Swamy Temple) count as acceptable.",
-      "source": "OSM areas of interest",
+      "finding": "Mixed: shops and eateries along all three sides, St John's Medical College Hospital facing Sarjapura Road (C–A), a school, mosques and temples near Madiwala, public buildings (IIA, BBMP Madiwala office, CPWD) and Madiwala Park. Religious buildings count as acceptable.",
+      "source": "OSM, Overture and Foursquare places",
       "suggested": "favourable"
     },
     {
       "id": "network",
       "question": "What is the street network type of the chosen stretch?",
       "rating": "verify",
-      "finding": "A stretch with termini points: Koramangala Water Tank junction (A) to Madiwala Underpass junction (B). Not a loop.",
+      "finding": "A loop: 100 Ft Road (A–B), Hosur Road (B–C) and Sarjapura Road (C–A), about 1.8 km around — the guidebook's first criterion ('Loops are good').",
       "source": "Map",
-      "suggested": "acceptable"
+      "suggested": "favourable"
     },
     {
       "id": "intersection",
       "question": "Does the stretch have an intersection?",
       "rating": "verify",
-      "finding": "Yes, two signalised junctions, one at each end.",
+      "finding": "Yes — three signalised junctions: Water Tank (A), Madiwala underpass (B) and St John's (C).",
       "source": "OSM traffic signals",
       "suggested": "favourable"
     },
@@ -42,7 +42,7 @@
       "id": "construction",
       "question": "Is there ongoing construction activity along the street?",
       "rating": "verify",
-      "finding": "Yes. The Ejipura flyover's RE-wall approach already runs down the middle from 45 to 225 m, and B-SMILE's elevated-corridor contract (tender, Oct 2026) puts twin 8.5 m viaducts over 0-360 m, a 7 m up-ramp over 0-190 m and an elevated rotary at Madiwala junction, with construction in 2026-28.",
+      "finding": "Yes. The Ejipura flyover's ramp wall runs down the middle of 100 Ft Road (A–B) from 45 to 225 m. B-SMILE's elevated-corridor contract (tender, Oct 2026) adds viaducts over A–B, an elevated rotary at Madiwala junction (B), and names St John's junction (C) in its scope; construction 2026–28.",
       "source": "B-SMILE contract Schedules A & B; OSM; satellite imagery",
       "suggested": "not_favourable"
     },
@@ -50,16 +50,16 @@
       "id": "shoulder",
       "question": "What is the condition of the road shoulder?",
       "rating": "verify",
-      "finding": "RCC covered drains on both sides along 0-400 m - the equivalent of a paved gutter. Check their condition and covers on the walk.",
-      "source": "B-SMILE contract, Schedule A inventory",
+      "finding": "Covered RCC drains on both sides of 100 Ft Road (A–B) per the contract survey; unknown on Hosur Road and Sarjapura Road.",
+      "source": "B-SMILE contract, Schedule A inventory (A–B only)",
       "suggested": "favourable"
     },
     {
       "id": "sidewalk",
       "question": "Is there a sidewalk along the stretch?",
       "rating": "verify",
-      "finding": "Present but not continuous: surveyed footpaths are 1.0-3.8 m wide, and there is none on either side at 200 m (beside the RE wall). Most stretches are below the 2.5 m IRC 103 standard for mixed-use streets.",
-      "source": "B-SMILE contract, Schedule A inventory - verify on the walk",
+      "finding": "Only 100 Ft Road (A–B) has survey data: footpaths 1.0–3.8 m wide, none on either side at 200 m, mostly below the 2.5 m IRC standard. Hosur Road (B–C) and Sarjapura Road (C–A) are not surveyed.",
+      "source": "B-SMILE contract, Schedule A inventory (A–B only) — walk all three sides",
       "suggested": "acceptable"
     },
     {
@@ -87,15 +87,15 @@
       "id": "hotspots",
       "question": "Are there activity hotspots (ATM, tea shop, eatery, bus stop, vendors)?",
       "rating": "verify",
-      "finding": "Yes: Madivala Masjid and Koramangala Water Tank bus stops, ATMs and eateries near Junction B, Indira Canteen. Vendors still to be recorded on the walk.",
-      "source": "OSM areas of interest",
+      "finding": "Yes: St John's Hospital and its KSRTC bus stand at junction C, Madivala Masjid and Koramangala Water Tank bus stops, Indira Canteen, Madiwala Park, eateries and private inter-city bus operators near Madiwala. Vendors still to be recorded on the walk.",
+      "source": "OSM, Overture and Foursquare places",
       "suggested": "favourable"
     },
     {
       "id": "conflict",
       "question": "Is there a visible conflict between vehicular and pedestrian flow?",
       "rating": "verify",
-      "finding": "Likely, given 460 m without a crossing past a bus stop, mosque and school - observe at peak hour.",
+      "finding": "Likely: no mid-block crossing on any side — 455 m on A–B, 643 m on B–C, 663 m on C–A — past bus stops, a hospital, a mosque and a school. Observe at peak hour.",
       "source": "Site walk"
     },
     {
