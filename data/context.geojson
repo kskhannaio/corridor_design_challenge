@@ -1,0 +1,663 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Ayyappa Swamy Temple",
+    "category": "Religious"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618119,
+     12.924283
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MAS",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617061,
+     12.925875
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Federal Bank",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617339,
+     12.92541
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "State Bank of India",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621901,
+     12.927395
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Venkateshwara Hospital",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617083,
+     12.925784
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Madivala Masjid",
+    "category": "Bus stop"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618541,
+     12.924887
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Koramangala Water Tank",
+    "category": "Bus stop"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621173,
+     12.927819
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Ayyappa Temple",
+    "category": "Bus stop"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617142,
+     12.92594
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Poorvika",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618499,
+     12.924596
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Fabindia",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619467,
+     12.924978
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BWSSB Payment Kiosk",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621218,
+     12.927785
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Cross Words",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619276,
+     12.925313
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sanjeevanam",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619453,
+     12.925422
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Friends Travels",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617175,
+     12.926326
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SRS Travels",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617511,
+     12.925738
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Parveen Travels",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617453,
+     12.925868
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "KPN Travels",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617606,
+     12.925702
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Clumax Diagnostic Center",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.6196,
+     12.923887
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Surya Diagnostics and Health Services",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617088,
+     12.924283
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sai Neeta Travels",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618172,
+     12.924986
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Metro",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618621,
+     12.924064
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "R R International Bikes",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618513,
+     12.924215
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sri Sathyanarayana HPS Madival",
+    "category": "School"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618574,
+     12.924473
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Citibank",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618009,
+     12.924526
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Varalakshmi Hospital",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617097,
+     12.924624
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Kaveri Speciality Hospital",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619311,
+     12.923677
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Chamundi Hi Tech Hospital",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617785,
+     12.924092
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Devi Hospital",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619863,
+     12.923944
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Ayappa Temple",
+    "category": "Bus stop"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617312,
+     12.926063
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sunshine Cafe",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618438,
+     12.925846
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sri Lakshmi Venkateswara Medicals",
+    "category": "Health"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618357,
+     12.923961
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Nirmaya Spa in Madiwala",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617019,
+     12.925855
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Shoba super market",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.61832,
+     12.923905
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Go Native Koramangala",
+    "category": "Commercial"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.619068,
+     12.924729
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Indian Institute of Astrophysics",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621385,
+     12.926309
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Survey Of India - Southern Zone",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.622548,
+     12.925949
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Madiwala Park",
+    "category": "Park"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617776,
+     12.924761
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Masjid-e-Noor",
+    "category": "Religious"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.618334,
+     12.924911
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Central Government Touring Officers Guest House",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621331,
+     12.924748
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Gowrichandra Arcade",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617365,
+     12.925025
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BBMP Madiwala Branch",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.6175,
+     12.925156
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "St. John's Grounds",
+    "category": "Park"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617074,
+     12.927623
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Indira Canteen",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617368,
+     12.924719
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Government Veterinary Hospital",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.617466,
+     12.924823
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Central Public Works Department",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.620971,
+     12.925048
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "KSRP Senior Officer's Residential Quarters",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.621785,
+     12.92367
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Survey of India Quarters",
+    "category": "Public / institutional"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     77.622919,
+     12.924435
+    ]
+   }
+  }
+ ]
+}
