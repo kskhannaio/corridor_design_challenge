@@ -15,6 +15,8 @@ Inputs (fetch into any scratch folder, then pass the paths):
     WHERE latitude BETWEEN 12.91899 AND 12.93300 AND longitude BETWEEN 77.61238 AND 77.62651
     -> save the rows as a JSON list (fsq.json)
 
+Hand-entered details such as opening hours live in data/place_extras.json and are applied on every build.
+
 Usage: python3 scripts/build_places.py overture.geojson fsq.json
 """
 import json, math, os, re, sys, collections
@@ -130,6 +132,10 @@ for incoming in (ovt, fsq):
         else:
             merged.append(p); stats[f"{p['source'].lower()} added"] += 1
 
+# hand-entered details (opening hours etc.), keyed by OSM id or listing id
+extras_path = os.path.join(DATA, 'place_extras.json')
+extras = {k: v for k, v in json.load(open(extras_path)).items() if not k.startswith('_')} if os.path.exists(extras_path) else {}
+
 feats = []
 for p in merged:
     d = road_dist(p['c'])
@@ -137,6 +143,8 @@ for p in merged:
              'ring': 300 if d <= 300 else 500, 'source': p['source'], 'sources': p['sources'], 'listed': p['listed']}
     for k in ('osm', 'confidence', 'id'):
         if p.get(k) is not None: props[k] = p[k]
+    for k, v in extras.get(p.get('osm') or p.get('id') or '', {}).items():
+        if k != 'name': props[k] = v
     feats.append({"type": "Feature", "properties": props,
                   "geometry": {"type": "Point", "coordinates": [round(p['c'][0], 6), round(p['c'][1], 6)]}})
 feats.sort(key=lambda f: f['properties']['dist_m'])

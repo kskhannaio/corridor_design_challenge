@@ -453,6 +453,7 @@ const OSM = o => `<a href="https://www.openstreetmap.org/${esc(o)}" target="_bla
 const POPUPS = {
   'poi': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(CAT_LABEL[p.category] || p.category)}<br><span class="pop-k">About ${p.dist_m} m from the road</span>` +
+    (p.hours ? `<br><strong>Open:</strong> ${esc(p.hours)}${p.hours_note ? `<br><span class="pop-k">${esc(p.hours_note)}</span>` : ''}` : '') +
     `<br><span class="pop-k">${p.listed ? 'Business listing, not checked on the ground' : 'Mapped place'} · from ${placeSources(p)}</span>`]; },
   'xg-cross': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : 'Traffic signals, but no marked pedestrian crossing on the map — to check on the walk'}`]; },

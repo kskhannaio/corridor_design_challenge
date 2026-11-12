@@ -1,0 +1,9 @@
+{
+  "_about": "Hand-entered details for places, merged into data/poi.geojson by scripts/build_places.py. Key by the place's OSM id (e.g. way/123) or, for listings, its source id. 'hours' is shown in the map popup; 'hours_osm' is the same in OpenStreetMap opening_hours syntax; 'hours_note' says how sure we are.",
+  "way/323458335": {
+    "name": "Madiwala Park",
+    "hours": "5–10 am and 4–9 pm, every day",
+    "hours_osm": "Mo-Su 05:00-10:00,16:00-21:00",
+    "hours_note": "To confirm at the gate on the site walk"
+  }
+}
