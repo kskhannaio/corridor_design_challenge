@@ -6,13 +6,13 @@ come from Overture/Foursquare are marked `listed: true` (business listings, not 
 
 Inputs (fetch into any scratch folder, then pass the paths):
   Overture places for the area (CDLA-Permissive-2.0; needs `pip install overturemaps`):
-    overturemaps download --bbox=77.61238,12.91899,77.62651,12.93300 -f geojson --type=place -o overture.geojson
+    overturemaps download --bbox=77.60933,12.91907,77.62660,12.93537 -f geojson --type=place -o overture.geojson
   Foursquare OS Places (Apache 2.0; accept the terms at huggingface.co/datasets/foursquare/fsq-os-places,
   then query just this area with DuckDB using your Hugging Face token):
     SELECT fsq_place_id AS id, name, latitude AS lat, longitude AS lon, date_refreshed AS refreshed,
            date_closed AS closed, fsq_category_labels AS cats, unresolved_flags AS flags
     FROM read_parquet('hf://datasets/foursquare/fsq-os-places/release/dt=<latest>/places/parquet/*.parquet')
-    WHERE latitude BETWEEN 12.91899 AND 12.93300 AND longitude BETWEEN 77.61238 AND 77.62651
+    WHERE latitude BETWEEN 12.91907 AND 12.93537 AND longitude BETWEEN 77.60933 AND 77.62660
     -> save the rows as a JSON list (fsq.json)
 
 Hand-entered details such as opening hours live in data/place_extras.json and are applied on every build.
