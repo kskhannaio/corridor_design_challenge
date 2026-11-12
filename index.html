@@ -247,7 +247,12 @@
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
   <h4>Places nearby</h4>
   <label><input type="checkbox" data-g="places"> Show places</label>
+  <label class="sub"><input type="checkbox" id="tg-listed" checked> Include business listings <span class="n">not verified</span></label>
   <div class="sub" id="cat-list"></div>
+  <p class="note sub" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:4px">
+    <span><span class="sw sw-dot" style="background:#868e96;border-color:#fff;width:11px;height:11px;vertical-align:-1px"></span> Mapped place</span>
+    <span><span class="sw sw-dot" style="background:#fff;border-color:#868e96;width:11px;height:11px;vertical-align:-1px"></span> Business listing, not checked on the ground</span>
+  </p>
   <p class="note">Places are shown within the largest walking distance ticked above (500 m if none). Each tab resets these to suit its story.</p>
 </div>
 
@@ -298,7 +303,9 @@ const GROUPS = {
 const vis = { crossings: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
-const poiFilter = () => ['all', ['in', ['get', 'category'], ['literal', Object.keys(CATS).filter(k => catOn[k])]], ['<=', ['get', 'dist_m'], poiRange()]];
+let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
+const poiFilter = () => ['all', ['in', ['get', 'category'], ['literal', Object.keys(CATS).filter(k => catOn[k])]], ['<=', ['get', 'dist_m'], poiRange()],
+  ...(listedOn ? [] : [['!', ['get', 'listed']]])];
 
 function applyVis() {
   for (const [g, ids] of Object.entries(GROUPS))
@@ -323,7 +330,9 @@ function addOverlays() {
   const K = k => ['==', ['get', 'kind'], k];
   const hidden = { visibility: 'none' };
   const src = (id, data) => map.getSource(id) || map.addSource(id, { type: 'geojson', data });
-  src('stretch', D.stretch); src('poi', D.poi); src('catchments', D.catchments); src('xing', D.crossings);
+  src('stretch', D.stretch);
+  if (!map.getSource('poi')) map.addSource('poi', { type: 'geojson', data: D.poi,
+    attribution: 'Places: © OpenStreetMap contributors · Overture Maps Foundation · Foursquare OS Places' }); src('catchments', D.catchments); src('xing', D.crossings);
   src('construction', D.construction); src('contract', D.contractGeo);
   if (!map.getSource('sat')) map.addSource('sat', SAT_SOURCE);
   const firstSymbol = map.getStyle().layers.find(l => l.type === 'symbol')?.id;
@@ -408,8 +417,10 @@ function addOverlays() {
   map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(), layout: hidden,
     paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
         19, ['match', ['get', 'category'], 'Commercial', 6, 9]],
-      'circle-color': ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888'],
-      'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
+      // mapped places (OSM): filled dots · business listings only: rings in the category colour
+      'circle-color': ['case', ['get', 'listed'], '#ffffff', ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888']],
+      'circle-stroke-color': ['case', ['get', 'listed'], ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888'], '#fff'],
+      'circle-stroke-width': ['case', ['get', 'listed'], 2, 1.5] } });
   map.addLayer({ id: 'poi-label', type: 'symbol', source: 'poi', minzoom: 16.3, layout: { ...hidden,
       'text-field': ['get', 'name'], 'text-size': 11, 'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 9, 'text-font': ['Noto Sans Regular'] },
     filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
@@ -433,10 +444,16 @@ load.then(() => {
 /* =====================================================================
    Popups — one handler, topmost layer wins, plain language
    ===================================================================== */
+// MapLibre hands array properties back as JSON strings
+const placeSources = p => {
+  const list = typeof p.sources === 'string' ? JSON.parse(p.sources) : (p.sources || [p.source]);
+  return list.map(src => src === 'OpenStreetMap' && p.osm ? OSM(p.osm) : esc(src)).join(', ');
+};
 const OSM = o => `<a href="https://www.openstreetmap.org/${esc(o)}" target="_blank" rel="noopener">OpenStreetMap</a>`;
 const POPUPS = {
   'poi': f => { const p = f.properties; return [f.geometry.coordinates,
-    `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(CAT_LABEL[p.category] || p.category)}<br><span class="pop-k">About ${p.dist_m} m from the road · ${OSM(p.osm)}</span>`]; },
+    `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(CAT_LABEL[p.category] || p.category)}<br><span class="pop-k">About ${p.dist_m} m from the road</span>` +
+    `<br><span class="pop-k">${p.listed ? 'Business listing, not checked on the ground' : 'Mapped place'} · from ${placeSources(p)}</span>`]; },
   'xg-cross': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : 'Traffic signals, but no marked pedestrian crossing on the map — to check on the walk'}`]; },
   'xg-gen': f => { const p = f.properties; return [f.geometry.coordinates,
@@ -519,10 +536,13 @@ const SCENES = [
           ['<span class="jn">A</span>', 'Water Tank junction · <span class="jn">B</span> Madiwala underpass'],
           ['<span class="sw sw-ring"></span>', '4 and 7 minute walk from the road'],
           ['<span class="sw sw-dot" style="background:#2a7de1;border-color:#fff"></span>', 'Places nearby, coloured by type'],
+          ['<span class="sw sw-dot" style="background:#fff;border-color:#2a7de1"></span>', 'Ring: business listing, not checked on the ground'],
         ])}
         ${fold('Places within a 7 minute walk', `<ul>${byCat.map(([k, n]) =>
           `<li><span class="sw sw-dot" style="display:inline-block;width:10px;height:10px;background:${CATS[k]};border-color:#fff;vertical-align:-1px"></span> ${CAT_LABEL[k]}: ${n}</li>`).join('')}</ul>
-          <p class="small" style="margin-top:8px">From OpenStreetMap. Street vendors and small shops are often missing — the site walk will add them. Filter these in <em>Layers</em>.</p>`, false, near.length)}`;
+          <p class="small" style="margin-top:8px">${near.filter(f => !f.properties.listed).length} are mapped in OpenStreetMap; ${near.filter(f => f.properties.listed).length} more come from
+          business listings (Overture Maps and Foursquare) and have not been checked on the ground. Street vendors and tea stalls are still missing — the site walk will add them.
+          Filter these in <em>Layers</em>.</p>`, false, near.length)}`;
     } },
 
   { id: 'crossing', tab: 'Crossing',
@@ -730,6 +750,7 @@ layersEl.addEventListener('change', e => {
   const g = e.target.dataset.g, c = e.target.dataset.cat;
   if (g) vis[g] = e.target.checked;
   if (c) { catOn[c] = e.target.checked; if (e.target.checked) vis.places = true; }
+  if (e.target.id === 'tg-listed') { listedOn = e.target.checked; vis.places = true; }
   applyVis();
 });
 document.getElementById('bm-map').onclick = () => { vis.sat = false; applyVis(); };
@@ -740,7 +761,7 @@ catList.innerHTML = Object.entries(CATS).map(([k, c]) =>
 function refreshCats() {
   if (!D.poi) return;
   for (const k of Object.keys(CATS)) {
-    catList.querySelector(`[data-n="${k}"]`).textContent = D.poi.features.filter(f => f.properties.category === k && f.properties.dist_m <= poiRange()).length;
+    catList.querySelector(`[data-n="${k}"]`).textContent = D.poi.features.filter(f => f.properties.category === k && f.properties.dist_m <= poiRange() && (listedOn || !f.properties.listed)).length;
     catList.querySelector(`[data-cat="${k}"]`).checked = catOn[k];
   }
 }
@@ -758,10 +779,13 @@ document.getElementById('about-open').onclick = () => {
       <li>Directorate of Urban Land Transport (DULT), Govt. of Karnataka — <em>Guidebook for Tactical Urbanism</em>, 2022.</li>
       <li>GIZ / MoHUA — <em>A Tactical Urbanism Guidebook</em>, 2020 (site scoring sheet, crossing spacing, footpath widths after IRC 103).</li>
       <li>${esc(c.client || 'B-SMILE')} — elevated-corridor tender, Schedules A–I (${esc(c.status || '')}) and its OD &amp; toll analysis.</li>
-      <li>OpenStreetMap contributors — road geometry, crossings, places nearby, construction.</li>
+      <li>OpenStreetMap contributors — road geometry, crossings, mapped places, construction (ODbL).</li>
+      <li>Overture Maps Foundation — places from business listings, mainly Meta and Microsoft (CDLA-Permissive-2.0). Kept at confidence 0.5 or above, plus all schools, health facilities and places of worship.</li>
+      <li>Foursquare Open Source Places (Apache 2.0) — only listings updated since 2024 and not marked closed.</li>
       <li>Esri World Imagery — satellite view and visual checks.</li></ul>
     <h3>Known gaps</h3><ul>
-      <li>OpenStreetMap misses most street vendors and small shops.</li>
+      <li>Places from business listings (shown as rings) are not checked on the ground; some may have closed or be slightly misplaced.</li>
+      <li>No source covers street vendors, tea stalls or informal stops — the site walk will add them.</li>
       <li>The contract is a tender: chainages and designs may change.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
       <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>

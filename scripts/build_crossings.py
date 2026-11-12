@@ -155,7 +155,7 @@ for w in ways.values():
         n = nodes[nid]; nm = w['tags'].get('name')
         gens.append((P(n['lon'], n['lat']), f"Side street: {nm}" if nm else ('Footpath / lane' if hw == 'footway' else 'Side road / gate access'),
                      'Side street', f"way/{w['id']}"))
-poi = json.load(open(os.path.join(DATA, 'poi.geojson')))
+poi = json.load(open(os.path.join(DATA, 'poi_osm.geojson')))   # OSM only: keeps the crossing analysis on mapped, stable data
 for f in poi['features']:
     p = f['properties']
     if p['category'] == 'Commercial' or p['dist_m'] > GENERATOR_REACH: continue

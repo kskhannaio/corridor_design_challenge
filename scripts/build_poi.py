@@ -1,4 +1,5 @@
-"""Classify OSM points of interest around the study stretch into the
+"""Classify OSM points of interest around the study stretch (output: data/poi_osm.geojson;
+scripts/build_places.py then merges Overture and Foursquare into data/poi.geojson) into the
 neighbourhood-mapping categories of the GIZ/MoHUA Tactical Urbanism
 Guidebook (commercial, recreational, public amenities, healthcare,
 religious, institutional, transit) and keep those within 500 m.
@@ -101,7 +102,7 @@ for e in E:
                   "geometry": {"type": "Point", "coordinates": [round(c[0], 6), round(c[1], 6)]}})
 
 feats.sort(key=lambda f: f['properties']['dist_m'])
-json.dump({"type": "FeatureCollection", "features": feats}, open(os.path.join(DATA, 'poi.geojson'), 'w'), indent=0)
+json.dump({"type": "FeatureCollection", "features": feats}, open(os.path.join(DATA, 'poi_osm.geojson'), 'w'), indent=0)
 
 cnt = collections.Counter((f['properties']['category'], f['properties']['ring']) for f in feats)
 for cat in ['Transit', 'Institutional', 'Healthcare', 'Religious', 'Recreational', 'Public amenities', 'Commercial']:
