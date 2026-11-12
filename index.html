@@ -4,292 +4,753 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Madiwala 100 Ft Road</title>
+<meta name="description" content="A tactical urbanism study of 100 Feet Road (Mahayogi Vemana Road) between the Koramangala Water Tank junction and Madiwala underpass, Bengaluru.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
   :root {
-    --bg: #f6f4ef; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a65; --line: #e3e0d8;
-    --study: #e4572e; --study-halo: rgba(228, 87, 46, .18);
-    --jn: #1d1d1b;
+    --bg: #f6f4ef; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a65; --line: #e6e2d9; --soft: #f4f1ea;
+    --accent: #e4572e; --good: #2f9e44; --warn: #e8a200; --bad: #c92a2a; --violet: #7048e8;
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --jn:#f0eee8; }
+    :root:not([data-theme="light"]) { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --soft:#292826; }
   }
-  :root[data-theme="dark"] { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --jn:#f0eee8; }
+  :root[data-theme="dark"] { --bg:#141413; --panel:#1f1f1d; --ink:#f0eee8; --muted:#a3a19a; --line:#34332f; --soft:#292826; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
-    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   #map { position: absolute; inset: 0; }
-  .panel { position: absolute; top: 16px; left: 16px; width: 320px; max-height: calc(100% - 32px); overflow: auto;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
-    box-shadow: 0 6px 24px rgba(0,0,0,.12); z-index: 2; }
-  .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
-  h1 { font-size: 18px; margin: 0 0 6px; line-height: 1.25; }
-  p { margin: 0 0 12px; color: var(--muted); }
-  dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 14px; }
-  dt { color: var(--muted); } dd { margin: 0; font-variant-numeric: tabular-nums; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 8px; }
-  .legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .legend li { display: flex; align-items: center; gap: 8px; }
-  .sw { width: 22px; height: 6px; border-radius: 3px; background: var(--study); flex: none; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
-  .jn { width: 18px; height: 18px; border-radius: 50%; background: var(--jn); color: var(--panel); font-size: 11px; font-weight: 700;
+  button { font: inherit; color: inherit; }
+
+  /* ---------- story panel ---------- */
+  .story { position: absolute; top: 16px; left: 16px; bottom: 16px; width: 380px; z-index: 2;
+    display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.14); overflow: hidden; }
+  .story-head { padding: 16px 20px 0; }
+  .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
+  .story-head h1 { font-size: 17px; margin: 0; line-height: 1.3; }
+  .grab { display: none; }
+  .tabs { display: flex; gap: 2px; padding: 12px 14px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { border: 0; background: none; padding: 8px 8px 10px; cursor: pointer; color: var(--muted); font-size: 14px;
+    white-space: nowrap; border-bottom: 2.5px solid transparent; margin-bottom: -1px; }
+  .tab[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+  .tab:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .story-body { flex: 1; overflow-y: auto; padding: 18px 20px 8px; }
+  .story-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px;
+    border-top: 1px solid var(--line); font-size: 13px; }
+  .btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .btn:hover { background: var(--soft); }
+  .btn[disabled] { opacity: .35; cursor: default; }
+  .linkbtn { border: 0; background: none; padding: 0; cursor: pointer; color: var(--muted); text-decoration: underline; font-size: 13px; }
+
+  .headline { font-size: 23px; line-height: 1.2; font-weight: 700; margin: 0 0 10px; letter-spacing: -.01em; }
+  .lede { margin: 0 0 14px; }
+  .lede strong { font-weight: 650; }
+  p.small, .small { font-size: 13px; color: var(--muted); }
+  .kpis { display: grid; gap: 8px; margin: 4px 0 16px; }
+  .kpi { display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; background: var(--soft);
+    border-radius: 10px; padding: 10px 12px; border: 0; text-align: left; cursor: pointer; width: 100%; }
+  .kpi:hover { outline: 1px solid var(--line); }
+  .kpi b { font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 13px; line-height: 1.35; }
+  .kpi small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  /* mini legend */
+  .key { list-style: none; margin: 4px 0 14px; padding: 12px; display: grid; gap: 7px; font-size: 13px;
+    border: 1px solid var(--line); border-radius: 10px; }
+  .key li { display: flex; align-items: center; gap: 9px; }
+  .sw { flex: none; display: inline-block; }
+  .sw-road { width: 22px; height: 5px; border-radius: 3px; background: var(--accent); }
+  .sw-gap { width: 22px; height: 6px; border-radius: 3px; background: var(--bad); }
+  .sw-ok { width: 22px; height: 10px; border-radius: 3px; background: rgba(47,158,68,.45); }
+  .sw-wall { width: 22px; height: 10px; border-radius: 2px; background: repeating-linear-gradient(135deg, #6b5a49 0 3px, #d9cbb8 3px 6px); }
+  .sw-cross { width: 14px; height: 14px; border-radius: 50%; background: var(--good); border: 3px solid #1b7a3a; }
+  .sw-jn { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #1d1d1b; }
+  .sw-need { width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 3px solid var(--violet); }
+  .sw-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #1d1d1b; }
+  .sw-ring { width: 22px; height: 0; border-top: 3px dotted var(--ink); }
+  .sw-cons { width: 22px; height: 8px; border-radius: 2px; background: repeating-linear-gradient(135deg, #8a5a2b 0 3px, #f0c27b 3px 6px); }
+  .jn { width: 18px; height: 18px; border-radius: 50%; background: #1d1d1b; color: #fff; font-size: 11px; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center; flex: none; }
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-  .seg button { border: 0; background: transparent; color: var(--ink); padding: 6px 12px; font: inherit; cursor: pointer; }
+
+  /* folds */
+  details.fold { border-top: 1px solid var(--line); padding: 10px 0; }
+  details.fold:last-of-type { border-bottom: 1px solid var(--line); }
+  details.fold > summary { cursor: pointer; font-size: 14px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary::before { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; flex: none; }
+  details.fold[open] > summary::before { transform: rotate(45deg); }
+  details.fold > summary .count { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 13px; }
+  .fold-body { padding-top: 8px; font-size: 13px; }
+  .fold-body ul { margin: 0; padding-left: 18px; }
+  .fold-body li { margin: 3px 0; }
+
+  /* list of places to cross */
+  ol.rows { list-style: none; margin: 0; padding: 0; }
+  ol.rows li { display: grid; grid-template-columns: 58px 1fr; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); cursor: pointer; }
+  ol.rows li:last-child { border-bottom: 0; }
+  ol.rows li:hover .nm { text-decoration: underline; }
+  .at { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .meta { color: var(--muted); font-size: 12px; }
+
+  /* footpath strip */
+  .strip { display: grid; grid-template-columns: 92px repeat(5, 1fr); gap: 3px; align-items: center; font-size: 12px; margin: 4px 0 6px; }
+  .strip .lab { color: var(--muted); }
+  .strip .cell { border-radius: 4px; text-align: center; padding: 7px 0; font-weight: 650; font-variant-numeric: tabular-nums; color: #1d1d1b; cursor: pointer; }
+  .strip .ax { text-align: center; color: var(--muted); font-size: 11px; }
+  .f-none { background: #ffc9c9; } .f-low { background: #ffd8a8; } .f-mid { background: #ffec99; } .f-ok { background: #b2f2bb; } .f-unknown { background: #e9ecef; }
+
+  /* street sections */
+  .xs { margin: 0 0 14px; }
+  .xs-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; font-weight: 650; }
+  .xs-h span { font-weight: 400; color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .xs svg { display: block; width: 100%; height: auto; margin-top: 5px; border-radius: 4px; }
+  .xs-why { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  ul.xkey { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+  ul.xkey li { display: flex; align-items: center; gap: 5px; }
+  ul.xkey i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
+  .callout { background: var(--soft); border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 0 0 14px; }
+
+  /* site check */
+  .progress { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--soft); margin: 6px 0 6px; }
+  .progress i { display: block; }
+  .tally { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .tally span::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; background: var(--c); }
+  h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 16px 0 6px; }
+  details.chk { border-bottom: 1px dashed var(--line); padding: 7px 0; }
+  details.chk > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 16px 1fr auto; gap: 9px; align-items: start; font-size: 14px; }
+  details.chk > summary::-webkit-details-marker { display: none; }
+  .ic { width: 14px; height: 14px; border-radius: 50%; margin-top: 3px; }
+  .r-favourable .ic { background: var(--good); } .r-acceptable .ic { background: var(--warn); }
+  .r-not_favourable .ic { background: var(--bad); } .r-verify .ic { border: 2px solid var(--muted); border-radius: 3px; }
+  .rt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; margin-top: 3px; }
+  .r-favourable .rt { color: var(--good); } .r-acceptable .rt { color: #b07a00; } .r-not_favourable .rt { color: var(--bad); } .r-verify .rt { color: var(--muted); }
+  details.chk .fold-body { padding-left: 25px; color: var(--muted); }
+
+  /* ---------- layers control ---------- */
+  .layers-btn { position: absolute; top: 16px; right: 16px; z-index: 3; display: flex; align-items: center; gap: 8px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14); font-size: 14px; font-weight: 600; }
+  .layers-btn svg { width: 18px; height: 18px; }
+  .layers { position: absolute; top: 64px; right: 16px; z-index: 3; width: 290px; max-height: calc(100% - 140px); overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.18);
+    padding: 12px 16px 14px; font-size: 14px; }
+  .layers[hidden] { display: none; }
+  .layers h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 12px 0 4px; }
+  .layers h4:first-child { margin-top: 0; }
+  .layers label { display: flex; align-items: center; gap: 9px; padding: 4px 0; cursor: pointer; }
+  .layers label .n { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .layers .sub { padding-left: 24px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 2px; }
+  .seg button { border: 0; background: transparent; padding: 5px 12px; cursor: pointer; font-size: 13px; }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
-  label.chk { display: flex; gap: 8px; align-items: center; margin-top: 10px; cursor: pointer; }
-  .ring-list label.chk { margin-top: 6px; }
-  .hint { font-size: 12px; margin: -2px 0 8px; }
-  .cat-list { display: grid; gap: 2px; margin-top: 8px; }
-  .cat-list label.chk { margin-top: 4px; }
-  .cat-list .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .cat-list .dot { width: 11px; height: 11px; }
-  .cat-actions { margin-top: 8px; font-size: 12px; color: var(--muted); }
-  button.link { border: 0; background: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; cursor: pointer; }
-  .ring { width: 22px; height: 0; border-top: 3px dotted var(--ink); flex: none; }
-  .ring.r500 { opacity: .55; }
-  .src { font-size: 12px; margin-top: 14px; color: var(--muted); }
-  .maplibregl-popup-content { background: var(--panel); color: var(--ink); border-radius: 8px; font: 13px/1.4 system-ui, sans-serif; }
+  .layers .note { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  .maplibregl-ctrl-top-right { top: 56px; }
+
+  /* about dialog */
+  dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; max-width: 620px; width: calc(100% - 32px);
+    background: var(--panel); color: var(--ink); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+  dialog::backdrop { background: rgba(0,0,0,.35); }
+  .dlg-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .dlg-head h2 { margin: 0; font-size: 17px; }
+  .dlg-body { padding: 4px 20px 18px; font-size: 14px; max-height: 70vh; overflow-y: auto; }
+  .dlg-body h3 { margin-top: 18px; }
+  .dlg-body ul { padding-left: 18px; margin: 4px 0; }
+  .dlg-body li { margin: 4px 0; }
+
+  /* map bits */
+  .maplibregl-popup-content { background: var(--panel); color: var(--ink); border-radius: 8px; font: 13px/1.45 system-ui, sans-serif; padding: 10px 14px; }
   .maplibregl-popup-tip { border-top-color: var(--panel) !important; border-bottom-color: var(--panel) !important; }
   .pop-k { color: var(--muted); font-size: 12px; }
   .jn-marker { width: 26px; height: 26px; border-radius: 50%; background: #1d1d1b; color: #fff; font: 700 13px system-ui, sans-serif;
     display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
-  @media (max-width: 640px) {
-    .panel { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; max-height: 45%; }
+  .xs-marker { background: #1d1d1b; color: #fff; font: 600 12px system-ui, sans-serif; padding: 4px 8px; border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3); white-space: nowrap; }
+
+  /* ---------- phones: bottom sheet ---------- */
+  @media (max-width: 720px) {
+    .story { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 56vh; border-radius: 14px 14px 0 0; transition: height .2s; }
+    .story.collapsed { height: 132px; }
+    .story.collapsed .story-body, .story.collapsed .story-foot { display: none; }
+    .grab { display: block; width: 100%; border: 0; background: none; padding: 8px 0 0; cursor: pointer; }
+    .grab::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto; }
+    .story-head { padding-top: 6px; }
+    .layers-btn { top: 12px; right: 12px; }
+    .layers { top: 58px; right: 12px; left: 12px; width: auto; max-height: 40vh; }
+    .maplibregl-ctrl-top-right { top: 52px; }
+    .headline { font-size: 20px; }
   }
 </style>
 </head>
 <body>
 <div id="map" role="region" aria-label="Map of the study stretch"></div>
 
-<aside class="panel">
-  <p class="eyebrow">Tactical urbanism · Stage 1 · Site selection</p>
-  <h1>100 Ft Road (Mahayogi Vemana Rd), Madiwala</h1>
-  <p>Study stretch between the Koramangala Water Tank junction and the Madiwala Underpass junction on Hosur Road.</p>
-  <dl>
-    <dt>Length</dt><dd id="len">—</dd>
-    <dt>Section</dt><dd>Divided, 2 + 2 lanes, one-way pairs</dd>
-    <dt>Junctions</dt><dd>2 (both ends)</dd>
-    <dt>Bus stops</dt><dd>Both directions</dd>
-  </dl>
-
-  <h2>Legend</h2>
-  <ul class="legend">
-    <li><span class="sw"></span>Study stretch (both carriageways)</li>
-    <li><span class="jn">A</span>Koramangala Water Tank Jn</li>
-    <li><span class="jn">B</span>Madiwala Underpass Jn</li>
-  </ul>
-
-  <h2>Areas of interest</h2>
-  <p class="hint">Landmark categories from the guidebook's neighbourhood mapping step, shown within the walking catchment ticked below.</p>
-  <div class="cat-list" id="cat-list"></div>
-  <div class="cat-actions"><button id="cat-all" class="link">Show all</button> · <button id="cat-none" class="link">Hide all</button></div>
-
-  <h2>Walking catchment</h2>
-  <div class="ring-list">
-    <label class="chk"><input type="checkbox" id="tg-r300" checked><span class="ring"></span>300 m from the road · ~4 min walk</label>
-    <label class="chk"><input type="checkbox" id="tg-r500" checked><span class="ring r500"></span>500 m from the road · ~7 min walk</label>
+<!-- story panel -->
+<aside class="story" id="story" aria-label="Study findings">
+  <button class="grab" id="grab" aria-label="Expand or collapse the panel"></button>
+  <div class="story-head">
+    <p class="eyebrow">Tactical urbanism study · Bengaluru</p>
+    <h1>100 Feet Road, Madiwala</h1>
   </div>
-
-  <h2>Basemap</h2>
-  <div class="seg" role="group" aria-label="Basemap">
-    <button id="bm-map" aria-pressed="true">Map</button>
-    <button id="bm-sat" aria-pressed="false">Satellite</button>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <div class="story-body" id="body" role="tabpanel" tabindex="0"></div>
+  <div class="story-foot">
+    <button class="btn" id="prev">← Previous</button>
+    <button class="linkbtn" id="about-open">About the data</button>
+    <button class="btn" id="next">Next →</button>
   </div>
-
-  <p class="src">Road geometry &amp; landmarks: © OpenStreetMap contributors. Method: DULT <em>Guidebook for Tactical Urbanism</em> (2022) &amp; GIZ/MoHUA <em>Tactical Urbanism Guidebook</em> (2020).</p>
 </aside>
 
+<!-- layers control -->
+<button class="layers-btn" id="layers-btn" aria-expanded="false" aria-controls="layers">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>
+  Layers
+</button>
+<div class="layers" id="layers" hidden>
+  <h4>Base map</h4>
+  <div class="seg" role="group" aria-label="Base map">
+    <button id="bm-map" aria-pressed="true">Street map</button>
+    <button id="bm-sat" aria-pressed="false">Satellite</button>
+  </div>
+  <h4>Study</h4>
+  <label><input type="checkbox" data-g="crossings"> Crossings &amp; gaps</label>
+  <label><input type="checkbox" data-g="footpaths"> Footpath widths</label>
+  <label><input type="checkbox" data-g="wall"> Flyover ramp wall</label>
+  <label><input type="checkbox" data-g="construction"> Flyover construction</label>
+  <h4>Walking distance from the road</h4>
+  <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
+  <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
+  <h4>Places nearby</h4>
+  <label><input type="checkbox" data-g="places"> Show places</label>
+  <div class="sub" id="cat-list"></div>
+  <p class="note">Places are shown within the largest walking distance ticked above (500 m if none). Each tab resets these to suit its story.</p>
+</div>
+
+<!-- about -->
+<dialog id="about">
+  <div class="dlg-head"><h2>About the data</h2><button class="btn" id="about-close">Close</button></div>
+  <div class="dlg-body" id="about-body"></div>
+</dialog>
+
 <script>
-// Neighbourhood mapping categories (GIZ/MoHUA Tactical Urbanism Guidebook, "Connecting places and people")
-const CATS = {
-  'Transit':          '#2a7de1',
-  'Institutional':    '#e8a200',
-  'Healthcare':       '#d6336c',
-  'Religious':        '#8e5bd6',
-  'Recreational':     '#2f9e44',
-  'Public amenities': '#0c8599',
-  'Commercial':       '#8a8780',
+/* =====================================================================
+   Content settings — plain-language names used across the page
+   ===================================================================== */
+const SIDE = { SE: 'IIA side', NW: 'Masjid side' };          // road sides, as locals would name them
+const CATS = {                                                // GIZ guidebook neighbourhood-mapping categories
+  'Transit': '#2a7de1', 'Institutional': '#e8a200', 'Healthcare': '#d6336c', 'Religious': '#8e5bd6',
+  'Recreational': '#2f9e44', 'Public amenities': '#0c8599', 'Commercial': '#8a8780',
 };
-const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
-const ringOn = { 300: true, 500: true };
-// areas of interest extend to the largest ticked walking catchment (none ticked → none shown)
-const poiRange = () => ringOn[500] ? 500 : ringOn[300] ? 300 : -1;
+const CAT_LABEL = { 'Transit': 'Bus stops', 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
+  'Religious': 'Temples & mosques', 'Recreational': 'Parks & recreation', 'Public amenities': 'Public services', 'Commercial': 'Shops & food' };
 
-const STYLE_MAP = 'https://tiles.openfreemap.org/styles/liberty';
-const SAT_SOURCE = {
-  type: 'raster', tileSize: 256, maxzoom: 19,
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const fmt = n => Number(n).toLocaleString('en-IN');
+const fromA = m => `${m} m from the Water Tank junction`;
+
+/* =====================================================================
+   Map
+   ===================================================================== */
+const SAT_SOURCE = { type: 'raster', tileSize: 256, maxzoom: 19,
   tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-  attribution: 'Imagery © Esri, Maxar, Earthstar Geographics'
-};
-
-const map = new maplibregl.Map({
-  container: 'map',
-  style: STYLE_MAP,
-  center: [77.6195, 12.926],
-  zoom: 16.6,
-  attributionControl: { compact: true }
-});
+  attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' };
+const map = new maplibregl.Map({ container: 'map', style: 'https://tiles.openfreemap.org/styles/liberty',
+  center: [77.6195, 12.926], zoom: 16, attributionControl: { compact: true } });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 
-const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+// layer groups toggled by the story and the Layers control
+const GROUPS = {
+  crossings:    ['ct-zone', 'xg-gap', 'xg-gap-label', 'xg-desire', 'xg-tick', 'xg-tick-label', 'xg-gen', 'xg-cross'],
+  footpaths:    ['ct-fp', 'ct-fp-label'],
+  wall:         ['ct-wall'],
+  construction: ['cons-casing', 'cons'],
+  places:       ['poi', 'poi-label'],
+  r300:         ['ring-300-casing', 'ring-300', 'ring-300-label'],
+  r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
+  sat:          ['sat'],
+};
+const vis = { crossings: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
+const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
+const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
+const poiFilter = () => ['all', ['in', ['get', 'category'], ['literal', Object.keys(CATS).filter(k => catOn[k])]], ['<=', ['get', 'dist_m'], poiRange()]];
 
-// areas-of-interest toggles: one checkbox per category, with a count for the ticked catchment
-const catList = document.getElementById('cat-list');
-catList.innerHTML = Object.entries(CATS).map(([k, c]) =>
-  `<label class="chk"><input type="checkbox" data-cat="${k}" checked><span class="dot" style="background:${c}"></span>${k}<span class="n" data-n="${k}"></span></label>`).join('');
-
-function poiFilter() {
-  return ['all',
-    ['in', ['get', 'category'], ['literal', Object.keys(CATS).filter(k => catOn[k])]],
-    ['<=', ['get', 'dist_m'], poiRange()]];
+function applyVis() {
+  for (const [g, ids] of Object.entries(GROUPS))
+    ids.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', vis[g] ? 'visible' : 'none'));
+  map.getLayer('poi') && map.setFilter('poi', poiFilter());
+  map.getLayer('poi-label') && map.setFilter('poi-label', ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']]);
+  document.querySelectorAll('#layers [data-g]').forEach(i => i.checked = vis[i.dataset.g]);
+  document.getElementById('bm-map').setAttribute('aria-pressed', String(!vis.sat));
+  document.getElementById('bm-sat').setAttribute('aria-pressed', String(vis.sat));
+  refreshCats();
 }
-function refreshPoi() {
-  for (const k of Object.keys(CATS)) {
-    const n = poi ? poi.features.filter(f => f.properties.category === k && f.properties.dist_m <= poiRange()).length : '';
-    catList.querySelector(`[data-n="${k}"]`).textContent = n;
-    catList.querySelector(`[data-cat="${k}"]`).checked = catOn[k];
-  }
-  ['poi', 'poi-label'].forEach(id => map.getLayer(id) && map.setFilter(id,
-    id === 'poi' ? poiFilter() : ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']]));
-}
 
-let stretch, poi, catchments;
+let D = {};   // all loaded data
 const load = Promise.all([
-  fetch('data/stretch.geojson').then(r => r.json()),
-  fetch('data/poi.geojson').then(r => r.json()),
-  fetch('data/catchments.geojson').then(r => r.json()),
-]).then(([s, c, k]) => {
-  stretch = s; poi = c; catchments = k;
-  refreshPoi();
-  const cw = s.features.filter(f => f.properties.kind === 'carriageway');
-  const avg = cw.reduce((a, f) => a + f.properties.length_m, 0) / cw.length;
-  document.getElementById('len').textContent = `≈ ${Math.round(avg)} m per carriageway`;
-  return [s, c];
-});
+  'data/stretch.geojson', 'data/poi.geojson', 'data/catchments.geojson', 'data/crossings.geojson',
+  'data/construction.geojson', 'data/scorecard.json', 'data/contract.json', 'data/contract.geojson',
+].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
+  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo]) =>
+    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo }));
 
 function addOverlays() {
-  if (!stretch) return;
-  if (!map.getSource('stretch')) map.addSource('stretch', { type: 'geojson', data: stretch });
-  if (!map.getSource('poi')) map.addSource('poi', { type: 'geojson', data: poi });
+  const K = k => ['==', ['get', 'kind'], k];
+  const hidden = { visibility: 'none' };
+  const src = (id, data) => map.getSource(id) || map.addSource(id, { type: 'geojson', data });
+  src('stretch', D.stretch); src('poi', D.poi); src('catchments', D.catchments); src('xing', D.crossings);
+  src('construction', D.construction); src('contract', D.contractGeo);
   if (!map.getSource('sat')) map.addSource('sat', SAT_SOURCE);
-
   const firstSymbol = map.getStyle().layers.find(l => l.type === 'symbol')?.id;
-  if (!map.getLayer('sat')) map.addLayer({ id: 'sat', type: 'raster', source: 'sat',
-    layout: { visibility: satOn ? 'visible' : 'none' } }, firstSymbol);
+  map.addLayer({ id: 'sat', type: 'raster', source: 'sat', layout: hidden }, firstSymbol);
 
-  // walking catchments (drawn beneath the study stretch)
-  if (!map.getSource('catchments')) map.addSource('catchments', { type: 'geojson', data: catchments });
+  // walking distance rings
   for (const r of [500, 300]) {
     const f = ['==', ['get', 'radius_m'], r];
-    const vis = ringOn[r] ? 'visible' : 'none';
-    map.addLayer({ id: `ring-${r}-casing`, type: 'line', source: 'catchments', filter: f, layout: { visibility: vis },
-      paint: { 'line-color': '#ffffff', 'line-width': 5, 'line-opacity': 0.55 } });
+    map.addLayer({ id: `ring-${r}-casing`, type: 'line', source: 'catchments', filter: f, layout: hidden,
+      paint: { 'line-color': '#fff', 'line-width': 5, 'line-opacity': 0.55 } });
     map.addLayer({ id: `ring-${r}`, type: 'line', source: 'catchments', filter: f,
-      layout: { visibility: vis, 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': '#1d1d1b', 'line-opacity': r === 300 ? 0.9 : 0.55,
-        'line-width': 2.5, 'line-dasharray': [0, 2] } });
+      layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': '#1d1d1b', 'line-opacity': r === 300 ? 0.9 : 0.55, 'line-width': 2.5, 'line-dasharray': [0, 2] } });
     map.addLayer({ id: `ring-${r}-label`, type: 'symbol', source: 'catchments', filter: f,
-      layout: { visibility: vis, 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-field': ['get', 'label'],
+      layout: { ...hidden, 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-field': ['get', 'label'],
         'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-offset': [0, -0.9] },
-      paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 } });
+      paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#fff', 'text-halo-width': 1.6 } });
   }
 
-  const isCW = ['==', ['get', 'kind'], 'carriageway'];
-  map.addLayer({ id: 'stretch-halo', type: 'line', source: 'stretch', filter: isCW,
-    layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': '#e4572e', 'line-opacity': 0.22,
-      'line-width': ['interpolate', ['exponential', 2], ['zoom'], 14, 10, 19, 70] } });
-  map.addLayer({ id: 'stretch-line', type: 'line', source: 'stretch', filter: isCW,
-    layout: { 'line-cap': 'round', 'line-join': 'round' },
+  // flyover construction (OSM)
+  map.addLayer({ id: 'cons-casing', type: 'line', source: 'construction', layout: hidden,
+    paint: { 'line-color': '#f0c27b', 'line-width': ['interpolate', ['linear'], ['zoom'], 15, 5, 19, 16], 'line-opacity': 0.85 } });
+  map.addLayer({ id: 'cons', type: 'line', source: 'construction', layout: hidden,
+    paint: { 'line-color': '#8a5a2b', 'line-width': ['interpolate', ['linear'], ['zoom'], 15, 5, 19, 16], 'line-dasharray': [0.4, 0.4], 'line-opacity': 0.9 } });
+
+  // flyover ramp wall and crossing zones (contract)
+  map.addLayer({ id: 'ct-wall', type: 'fill', source: 'contract', filter: K('re_wall'), layout: hidden,
+    paint: { 'fill-color': '#6b5a49', 'fill-opacity': 0.55, 'fill-outline-color': '#3d3227' } });
+  map.addLayer({ id: 'ct-zone', type: 'line', source: 'contract', filter: ['all', K('zone'), ['!=', ['get', 'status'], 'junction']],
+    layout: { ...hidden, 'line-cap': 'butt' },
+    paint: { 'line-color': ['match', ['get', 'status'], 'feasible', '#2f9e44', '#6b5a49'],
+      'line-opacity': ['match', ['get', 'status'], 'feasible', 0.4, 0.5],
+      'line-width': ['interpolate', ['exponential', 2], ['zoom'], 15, 10, 19, 60] } });
+
+  // study road
+  const isCW = K('carriageway');
+  map.addLayer({ id: 'stretch-halo', type: 'line', source: 'stretch', filter: isCW, layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#e4572e', 'line-opacity': 0.2, 'line-width': ['interpolate', ['exponential', 2], ['zoom'], 14, 10, 19, 70] } });
+  map.addLayer({ id: 'stretch-line', type: 'line', source: 'stretch', filter: isCW, layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': '#e4572e', 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2.5, 19, 7] } });
   map.addLayer({ id: 'stretch-arrows', type: 'symbol', source: 'stretch', filter: isCW,
     layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'text-field': '>', 'text-size': 13, 'text-font': ['Noto Sans Bold'],
       'text-keep-upright': false, 'text-allow-overlap': true },
     paint: { 'text-color': '#ffffff' } });
 
-  // areas of interest: commercial drawn smaller so the civic/transit layers read first
-  map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(),
-    paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'],
-        14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
+  // crossings & gaps
+  map.addLayer({ id: 'xg-gap', type: 'line', source: 'xing', filter: K('gap'), layout: { ...hidden, 'line-cap': 'round' },
+    paint: { 'line-color': ['match', ['get', 'status'], 'ok', '#2f9e44', 'residential-only', '#e8a200', '#c92a2a'],
+      'line-width': ['interpolate', ['linear'], ['zoom'], 15, 4, 19, 9], 'line-opacity': 0.9 } });
+  map.addLayer({ id: 'xg-gap-label', type: 'symbol', source: 'xing', filter: K('gap'), minzoom: 15.5,
+    layout: { ...hidden, 'symbol-placement': 'line-center', 'text-field': ['concat', ['to-string', ['get', 'length_m']], ' m with no crossing'],
+      'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-offset': [0, -1.2], 'text-allow-overlap': true },
+    paint: { 'text-color': '#c92a2a', 'text-halo-color': '#fff', 'text-halo-width': 2 } });
+  map.addLayer({ id: 'xg-desire', type: 'line', source: 'xing', filter: K('desire'), minzoom: 15.5, layout: hidden,
+    paint: { 'line-color': '#7048e8', 'line-width': 1.6, 'line-dasharray': [2, 1.5] } });
+  map.addLayer({ id: 'xg-tick', type: 'circle', source: 'xing', filter: K('tick'), minzoom: 15.5, layout: hidden,
+    paint: { 'circle-radius': ['case', ['get', 'major'], 4, 3], 'circle-color': '#fff', 'circle-stroke-color': '#1d1d1b', 'circle-stroke-width': 2 } });
+  map.addLayer({ id: 'xg-tick-label', type: 'symbol', source: 'xing', filter: ['all', K('tick'), ['get', 'major']], minzoom: 16.5,
+    layout: { ...hidden, 'text-field': ['concat', ['to-string', ['get', 'chainage_m']], ' m'],
+      'text-font': ['Noto Sans Regular'], 'text-size': 10, 'text-anchor': 'left', 'text-offset': [0.7, 0] },
+    paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#fff', 'text-halo-width': 1.6 } });
+  map.addLayer({ id: 'xg-gen', type: 'circle', source: 'xing', filter: K('generator'), layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 4, 19, 8], 'circle-color': '#fff',
+      'circle-stroke-color': '#7048e8', 'circle-stroke-width': 3 } });
+  map.addLayer({ id: 'xg-cross', type: 'circle', source: 'xing', filter: K('crossing'), layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 6, 19, 11],
+      'circle-color': ['case', ['get', 'verified'], '#2f9e44', '#ffffff'],
+      'circle-stroke-color': ['case', ['get', 'verified'], '#1b7a3a', '#1d1d1b'], 'circle-stroke-width': 3 } });
+
+  // footpath widths: one dot per side of the road at each surveyed point
+  const fpColor = ['match', ['get', 'fp_flag'], 'none', '#c92a2a', 'below-1.8', '#f76707', 'below-2.5', '#fab005', 'ok', '#2f9e44', '#adb5bd'];
+  map.addLayer({ id: 'ct-fp', type: 'circle', source: 'contract', filter: K('fp'), layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 5, 19, 10], 'circle-color': fpColor,
+      'circle-stroke-color': '#1d1d1b', 'circle-stroke-width': 2 } });
+  map.addLayer({ id: 'ct-fp-label', type: 'symbol', source: 'contract', filter: K('fp'), minzoom: 16,
+    layout: { ...hidden, 'text-field': ['case', ['==', ['get', 'fp_m'], 0], 'no footpath', ['concat', ['to-string', ['get', 'fp_m']], ' m']],
+      'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-allow-overlap': true,
+      'text-anchor': ['match', ['get', 'side'], 'SE', 'left', 'right'], 'text-offset': ['match', ['get', 'side'], 'SE', ['literal', [1.1, 0]], ['literal', [-1.1, 0]]] },
+    paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
+
+  // places nearby
+  map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(), layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
         19, ['match', ['get', 'category'], 'Commercial', 6, 9]],
       'circle-color': ['match', ['get', 'category'], ...Object.entries(CATS).flat(), '#888'],
       'circle-stroke-color': '#fff', 'circle-stroke-width': 1.5 } });
-  map.addLayer({ id: 'poi-label', type: 'symbol', source: 'poi', minzoom: 16.3,
+  map.addLayer({ id: 'poi-label', type: 'symbol', source: 'poi', minzoom: 16.3, layout: { ...hidden,
+      'text-field': ['get', 'name'], 'text-size': 11, 'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 9, 'text-font': ['Noto Sans Regular'] },
     filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
-    layout: { 'text-field': ['get', 'name'], 'text-size': 11,
-      'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 9,
-      'text-font': ['Noto Sans Regular'] },
     paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
+
+  applyVis();
 }
-
-// junction markers (DOM, survive style swaps)
-load.then(([s]) => {
-  s.features.filter(f => f.properties.kind === 'junction').forEach(f => {
-    const el = document.createElement('div');
-    el.className = 'jn-marker'; el.textContent = f.properties.id;
-    el.setAttribute('aria-label', f.properties.name);
-    new maplibregl.Marker({ element: el })
-      .setLngLat(f.geometry.coordinates)
-      .setPopup(new maplibregl.Popup({ offset: 16 }).setHTML(
-        `<strong>${f.properties.id} · ${f.properties.name}</strong><br><span class="pop-k">${f.properties.note}</span>`))
-      .addTo(map);
-  });
-  // frame the road plus the outermost catchment so both rings are in view on load
-  const b = new maplibregl.LngLatBounds();
-  s.features.forEach(f => (f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates).forEach(c => b.extend(c)));
-  catchments.features.forEach(f => f.geometry.coordinates[0].forEach(c => b.extend(c)));
-  const mobile = innerWidth <= 640;
-  map.fitBounds(b, { padding: mobile ? { top: 40, bottom: innerHeight * 0.5, left: 30, right: 30 }
-                                     : { top: 60, bottom: 60, left: 380, right: 60 }, maxZoom: 18, duration: 0 });
-});
-
-let satOn = false;
 map.on('style.load', () => load.then(addOverlays));
 
-const btnMap = document.getElementById('bm-map'), btnSat = document.getElementById('bm-sat');
-function setSat(on) {
-  satOn = on;
-  btnMap.setAttribute('aria-pressed', String(!on)); btnSat.setAttribute('aria-pressed', String(on));
-  if (map.getLayer('sat')) map.setLayoutProperty('sat', 'visibility', on ? 'visible' : 'none');
-}
-btnMap.onclick = () => setSat(false);
-btnSat.onclick = () => setSat(true);
-catList.addEventListener('change', e => {
-  const k = e.target.dataset.cat;
-  if (k) { catOn[k] = e.target.checked; refreshPoi(); }
+// junction markers (DOM markers survive style changes)
+load.then(() => {
+  D.stretch.features.filter(f => f.properties.kind === 'junction').forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'jn-marker'; el.textContent = f.properties.id; el.setAttribute('aria-label', f.properties.name);
+    new maplibregl.Marker({ element: el }).setLngLat(f.geometry.coordinates)
+      .setPopup(new maplibregl.Popup({ offset: 16 }).setHTML(`<strong>${f.properties.id} · ${esc(f.properties.name)}</strong><br><span class="pop-k">${esc(f.properties.note)}</span>`))
+      .addTo(map);
+  });
 });
-document.getElementById('cat-all').onclick = () => { Object.keys(catOn).forEach(k => catOn[k] = true); refreshPoi(); };
-document.getElementById('cat-none').onclick = () => { Object.keys(catOn).forEach(k => catOn[k] = false); refreshPoi(); };
 
-for (const r of [300, 500]) {
-  document.getElementById(`tg-r${r}`).onchange = e => {
-    ringOn[r] = e.target.checked;
-    [`ring-${r}-casing`, `ring-${r}`, `ring-${r}-label`].forEach(id =>
-      map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ringOn[r] ? 'visible' : 'none'));
-    refreshPoi();
-  };
+/* =====================================================================
+   Popups — one handler, topmost layer wins, plain language
+   ===================================================================== */
+const OSM = o => `<a href="https://www.openstreetmap.org/${esc(o)}" target="_blank" rel="noopener">OpenStreetMap</a>`;
+const POPUPS = {
+  'poi': f => { const p = f.properties; return [f.geometry.coordinates,
+    `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(CAT_LABEL[p.category] || p.category)}<br><span class="pop-k">About ${p.dist_m} m from the road · ${OSM(p.osm)}</span>`]; },
+  'xg-cross': f => { const p = f.properties; return [f.geometry.coordinates,
+    `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : 'Traffic signals, but no marked pedestrian crossing on the map — to check on the walk'}`]; },
+  'xg-gen': f => { const p = f.properties; return [f.geometry.coordinates,
+    `<strong>${esc(p.name)}</strong><br>People cross the road to reach this<br><span class="pop-k">${fromA(p.chainage_m)} · ${esc(SIDE[p.side.split(' ')[0]] || p.side)}</span>`]; },
+  'ct-fp': f => { const p = f.properties; return [f.geometry.coordinates,
+    `<strong>${p.fp_m ? `Footpath ${p.fp_m} m wide` : 'No footpath'}</strong> · ${esc(SIDE[p.side])}<br>${fromA(p.chainage_m)}` +
+    `<br><span class="pop-k">Standard for a busy mixed-use street: 2.5 m. Measured in the flyover contract's survey.</span>`]; },
+  'xg-tick': f => [f.geometry.coordinates, `<strong>${fromA(f.properties.chainage_m)}</strong>`],
+  'ct-wall': (f, e) => [e.lngLat, `<strong>Flyover ramp wall</strong><br>A solid ${f.properties.width_m} m wall of packed earth down the middle of the road, ${f.properties.from_m}–${f.properties.to_m} m from the Water Tank junction. No one can cross here.`],
+  'xg-gap': (f, e) => { const p = f.properties; return [e.lngLat,
+    `<strong>${p.length_m} m with no crossing</strong><br><span class="pop-k">The guidebook asks for one every 80–150 m on a busy street like this.</span>`]; },
+  'ct-zone': (f, e) => { const p = f.properties; return [e.lngLat, p.status === 'feasible'
+    ? `<strong>A crossing is possible here</strong><br><span class="pop-k">${p.from_m}–${p.to_m} m from the Water Tank junction. The middle of the road is open, so a crossing with a safe island in the middle can fit.</span>`
+    : `<strong>No crossing possible</strong><br><span class="pop-k">The flyover ramp wall fills the middle of the road here.</span>`]; },
+  'stretch-line': (f, e) => { const p = f.properties; return [e.lngLat,
+    `<strong>100 Feet Road (Mahayogi Vemana Road)</strong><br>${esc(p.direction)}<br><span class="pop-k">${p.lanes} lanes, one-way · ${p.length_m} m</span>`]; },
+  'cons': (f, e) => [e.lngLat, `<strong>${esc(f.properties.name)}</strong><br>${f.properties.elevated ? 'Raised section' : 'Ramp / works at street level'}`],
+};
+const CLICKABLE = Object.keys(POPUPS);
+const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
+map.on('click', e => {
+  const hits = hitsAt(e.point); if (!hits.length) return;
+  const top = CLICKABLE.map(id => hits.find(h => h.layer.id === id)).find(Boolean);
+  const [ll, html] = POPUPS[top.layer.id](top, e);
+  new maplibregl.Popup({ offset: 8, maxWidth: '280px' }).setLngLat(ll).setHTML(html).addTo(map);
+});
+map.on('mousemove', e => { map.getCanvas().style.cursor = hitsAt(e.point).length ? 'pointer' : ''; });
+
+/* =====================================================================
+   Story — each tab sets the map and renders its own content
+   ===================================================================== */
+const pad = () => innerWidth <= 720
+  ? { top: 70, bottom: innerHeight * 0.58, left: 24, right: 24 }
+  : { top: 70, bottom: 50, left: 420, right: 60 };
+const boundsOf = coords => coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+const roadCoords = () => D.stretch.features.flatMap(f => f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates);
+const fitRoad = () => map.fitBounds(boundsOf(roadCoords()), { padding: pad(), maxZoom: 18, duration: 900 });
+const flyTo = ll => map.flyTo({ center: ll, zoom: 18.3, padding: pad(), duration: 900 });
+const key = items => `<ul class="key">${items.map(([sw, t]) => `<li>${sw}<span>${t}</span></li>`).join('')}</ul>`;
+const fold = (title, html, open = false, count = '') =>
+  `<details class="fold"${open ? ' open' : ''}><summary>${title}${count !== '' ? `<span class="count">${count}</span>` : ''}</summary><div class="fold-body">${html}</div></details>`;
+let sectionMarker;
+
+function gapStats() {
+  const gaps = D.crossings.features.filter(f => f.properties.kind === 'gap').map(f => f.properties);
+  const longest = Math.max(...gaps.map(g => g.length_m));
+  const need = gaps.reduce((a, g) => a + g.crossings_needed, 0);
+  const feas = D.contractGeo.features.find(f => f.properties.kind === 'zone' && f.properties.status === 'feasible').properties;
+  return { longest, need, feas, wall: D.contract.re_wall };
+}
+function fpStats() {
+  const v = D.contract.inventory.rows.flatMap(r => [r.fp_lhs, r.fp_rhs]);
+  return { total: v.length, below: v.filter(x => x < 2.5).length, none: D.contract.inventory.rows.filter(r => !r.fp_lhs && !r.fp_rhs).map(r => r.ch) };
+}
+function trafficStats() {
+  const t = D.contract.traffic, round = n => Math.round(n / 500) * 500;
+  return { t, low: round(t.adt_2025 - t.diverted_od), high: round(t.adt_2025 - t.diverted_tollable) };
 }
 
-// popups
-map.on('click', 'stretch-line', e => {
-  const p = e.features[0].properties;
-  new maplibregl.Popup().setLngLat(e.lngLat).setHTML(
-    `<strong>${p.name}</strong><br>${p.direction}<br><span class="pop-k">${p.lanes} lanes · one-way · ${p.length_m} m · ${p.osm_id}</span>`).addTo(map);
+const SCENES = [
+  { id: 'overview', tab: 'Overview',
+    layers: { r300: true, r500: true, places: true },
+    view: () => map.fitBounds(boundsOf(D.catchments.features.flatMap(f => f.geometry.coordinates[0])), { padding: pad(), duration: 900 }),
+    render() {
+      const g = gapStats(), fp = fpStats();
+      const near = D.poi.features.filter(f => f.properties.dist_m <= 500);
+      const byCat = Object.keys(CATS).map(k => [k, near.filter(f => f.properties.category === k).length]);
+      return `
+        <h2 class="headline">A short, busy road about to be reshaped by a flyover</h2>
+        <p class="lede">This 460 m stretch links the <strong>Water Tank junction (A)</strong> to the <strong>Madiwala underpass (B)</strong>.
+        It has a school, a mosque, a temple, bus stops on both sides and a government research campus — exactly the kind of street the
+        tactical urbanism guidebooks say to test first. A tolled flyover is due to be built over it from 2026.</p>
+        <div class="kpis">
+          <button class="kpi" data-go="crossing"><b>${g.longest} m</b><span>with no safe place to cross<small>The guidebook asks for one every 80–150 m</small></span></button>
+          <button class="kpi" data-go="footpaths"><b>${fp.below}/${fp.total}</b><span>footpath measurements below standard<small>No footpath at all at ${fp.none.join(', ')} m</small></span></button>
+          <button class="kpi" data-go="street"><b>~½</b><span>of today's traffic expected to move up to the flyover<small>A chance to give street space back to people</small></span></button>
+        </div>
+        ${key([
+          ['<span class="sw sw-road"></span>', 'The study road'],
+          ['<span class="jn">A</span>', 'Water Tank junction · <span class="jn">B</span> Madiwala underpass'],
+          ['<span class="sw sw-ring"></span>', '4 and 7 minute walk from the road'],
+          ['<span class="sw sw-dot" style="background:#2a7de1;border-color:#fff"></span>', 'Places nearby, coloured by type'],
+        ])}
+        ${fold('Places within a 7 minute walk', `<ul>${byCat.map(([k, n]) =>
+          `<li><span class="sw sw-dot" style="display:inline-block;width:10px;height:10px;background:${CATS[k]};border-color:#fff;vertical-align:-1px"></span> ${CAT_LABEL[k]}: ${n}</li>`).join('')}</ul>
+          <p class="small" style="margin-top:8px">From OpenStreetMap. Street vendors and small shops are often missing — the site walk will add them. Filter these in <em>Layers</em>.</p>`, false, near.length)}`;
+    } },
+
+  { id: 'crossing', tab: 'Crossing',
+    layers: { crossings: true, wall: true },
+    view: fitRoad,
+    render() {
+      const g = gapStats();
+      const gens = D.crossings.features.filter(f => f.properties.kind === 'generator');
+      return `
+        <h2 class="headline">${g.longest} m with no safe place to cross</h2>
+        <p class="lede">The only crossings are at the two junctions. In between are a bus stop, a mosque and a school that people
+        cross to reach every day. The guidebook asks for a crossing every <strong>80–150 m</strong> on a street like this — at least
+        <strong>${g.need} more</strong>.</p>
+        <p class="lede">The flyover ramp wall fills the middle of the road for the first stretch, so new crossings can only go
+        <strong>${g.feas.from_m}–${g.feas.to_m} m</strong> from the Water Tank junction — which is where most people need them.
+        The flyover contract adds crossings only at the junctions.</p>
+        ${key([
+          ['<span class="sw sw-gap"></span>', 'Stretch with no crossing'],
+          ['<span class="sw sw-ok"></span>', 'A new crossing could go here'],
+          ['<span class="sw sw-wall"></span>', 'Flyover ramp wall — no crossing possible'],
+          ['<span class="sw sw-need"></span>', 'Places people cross the road to reach'],
+          ['<span class="sw sw-cross"></span>', 'Zebra crossing · <span class="sw sw-jn" style="margin-left:4px"></span>&nbsp;junction, crossing unclear'],
+        ])}
+        ${fold('Where people need to cross', `<ol class="rows">${gens.map(f => {
+          const p = f.properties, wall = p.chainage_m > g.wall.from && p.chainage_m < g.wall.to;
+          return `<li data-ll="${f.geometry.coordinates}"><span class="at">${p.chainage_m} m</span><span><span class="nm">${esc(p.name)}</span>
+            <br><span class="meta">${esc(SIDE[p.side.split(' ')[0]] || p.side)}${wall ? ' · beside the ramp wall' : ''}</span></span></li>`; }).join('')}</ol>
+          <p class="small" style="margin-top:8px">Distances are from the Water Tank junction. Tap a row to zoom in.</p>`, true, gens.length)}
+        ${fold('How we know this', `<ul>
+          <li>Existing crossings and side streets: OpenStreetMap. The zebra at junction A is mapped; junction B has signals but no mapped crossing — to check on the walk.</li>
+          <li>Ramp wall (${g.wall.from}–${g.wall.to} m, ${g.wall.width} m wide): B-SMILE flyover contract, Schedule A.</li>
+          <li>Crossing spacing of 80–150 m for mixed-use streets: GIZ/MoHUA Tactical Urbanism Guidebook (after IRC 103).</li>
+          <li>Places people cross to reach: bus stops, side streets and destinations within 80 m of the road.</li></ul>`)}`;
+    } },
+
+  { id: 'footpaths', tab: 'Footpaths',
+    layers: { footpaths: true, wall: true },
+    view: fitRoad,
+    render() {
+      const fp = fpStats(), rows = D.contract.inventory.rows;
+      const cls = v => v == null ? 'f-unknown' : v === 0 ? 'f-none' : v < 1.8 ? 'f-low' : v < 2.5 ? 'f-mid' : 'f-ok';
+      const cell = (r, v) => `<div class="cell ${cls(v)}" data-ch="${r.ch}" title="${fromA(r.ch)}">${v === 0 ? '—' : v == null ? '?' : v.toFixed(1)}</div>`;
+      return `
+        <h2 class="headline">Footpaths are narrow — and vanish beside the ramp wall</h2>
+        <p class="lede">Footpaths were measured every 100 m. <strong>${fp.below} of ${fp.total}</strong> measurements are narrower than the
+        2.5 m a busy street needs, and at <strong>${fp.none.join(', ')} m</strong> there is no footpath on either side, so people walk in the road.</p>
+        <div class="strip">
+          <span></span>${rows.map(r => `<span class="ax">${r.ch} m</span>`).join('')}
+          <span class="lab">${SIDE.NW}</span>${rows.map(r => cell(r, r.fp_rhs)).join('')}
+          <span class="lab">${SIDE.SE}</span>${rows.map(r => cell(r, r.fp_lhs)).join('')}
+        </div>
+        <p class="small" style="margin:0 0 14px">Footpath width in metres, by distance from the Water Tank junction. Tap a cell to see it on the map.</p>
+        ${key([
+          ['<span class="sw sw-dot" style="background:#2f9e44"></span>', '2.5 m or more — meets the standard'],
+          ['<span class="sw sw-dot" style="background:#fab005"></span>', '1.8–2.5 m — too narrow for a busy street'],
+          ['<span class="sw sw-dot" style="background:#f76707"></span>', 'Under 1.8 m — below the minimum'],
+          ['<span class="sw sw-dot" style="background:#c92a2a"></span>', 'No footpath'],
+        ])}
+        ${fold('Full survey table', `<table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">
+          <tr class="meta"><td>From A</td><td>Road (car lanes + middle)</td><td>Wall to wall</td></tr>
+          ${rows.map(r => `<tr><td>${r.ch} m</td><td>${r.cw_lhs != null ? `${r.cw_lhs} + ${r.median} + ${r.cw_rhs} m` : `${r.cw_total} m, undivided`}</td><td>${r.row} m</td></tr>`).join('')}</table>`)}
+        ${fold('How we know this', `<ul>
+          <li>Widths: chainage-wise survey in the B-SMILE flyover contract (Schedule A, Annex I). To be spot-checked on the walk.</li>
+          <li>Standard: IRC 103 via the GIZ/MoHUA guidebook — 2.5 m for mixed-use streets, 1.8 m minimum anywhere.</li>
+          <li>The contract labels sides LHS/RHS. We read LHS as the ${SIDE.SE} (left when walking from A to B). If the walk shows otherwise, the sides swap.</li>
+          <li>At 300 m the survey records the road as undivided, while the contract's drawing near there shows a median — another thing to check.</li></ul>`)}`;
+    } },
+
+  { id: 'street', tab: 'Street',
+    layers: { construction: true, wall: true },
+    view: () => map.flyTo({ center: sectionPoint(), zoom: 17.2, padding: pad(), duration: 900 }),
+    enter() { sectionMarker = new maplibregl.Marker({ element: Object.assign(document.createElement('div'), { className: 'xs-marker', textContent: 'Street section here' }) }).setLngLat(sectionPoint()).addTo(map); },
+    leave() { sectionMarker?.remove(); sectionMarker = null; },
+    render() {
+      const tr = trafficStats();
+      return `
+        <h2 class="headline">The flyover contract disagrees with itself</h2>
+        <p class="lede">Its drawing keeps almost all the road for vehicles. Its written text describes a much narrower road with
+        wider footpaths. The street-level design is still to be finalised — a low-cost trial now can show which works.</p>
+        ${sectionsHTML()}
+        <div class="callout"><strong>Why a narrower road could work:</strong> about ${fmt(tr.t.adt_2025)} vehicles a day use this corridor now.
+        The flyover's traffic study expects ${fmt(tr.t.diverted_tollable)}–${fmt(tr.t.diverted_od)} of them to use the tolled flyover from ${tr.t.toll_from},
+        leaving roughly ${fmt(tr.low)}–${fmt(tr.high)} at street level — about half of today.</div>
+        ${fold('How we know this', `<ul>
+          <li><em>Today</em>: existing cross-section at 330 m, contract Schedule A, Annex V.</li>
+          <li><em>Contract drawing</em>: typical cross-section TCS-09 at 330 m, with a 17.2 m flyover deck 5.5 m above.</li>
+          <li><em>Contract text</em>: Schedule B, clause 4(ii) — an 18 m road of 3 m footpath, 1.5 m buffer, 9 m carriageway, 1.5 m buffer, 3 m footpath. It does not say how this fits the ~30 m width or the flyover pillars.</li>
+          <li><em>Trial option</em>: our proposal, using cones, barricades and paint as in DULT's Siddaiah Road trial; lane width 3.5 m per IRC.</li>
+          <li>Traffic: the flyover's OD and toll analysis, for the whole Indiranagar–Silk Board corridor, not a count on this stretch.</li></ul>`)}`;
+    } },
+
+  { id: 'check', tab: 'Site check',
+    layers: { construction: true },
+    view: fitRoad,
+    render() {
+      const sc = D.scorecard, C = sc.criteria;
+      const n = r => C.filter(c => c.rating === r).length;
+      const known = C.filter(c => c.rating !== 'verify'), todo = C.filter(c => c.rating === 'verify');
+      const seg = (r, col) => `<i style="width:${n(r) / C.length * 100}%;background:${col}"></i>`;
+      const item = c => `<details class="chk r-${c.rating}"><summary><span class="ic"></span><span>${esc(c.question)}</span><span class="rt">${esc(sc.ratings[c.rating].replace(' on the walk', ''))}</span></summary>
+        <div class="fold-body">${esc(c.finding)}<br><em>${esc(c.source)}</em></div></details>`;
+      return `
+        <h2 class="headline">Is the site ready for a trial? ${known.length} of ${C.length} checks done</h2>
+        <p class="lede">The guidebook's site checklist. Most of the street is a good fit; the flyover construction is the one strong
+        reason for caution. The rest needs a walk along the road — ideally at the morning or evening rush.</p>
+        <div class="progress">${seg('favourable', '#2f9e44')}${seg('acceptable', '#e8a200')}${seg('not_favourable', '#c92a2a')}</div>
+        <div class="tally"><span style="--c:#2f9e44">${n('favourable')} good</span><span style="--c:#e8a200">${n('acceptable')} okay</span>
+          <span style="--c:#c92a2a">${n('not_favourable')} a concern</span><span style="--c:#adb5bd">${todo.length} to check</span></div>
+        <h3>To check on the walk</h3>${todo.map(item).join('')}
+        <h3>Already known</h3>${known.map(item).join('')}
+        <p class="small" style="margin-top:12px">Tap a row for the evidence. Ratings live in <code>data/scorecard.json</code> — update it after the walk.</p>`;
+    } },
+];
+
+// street-section helpers
+function sectionPoint() {
+  const t = D.crossings.features.filter(f => f.properties.kind === 'tick');
+  const a = t.find(f => f.properties.chainage_m === 300).geometry.coordinates, b = t.find(f => f.properties.chainage_m === 350).geometry.coordinates;
+  const k = (D.contract.sections.ch - 300) / 50;
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+}
+const PART = {
+  drain: { c: '#ced4da', t: '#1d1d1b', name: 'Drain' }, foot: { c: '#f2c979', t: '#1d1d1b', name: 'Footpath' },
+  ext: { c: '#f59f00', t: '#1d1d1b', name: 'Wider footpath (trial)' }, bay: { c: '#74c0fc', t: '#1d1d1b', name: 'Bus stop / vending / parking' },
+  buffer: { c: '#b2f2bb', t: '#1d1d1b', name: 'Buffer' }, car: { c: '#495057', t: '#fff', name: 'Vehicle lanes' },
+  median: { c: '#868e96', t: '#fff', name: 'Middle strip' }, pier: { c: '#212529', t: '#fff', name: 'Flyover pillar' },
+  unspecified: { c: 'none', t: '#6b6a65', name: 'Not specified' },
+};
+const SECTION_WHY = {
+  existing: 'Most of the width goes to vehicles.',
+  tcs09: 'Same footpaths as today; vehicles keep almost everything.',
+  text: 'A narrow road with wide footpaths — but where the other 12 m goes is not said.',
+  tactical: 'Two lanes each way, wider footpaths and space for bus stops and vendors — testable in a week with cones and paint.',
+};
+function sectionsHTML() {
+  const items = D.contract.sections.items, full = Math.max(...items.map(it => it.parts.reduce((a, p) => a + p[1], 0)));
+  const W = 300, H = 34, k = W / full;
+  const bars = items.map(it => {
+    let x = 0, walk = 0, drive = 0;
+    const rects = it.parts.map(([type, m]) => {
+      const s = PART[type], w = m * k;
+      const r = `<rect x="${x.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${s.c}" ${type === 'unspecified' ? 'stroke="#adb5bd" stroke-dasharray="3 2"' : 'stroke="#fff" stroke-width=".6"'}><title>${s.name}: ${m} m</title></rect>` +
+        (w >= 13 ? `<text x="${(x + w / 2).toFixed(2)}" y="${H / 2 + 4}" text-anchor="middle" font-size="10" fill="${s.t}">${+m.toFixed(2)}</text>` : '');
+      x += w; if (type === 'foot' || type === 'ext') walk += m; if (type === 'car') drive += m;
+      return r;
+    }).join('');
+    return `<div class="xs"><div class="xs-h">${esc(it.title)}<span>people ${+walk.toFixed(1)} m · vehicles ${+drive.toFixed(1)} m</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(it.title)}: ${it.parts.map(p => PART[p[0]].name + ' ' + p[1] + ' m').join(', ')}">${rects}</svg>
+      <div class="xs-why">${esc(SECTION_WHY[it.id] || '')}</div></div>`;
+  }).join('');
+  const used = new Set(items.flatMap(it => it.parts.map(p => p[0])));
+  const legend = `<ul class="xkey">${Object.entries(PART).filter(([t]) => used.has(t)).map(([t, s]) =>
+    `<li><i style="background:${s.c};${t === 'unspecified' ? 'border:1px dashed #adb5bd' : ''}"></i>${s.name}</li>`).join('')}</ul>`;
+  return `<p class="small" style="margin:0 0 8px">Cross-sections 330 m from the Water Tank junction, drawn to scale across the ~30 m between property walls (numbers in metres).</p>${bars}${legend}`;
+}
+
+/* tabs, navigation, deep links */
+const tabsEl = document.getElementById('tabs'), body = document.getElementById('body');
+tabsEl.innerHTML = SCENES.map(s => `<button class="tab" role="tab" id="tab-${s.id}" data-id="${s.id}" aria-selected="false">${s.tab}</button>`).join('');
+let current = null;
+function show(id, { fly = true } = {}) {
+  const i = Math.max(0, SCENES.findIndex(s => s.id === id)), s = SCENES[i];
+  if (current && current !== s) current.leave?.();
+  const entering = current !== s;
+  current = s;
+  tabsEl.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === s.id)));
+  document.getElementById(`tab-${s.id}`).scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  body.setAttribute('aria-labelledby', `tab-${s.id}`);
+  body.innerHTML = s.render(); body.scrollTop = 0;
+  Object.keys(vis).forEach(g => { if (g !== 'sat') vis[g] = !!s.layers[g]; });
+  if (map.getLayer('poi')) applyVis(); else refreshCats();
+  if (entering) s.enter?.();
+  if (fly) s.view();
+  document.getElementById('prev').disabled = i === 0;
+  document.getElementById('next').disabled = i === SCENES.length - 1;
+  document.getElementById('next').textContent = i < SCENES.length - 1 ? `${SCENES[i + 1].tab} →` : 'Next →';
+  if (location.hash.slice(1) !== s.id) history.replaceState(null, '', '#' + s.id);
+}
+tabsEl.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) show(t.dataset.id); });
+tabsEl.addEventListener('keydown', e => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const i = SCENES.indexOf(current) + (e.key === 'ArrowRight' ? 1 : -1);
+  if (SCENES[i]) { show(SCENES[i].id); document.getElementById(`tab-${SCENES[i].id}`).focus(); }
 });
-map.on('click', 'poi', e => {
-  const p = e.features[0].properties;
-  new maplibregl.Popup({ offset: 8 }).setLngLat(e.features[0].geometry.coordinates).setHTML(
-    `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(p.category)}` +
-    `<br><span class="pop-k">≈ ${p.dist_m} m from the road · <a href="https://www.openstreetmap.org/${esc(p.osm)}" target="_blank" rel="noopener">OSM</a></span>`).addTo(map);
+document.getElementById('prev').onclick = () => { const i = SCENES.indexOf(current); if (i > 0) show(SCENES[i - 1].id); };
+document.getElementById('next').onclick = () => { const i = SCENES.indexOf(current); if (i < SCENES.length - 1) show(SCENES[i + 1].id); };
+body.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]'); if (go) return show(go.dataset.go);
+  const row = e.target.closest('[data-ll]'); if (row) return flyTo(row.dataset.ll.split(',').map(Number));
+  const cell = e.target.closest('[data-ch]');
+  if (cell) { const f = D.contractGeo.features.find(f => f.properties.kind === 'survey' && f.properties.chainage_m === +cell.dataset.ch); if (f) flyTo(f.geometry.coordinates); }
 });
-['stretch-line', 'poi'].forEach(id => {
-  map.on('mouseenter', id, () => map.getCanvas().style.cursor = 'pointer');
-  map.on('mouseleave', id, () => map.getCanvas().style.cursor = '');
+addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== current?.id) show(id); });
+
+// phones: tap the handle to collapse/expand the sheet
+document.getElementById('grab').onclick = () => document.getElementById('story').classList.toggle('collapsed');
+
+/* layers control */
+const layersBtn = document.getElementById('layers-btn'), layersEl = document.getElementById('layers');
+layersBtn.onclick = () => { layersEl.hidden = !layersEl.hidden; layersBtn.setAttribute('aria-expanded', String(!layersEl.hidden)); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !layersEl.hidden) { layersEl.hidden = true; layersBtn.setAttribute('aria-expanded', 'false'); layersBtn.focus(); } });
+layersEl.addEventListener('change', e => {
+  const g = e.target.dataset.g, c = e.target.dataset.cat;
+  if (g) vis[g] = e.target.checked;
+  if (c) { catOn[c] = e.target.checked; if (e.target.checked) vis.places = true; }
+  applyVis();
 });
+document.getElementById('bm-map').onclick = () => { vis.sat = false; applyVis(); };
+document.getElementById('bm-sat').onclick = () => { vis.sat = true; applyVis(); };
+const catList = document.getElementById('cat-list');
+catList.innerHTML = Object.entries(CATS).map(([k, c]) =>
+  `<label><input type="checkbox" data-cat="${k}" checked><span class="sw sw-dot" style="background:${c};border-color:#fff;width:11px;height:11px"></span>${CAT_LABEL[k]}<span class="n" data-n="${k}"></span></label>`).join('');
+function refreshCats() {
+  if (!D.poi) return;
+  for (const k of Object.keys(CATS)) {
+    catList.querySelector(`[data-n="${k}"]`).textContent = D.poi.features.filter(f => f.properties.category === k && f.properties.dist_m <= poiRange()).length;
+    catList.querySelector(`[data-cat="${k}"]`).checked = catOn[k];
+  }
+}
+
+/* about the data */
+const about = document.getElementById('about');
+document.getElementById('about-open').onclick = () => {
+  const c = D.contract?.source || {};
+  document.getElementById('about-body').innerHTML = `
+    <h3>What this is</h3>
+    <p>A study of 100 Feet Road (Mahayogi Vemana Road) between the Koramangala Water Tank junction (A) and the Madiwala underpass (B),
+    following the site-selection and site-appraisal steps of two tactical urbanism guidebooks. Distances along the road are measured
+    from junction A.</p>
+    <h3>Sources</h3><ul>
+      <li>Directorate of Urban Land Transport (DULT), Govt. of Karnataka — <em>Guidebook for Tactical Urbanism</em>, 2022.</li>
+      <li>GIZ / MoHUA — <em>A Tactical Urbanism Guidebook</em>, 2020 (site scoring sheet, crossing spacing, footpath widths after IRC 103).</li>
+      <li>${esc(c.client || 'B-SMILE')} — elevated-corridor tender, Schedules A–I (${esc(c.status || '')}) and its OD &amp; toll analysis.</li>
+      <li>OpenStreetMap contributors — road geometry, crossings, places nearby, construction.</li>
+      <li>Esri World Imagery — satellite view and visual checks.</li></ul>
+    <h3>Known gaps</h3><ul>
+      <li>OpenStreetMap misses most street vendors and small shops.</li>
+      <li>The contract is a tender: chainages and designs may change.</li>
+      <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
+      <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
+      <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items still need the walk.</li></ul>
+    <h3>For developers</h3>
+    <p class="small">Data lives in <code>data/</code>; rebuild scripts are in <code>scripts/</code> (each has usage notes at the top).</p>`;
+  about.showModal();
+};
+document.getElementById('about-close').onclick = () => about.close();
+about.addEventListener('click', e => { if (e.target === about) about.close(); });
+
+/* start */
+load.then(() => show(location.hash.slice(1) || 'overview'))
+  .catch(err => { body.innerHTML = `<p class="lede">Sorry — the map data didn't load (${esc(err.message)}). If you opened the file directly, serve the folder with <code>python3 -m http.server</code>.</p>`; });
 </script>
 </body>
 </html>

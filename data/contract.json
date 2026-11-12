@@ -1,0 +1,104 @@
+{
+  "source": {
+    "title": "Construction of Proposed Elevated Corridor from Sarjapura Junction to Electronic City Flyover integrating Ejipura Flyover, Madiwala Underpass, St. John Junction and Silk Board Junction - Schedules A, B, C, D, F, H & I",
+    "client": "Bengaluru Smart Infrastructure Limited (B-SMILE)",
+    "status": "Tender purpose only; drawings dated 21-10-2026. Chainages may change in the final design.",
+    "file": "docs/Ejipura to Silk Board Schedule A B C D F H I.pdf",
+    "traffic_file": "docs/OD and Toll Analysis OMR to Silk Board.pdf"
+  },
+  "chainage_note": "Contract chainage 0 = Sarjapura Road junction (our Junction A); 458 m = Madivala Underpass T-junction (our Junction B). LHS/RHS read as left/right looking from A towards B, i.e. LHS = SE side, RHS = NW side.",
+  "inventory": {
+    "ref": "Schedule A, Annex I - chainage-wise carriageway inventory (rows 112-116)",
+    "rows": [
+      { "ch": 0,   "cw_lhs": 9.5,  "median": 2.5,  "cw_rhs": 9.1,  "cw_total": 21.1, "fp_lhs": 2.0, "fp_rhs": 2.4, "drain_lhs": 2.4, "drain_rhs": 1.3, "row": 29.2 },
+      { "ch": 100, "cw_lhs": 6.7,  "median": 12.0, "cw_rhs": 10.2, "cw_total": 28.9, "fp_lhs": 1.5, "fp_rhs": 1.0, "drain_lhs": null, "drain_rhs": null, "row": 31.4 },
+      { "ch": 200, "cw_lhs": 6.4,  "median": 19.1, "cw_rhs": 5.1,  "cw_total": 30.6, "fp_lhs": 0,   "fp_rhs": 0,   "drain_lhs": null, "drain_rhs": null, "row": 30.6 },
+      { "ch": 300, "cw_lhs": null, "median": null, "cw_rhs": null, "cw_total": 24.4, "fp_lhs": 1.7, "fp_rhs": 3.8, "drain_lhs": null, "drain_rhs": null, "row": 29.9, "note": "Recorded as a single 24.4 m carriageway; the typical drawing at 330 m shows 11 + 0.6 + 11 m." },
+      { "ch": 400, "cw_lhs": 10.8, "median": 0.7,  "cw_rhs": 10.7, "cw_total": 22.2, "fp_lhs": 2.2, "fp_rhs": 3.1, "drain_lhs": 1.4, "drain_rhs": 1.0, "row": 29.9 }
+    ],
+    "drains": "RCC covered drains on both sides along 0-400 m"
+  },
+  "footpath_standard": {
+    "ref": "IRC 103:2012 via GIZ/MoHUA guidebook",
+    "residential_min": 1.8,
+    "commercial_min": 2.5
+  },
+  "re_wall": {
+    "ref": "Schedule A, item 19 - existing RE wall",
+    "from": 45, "to": 225, "width": 8.5,
+    "note": "Reinforced-earth approach of the Ejipura flyover, on the Madivala underpass side. A solid earth-filled wall in the middle of the road - nobody can cross through it."
+  },
+  "ramp": {
+    "ref": "Schedule B, ix (Ramps) and xi (cross-section table, row 1)",
+    "from": 0, "to": 190, "approach_at_grade": 80, "width": 7,
+    "note": "Up-ramp to Silk Board from Sarjapura Road: 110 m viaduct + 80 m approach (RE wall, TCS-17)."
+  },
+  "viaduct": {
+    "ref": "Schedule B, xi (cross-section table, row 2)",
+    "from": 0, "to": 360, "width": 8.5, "clearance": 5.5,
+    "note": "Split flyover Ejipura to Madivala rotary, LHS + RHS, 8.5 m each, 5.5 m above the at-grade road. Elevated rotary at Madivala junction."
+  },
+  "pedestrian_provisions": {
+    "ref": "Schedule B x, Schedule C (pedestrian facilities, bus bays)",
+    "items": [
+      "Raised pedestrian crossings at each junction (locations to be approved by the Authority Engineer)",
+      "Pedestrian underpass / overpass / walkway: Nil",
+      "Bus shelters on the project highway: Nil",
+      "Mid-block crossings: none listed"
+    ]
+  },
+  "sections": {
+    "ch": 330,
+    "items": [
+      {
+        "id": "existing",
+        "title": "Today",
+        "ref": "Schedule A, Annex V - existing cross section at Ch 0+330",
+        "parts": [
+          ["drain", 1.2, "Drain"], ["foot", 2.5, "Footpath"], ["car", 11.0, "Carriageway"],
+          ["median", 0.6, "Median"],
+          ["car", 11.0, "Carriageway"], ["foot", 2.5, "Footpath"], ["drain", 1.2, "Drain"]
+        ]
+      },
+      {
+        "id": "tcs09",
+        "title": "Contract drawing (TCS-09)",
+        "ref": "Schedule B, Appendix B-I - TCS-09, typical cross section at Ch 0+330; 17.2 m deck above at 5.5 m clearance",
+        "parts": [
+          ["drain", 1.2, "Drain"], ["foot", 2.5, "Footpath"], ["car", 10.15, "Carriageway"],
+          ["pier", 2.0, "Pier"],
+          ["car", 10.15, "Carriageway"], ["foot", 2.5, "Footpath"], ["drain", 1.2, "Drain"]
+        ]
+      },
+      {
+        "id": "text",
+        "title": "Contract text (Schedule B)",
+        "ref": "Schedule B, 4(ii) - at-grade formation 18 m: 3.0 footpath + 1.5 buffer + 2 x 4.5 carriageway + 1.5 + 3.0. The text does not say how these 18 m sit within the ~30 m right-of-way or around the piers.",
+        "parts": [
+          ["unspecified", 6.0, "Not specified"],
+          ["foot", 3.0, "Footpath"], ["buffer", 1.5, "Buffer"], ["car", 9.0, "Carriageway"],
+          ["buffer", 1.5, "Buffer"], ["foot", 3.0, "Footpath"],
+          ["unspecified", 6.0, "Not specified"]
+        ]
+      },
+      {
+        "id": "tactical",
+        "title": "Tactical trial option (to test)",
+        "ref": "Existing kerbs kept. Cones/barricades and paint test a 7 m carriageway per direction (2 x 3.5 m, IRC), a 2 m footpath extension and 2 m kerbside bays for bus stops, vending or parking (DULT Siddaiah Road approach).",
+        "parts": [
+          ["drain", 1.2, "Drain"], ["foot", 2.5, "Footpath"], ["ext", 2.0, "Footpath ext."], ["bay", 2.0, "Bay"],
+          ["car", 7.0, "Carriageway"], ["median", 0.6, "Median"], ["car", 7.0, "Carriageway"],
+          ["bay", 2.0, "Bay"], ["ext", 2.0, "Footpath ext."], ["foot", 2.5, "Footpath"], ["drain", 1.2, "Drain"]
+        ]
+      }
+    ]
+  },
+  "traffic": {
+    "ref": "OD and Toll Analysis - Indiranagar to Silk Board corridor (to & fro), whole route rather than this stretch",
+    "adt_2025": 27300,
+    "share": { "two_wheelers": 0.43, "cars": 0.29, "autos": 0.13, "buses": 0.03 },
+    "diverted_od": 16842,
+    "diverted_tollable": 12357,
+    "toll_from": "2028-29"
+  }
+}
