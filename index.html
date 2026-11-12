@@ -7,6 +7,8 @@
 <meta name="description" content="A tactical urbanism study of 100 Feet Road (Mahayogi Vemana Road) between the Koramangala Water Tank junction and Madiwala underpass, Bengaluru.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
 <style>
   :root {
     --bg: #f6f4ef; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a65; --line: #e6e2d9; --soft: #f4f1ea;
@@ -20,13 +22,26 @@
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
     font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   #map { position: absolute; inset: 0; }
+  /* invisible box over the part of the map not covered by the panel — used to spotlight the map in the tour */
+  #map-area { position: absolute; top: 16px; bottom: 16px; left: 412px; right: 16px; pointer-events: none; z-index: 0; }
   button { font: inherit; color: inherit; }
 
   /* ---------- story panel ---------- */
   .story { position: absolute; top: 16px; left: 16px; bottom: 16px; width: 380px; z-index: 2;
     display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line);
     border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.14); overflow: hidden; }
-  .story-head { padding: 16px 20px 0; }
+  .story-head { padding: 16px 20px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .tour-btn { display: inline-flex; align-items: center; gap: 5px; flex: none; border: 1px solid var(--line); background: var(--panel);
+    border-radius: 999px; padding: 4px 10px 4px 7px; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 2px; }
+  .tour-btn:hover { color: var(--ink); background: var(--soft); }
+  .tour-btn svg { width: 16px; height: 16px; }
+
+  /* guided tour (driver.js) — match the page's type */
+  .driver-popover { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; border-radius: 12px; max-width: 320px; padding: 16px 18px; }
+  .driver-popover-title { font-size: 16px; font-weight: 700; }
+  .driver-popover-description { font-size: 14px; line-height: 1.5; color: #3d3d3a; }
+  .driver-popover-footer button { font-size: 13px; padding: 5px 10px; border-radius: 7px; text-shadow: none; }
+  .driver-popover-progress-text { font-size: 12px; }
   .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
   .story-head h1 { font-size: 17px; margin: 0; line-height: 1.3; }
   .grab { display: none; }
@@ -173,6 +188,7 @@
   @media (max-width: 720px) {
     .story { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 56vh; border-radius: 14px 14px 0 0; transition: height .2s; }
     .story.collapsed { height: 132px; }
+    #map-area { top: 8px; left: 8px; right: 8px; bottom: calc(56vh + 8px); }
     .story.collapsed .story-body, .story.collapsed .story-foot { display: none; }
     .grab { display: block; width: 100%; border: 0; background: none; padding: 8px 0 0; cursor: pointer; }
     .grab::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto; }
@@ -186,13 +202,20 @@
 </head>
 <body>
 <div id="map" role="region" aria-label="Map of the study stretch"></div>
+<div id="map-area" aria-hidden="true"></div>
 
 <!-- story panel -->
 <aside class="story" id="story" aria-label="Study findings">
   <button class="grab" id="grab" aria-label="Expand or collapse the panel"></button>
   <div class="story-head">
-    <p class="eyebrow">Tactical urbanism study · Bengaluru</p>
-    <h1>100 Feet Road, Madiwala</h1>
+    <div>
+      <p class="eyebrow">Tactical urbanism study · Bengaluru</p>
+      <h1>100 Feet Road, Madiwala</h1>
+    </div>
+    <button class="tour-btn" id="tour-btn" title="Take a quick tour of this page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg>
+      Tour
+    </button>
   </div>
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div class="story-body" id="body" role="tabpanel" tabindex="0"></div>
@@ -748,8 +771,53 @@ document.getElementById('about-open').onclick = () => {
 document.getElementById('about-close').onclick = () => about.close();
 about.addEventListener('click', e => { if (e.target === about) about.close(); });
 
+/* guided tour (driver.js) — runs on the Overview tab; auto-starts once for first-time visitors */
+const TOUR_KEY = 'madiwala-tour-seen';
+const seenTour = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch { return false; } };
+const markTourSeen = () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch {} };
+function startTour() {
+  if (!window.driver?.js?.driver) return;                 // library failed to load: page still works without the tour
+  if (current?.id !== 'overview') show('overview');
+  document.getElementById('story').classList.remove('collapsed');
+  if (!layersEl.hidden) layersBtn.click();
+  const phone = innerWidth <= 720;
+  const tour = window.driver.js.driver({
+    showProgress: true, progressText: '{{current}} of {{total}}',
+    nextBtnText: 'Next →', prevBtnText: '← Back', doneBtnText: 'Start exploring',
+    overlayOpacity: 0.6, stagePadding: 6, stageRadius: 10, smoothScroll: true,
+    onDestroyed: markTourSeen,
+    steps: [
+      { popover: { title: 'Welcome',
+          description: 'This page studies a 460 m stretch of 100 Feet Road in Madiwala and asks how it could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
+      { element: '#tabs', popover: { title: 'Five short chapters', side: 'bottom', align: 'start',
+          description: 'Each tab tells one part of the story — the road, crossing it, its footpaths, the flyover plans and whether it is ready for a trial. The map changes to match.' } },
+      { element: '.kpis', popover: { title: 'The key findings', side: phone ? 'top' : 'right', align: 'start',
+          description: 'The three numbers that matter most. Tap any card to jump to its chapter.' } },
+      { element: '#body .key', popover: { title: 'What the map is showing', side: phone ? 'top' : 'right', align: 'start',
+          description: 'Each chapter has its own small key, covering only what is on the map right now.' } },
+      { element: '#body details.fold', popover: { title: 'More detail when you want it', side: phone ? 'top' : 'right', align: 'start',
+          description: 'Lists, tables and sources are folded away. Tap a heading to open it.' } },
+      { element: '#map-area', popover: { title: 'The map', side: 'over', align: 'center',
+          description: 'Drag to move, pinch or scroll to zoom. Tap anything coloured — a crossing, a footpath dot, a place — to see what it is.' } },
+      { element: '#layers-btn', popover: { title: 'Choose what to see', side: 'bottom', align: 'end',
+          description: 'Switch to satellite view, or turn layers and types of places on and off yourself.' } },
+      { element: '.story-foot', popover: { title: 'Find your way', side: 'top', align: 'center',
+          description: 'Step through the chapters in order, or open "About the data" to see where everything comes from.' } },
+      { element: '#tour-btn', popover: { title: 'Come back any time', side: 'bottom', align: 'end',
+          description: 'Press "Tour" to see this again.' } },
+    ],
+  });
+  tour.drive();
+}
+document.getElementById('tour-btn').onclick = startTour;
+
 /* start */
-load.then(() => show(location.hash.slice(1) || 'overview'))
+load.then(() => {
+  const first = location.hash.slice(1) || 'overview';
+  show(first);
+  // first visit on the landing view: start the tour once the map has drawn
+  if (!seenTour() && first === 'overview') map.once('idle', () => setTimeout(startTour, 400));
+})
   .catch(err => { body.innerHTML = `<p class="lede">Sorry — the map data didn't load (${esc(err.message)}). If you opened the file directly, serve the folder with <code>python3 -m http.server</code>.</p>`; });
 </script>
 </body>
