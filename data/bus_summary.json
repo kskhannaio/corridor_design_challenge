@@ -1,0 +1,16 @@
+{
+ "source": "BMTC GTFS (Vonter, from the Namma BMTC 2.0 app; ODbL) and KGIS bus stops via OpenCity",
+ "weekday": "Monday",
+ "peak": "08:00-09:00",
+ "sides": {
+  "AB:A>B": 5,
+  "AB:B>A": 383,
+  "BC:B>C": 1338,
+  "CA:A>C": 338,
+  "CA:C>A": 1655
+ },
+ "stops_on_loop": 9,
+ "buses_day_at_loop_stops": 6517,
+ "buses_peak_at_loop_stops": 476,
+ "routes_at_loop_stops": 265
+}
