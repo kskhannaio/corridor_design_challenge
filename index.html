@@ -253,7 +253,8 @@
   <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
   <h4>Buses</h4>
-  <label><input type="checkbox" data-g="buses"> Bus stops &amp; routes</label>
+  <label><input type="checkbox" data-g="busStops"> Bus stops</label>
+  <label><input type="checkbox" data-g="busRoutes"> Bus routes</label>
   <h4>Places nearby</h4>
   <label><input type="checkbox" data-g="places"> Show places</label>
   <label class="sub"><input type="checkbox" id="tg-listed" checked> Include business listings <span class="n">not verified</span></label>
@@ -311,7 +312,8 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 const GROUPS = {
   crossings:    ['ct-zone', 'xg-gap', 'xg-gap-label', 'xg-desire', 'xg-tick', 'xg-tick-label', 'xg-gen', 'xg-cross'],
   footpaths:    ['ct-fp', 'ct-fp-label'],
-  buses:        ['bus-route-casing', 'bus-route', 'bus-stop', 'bus-stop-label'],
+  busRoutes:    ['bus-route-casing', 'bus-route'],
+  busStops:     ['bus-stop', 'bus-stop-label'],
   wall:         ['ct-wall'],
   construction: ['cons-casing', 'cons', 'cons-stripes', 'cons-label'],
   places:       ['poi', 'poi-label'],
@@ -319,7 +321,7 @@ const GROUPS = {
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
 };
-const vis = { crossings: false, buses: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
+const vis = { crossings: false, busRoutes: false, busStops: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
 let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
@@ -653,7 +655,7 @@ const SCENES = [
     } },
 
   { id: 'buses', tab: 'Buses',
-    layers: { buses: true },
+    layers: { busStops: true, busRoutes: true },
     view: fitRoad,
     render() {
       const B = D.busStops.features.map(f => ({ ...f.properties, ll: f.geometry.coordinates }));
