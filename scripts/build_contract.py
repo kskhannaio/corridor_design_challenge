@@ -58,7 +58,7 @@ def band(a, b, width):
     return [[U(p) for p in ring]]
 
 feats = []
-F = lambda geom, **props: feats.append({"type": "Feature", "properties": {**props, 'side': 'AB'}, "geometry": geom})
+F = lambda geom, **props: feats.append({"type": "Feature", "properties": {'side': 'AB', 'road': 'AB', **props}, "geometry": geom})
 
 w = C['re_wall']
 F({"type": "Polygon", "coordinates": band(w['from'], w['to'], w['width'])}, kind='re_wall',
