@@ -252,6 +252,8 @@
   <h4>Walking distance from the road</h4>
   <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
+  <h4>Buses</h4>
+  <label><input type="checkbox" data-g="buses"> Bus stops &amp; routes</label>
   <h4>Places nearby</h4>
   <label><input type="checkbox" data-g="places"> Show places</label>
   <label class="sub"><input type="checkbox" id="tg-listed" checked> Include business listings <span class="n">not verified</span></label>
@@ -309,6 +311,7 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 const GROUPS = {
   crossings:    ['ct-zone', 'xg-gap', 'xg-gap-label', 'xg-desire', 'xg-tick', 'xg-tick-label', 'xg-gen', 'xg-cross'],
   footpaths:    ['ct-fp', 'ct-fp-label'],
+  buses:        ['bus-route-casing', 'bus-route', 'bus-stop', 'bus-stop-label'],
   wall:         ['ct-wall'],
   construction: ['cons-casing', 'cons', 'cons-stripes', 'cons-label'],
   places:       ['poi', 'poi-label'],
@@ -316,7 +319,7 @@ const GROUPS = {
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
 };
-const vis = { crossings: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
+const vis = { crossings: false, buses: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
 let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
@@ -338,9 +341,10 @@ let D = {};   // all loaded data
 const load = Promise.all([
   'data/stretch.geojson', 'data/poi.geojson', 'data/catchments.geojson', 'data/crossings.geojson',
   'data/construction.geojson', 'data/scorecard.json', 'data/contract.json', 'data/contract.geojson',
+  'data/bus_stops.geojson', 'data/bus_routes.geojson', 'data/bus_summary.json',
 ].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
-  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo]) =>
-    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo }));
+  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary]) =>
+    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary }));
 
 function addOverlays() {
   const K = k => ['==', ['get', 'kind'], k];
@@ -437,6 +441,24 @@ function addOverlays() {
       'text-anchor': ['match', ['get', 'side'], 'SE', 'left', 'right'], 'text-offset': ['match', ['get', 'side'], 'SE', ['literal', [1.1, 0]], ['literal', [-1.1, 0]]] },
     paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
 
+  // buses: route paths (width = buses per weekday) and stops (size = buses per weekday)
+  const busAttr = 'Buses: BMTC GTFS by Vonter (ODbL) · KGIS stops via OpenCity';
+  if (!map.getSource('bus-routes')) map.addSource('bus-routes', { type: 'geojson', data: D.busRoutes, attribution: busAttr });
+  if (!map.getSource('bus-stops')) map.addSource('bus-stops', { type: 'geojson', data: D.busStops });
+  const busW = ['interpolate', ['linear'], ['get', 'buses_day'], 0, 1.5, 300, 4, 1500, 12];
+  map.addLayer({ id: 'bus-route-casing', type: 'line', source: 'bus-routes', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#fff', 'line-width': ['+', busW, 3], 'line-opacity': 0.8 } });
+  map.addLayer({ id: 'bus-route', type: 'line', source: 'bus-routes', layout: { ...hidden, 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#1c7ed6', 'line-width': busW, 'line-opacity': 0.7 } });
+  map.addLayer({ id: 'bus-stop', type: 'circle', source: 'bus-stops', layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['get', 'buses_day'], 0, 5, 100, 7, 500, 10, 1700, 17],
+      'circle-color': ['case', ['get', 'timetabled'], '#1c7ed6', '#ffffff'],
+      'circle-stroke-color': ['case', ['get', 'timetabled'], '#ffffff', '#1c7ed6'], 'circle-stroke-width': 2.5 } });
+  map.addLayer({ id: 'bus-stop-label', type: 'symbol', source: 'bus-stops', minzoom: 15.8, filter: ['get', 'timetabled'],
+    layout: { ...hidden, 'text-field': ['concat', ['get', 'name'], '\n', ['to-string', ['get', 'buses_day']], ' buses/day'],
+      'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-anchor': 'left', 'text-offset': [1.3, 0], 'text-max-width': 12 },
+    paint: { 'text-color': '#0b4f8a', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
+
   // places nearby
   map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(), layout: hidden,
     paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
@@ -474,7 +496,15 @@ const placeSources = p => {
   return list.map(src => src === 'OpenStreetMap' && p.osm ? OSM(p.osm) : esc(src)).join(', ');
 };
 const OSM = o => `<a href="https://www.openstreetmap.org/${esc(o)}" target="_blank" rel="noopener">OpenStreetMap</a>`;
+const routeList = (r, n) => { const a = typeof r === 'string' ? JSON.parse(r) : (r || []);
+  return a.length ? esc(a.slice(0, 14).join(', ')) + (n > 14 ? ` and ${n - 14} more` : '') : ''; };
 const POPUPS = {
+  'bus-stop': f => { const p = f.properties; return [f.geometry.coordinates, p.timetabled
+    ? `<strong>${esc(p.name)}</strong> bus stop<br><strong>${fmt(p.buses_day)}</strong> buses a weekday · ${p.buses_peak} between 8 and 9 am` +
+      `<br><span class="pop-k">${p.n_routes} routes: ${routeList(p.routes, p.n_routes)}</span><br><span class="pop-k">From ${esc(p.source)} · timetables are indicative</span>`
+    : `<strong>${esc(p.name)}</strong> bus stop<br>Listed in the government (KGIS) stop layer, but no buses are timetabled here in the BMTC app data.<br><span class="pop-k">Check on the walk whether it's in use.</span>`]; },
+  'bus-route': (f, e) => { const p = f.properties; return [e.lngLat,
+    `<strong>Bus routes on this road</strong><br>About <strong>${fmt(p.buses_day)}</strong> buses a weekday on this path<br><span class="pop-k">${p.n_routes} routes: ${routeList(p.routes, p.n_routes)}</span>`]; },
   'poi': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${esc(p.name)}</strong><br>${esc(p.type)} · ${esc(CAT_LABEL[p.category] || p.category)}<br><span class="pop-k">About ${p.dist_m} m from the road</span>` +
     (p.hours ? `<br><strong>Open:</strong> ${esc(p.hours)}${p.hours_note ? `<br><span class="pop-k">${esc(p.hours_note)}</span>` : ''}` : '') +
@@ -566,6 +596,7 @@ const SCENES = [
         part of it from 2026.</p>
         <div class="kpis">
           <button class="kpi" data-go="crossing"><b>${g.need}</b><span>safe crossings missing around the loop<small>No mid-block crossing on any side; the guidebook asks for one every 80–150 m</small></span></button>
+          <button class="kpi" data-go="buses"><b>~${fmt(Math.round(D.busSummary.buses_day_at_loop_stops / 100) * 100)}</b><span>buses stop on the loop every weekday<small>Up to one every ${Math.round(3600 / Math.max(...D.busStops.features.filter(f => f.properties.on_loop).map(f => f.properties.buses_peak)))} seconds in the morning peak</small></span></button>
           <button class="kpi" data-go="footpaths"><b>${fp.below}/${fp.total}</b><span>footpath measurements below standard on 100 Ft Road<small>No footpath at all at ${fp.none.join(', ')} m; the other sides are still to be measured</small></span></button>
           <button class="kpi" data-go="street"><b>~½</b><span>of today's traffic expected to move up to the flyover<small>A chance to give street space back to people</small></span></button>
         </div>
@@ -619,6 +650,40 @@ const SCENES = [
           <li>Ramp wall (${g.wall.from}–${g.wall.to} m, ${g.wall.width} m wide): B-SMILE flyover contract, Schedule A.</li>
           <li>Crossing spacing of 80–150 m for mixed-use streets: GIZ/MoHUA Tactical Urbanism Guidebook (after IRC 103).</li>
           <li>Places people cross to reach: bus stops, side streets and destinations within 80 m of the road.</li></ul>`)}`;
+    } },
+
+  { id: 'buses', tab: 'Buses',
+    layers: { buses: true },
+    view: fitRoad,
+    render() {
+      const B = D.busStops.features.map(f => ({ ...f.properties, ll: f.geometry.coordinates }));
+      const loop = B.filter(s => s.on_loop && s.timetabled).sort((a, b) => b.buses_day - a.buses_day);
+      const sm = D.busSummary, top = loop[0], gap = Math.round(3600 / Math.max(1, top.buses_peak));
+      const dir = (sid, fr, to) => sm.sides[`${sid}:${fr}>${to}`] || 0;
+      const rows = Object.keys(ROADS).map(sid => { const [a, b] = [ROADS[sid].from, ROADS[sid].to];
+        return `<tr data-side="${sid}"><td><b>${a}–${b}</b> ${esc(ROADS[sid].name)}</td><td>${fmt(dir(sid, a, b))}</td><td>${fmt(dir(sid, b, a))}</td></tr>`; }).join('');
+      const kgisOnly = B.filter(s => !s.timetabled).length;
+      return `
+        <h2 class="headline">A bus every ${gap} seconds at the busiest stops</h2>
+        <p class="lede">About <strong>${fmt(sm.buses_day_at_loop_stops)}</strong> buses stop on the loop on a weekday, on <strong>${sm.routes_at_loop_stops}</strong> routes.
+        At <strong>${esc(top.name)}</strong> it's ${fmt(top.buses_day)} a day — ${top.buses_peak} between 8 and 9 am. Every one of those passengers
+        is a pedestrian at one end of the trip, and most stops have no safe crossing nearby.</p>
+        ${key([
+          ['<span class="sw sw-dot" style="background:#1c7ed6;border-color:#fff;width:16px;height:16px"></span>', 'Bus stop — bigger means more buses a day'],
+          ['<span class="sw sw-dot" style="background:#fff;border-color:#1c7ed6"></span>', 'Stop in the government list with no buses timetabled'],
+          ['<span class="sw" style="width:22px;height:6px;border-radius:3px;background:#1c7ed6;opacity:.7"></span>', 'Bus routes — thicker means more buses'],
+        ])}
+        ${fold('Stops on the loop', `<ol class="rows">${loop.map(s => `<li data-ll="${s.ll}"><span class="at">${fmt(s.buses_day)}</span><span><span class="nm">${esc(s.name)}</span>
+          <br><span class="meta">${esc(ROADS[s.side].name)} · ${s.buses_peak} in the 8–9 am hour · ${s.n_routes} routes</span></span></li>`).join('')}</ol>
+          <p class="small" style="margin-top:8px">Buses per weekday. Tap a row to zoom in.</p>`, true, loop.length)}
+        ${fold('Buses along each road', `<table class="sidetab"><tr><th>Road</th><th>First → second junction</th><th>Back</th></tr>${rows}</table>
+          <p class="small">Buses a weekday running along each road in each direction. The data has <strong>no southbound buses on Hosur Road</strong>
+          between St John's and Madiwala and very few on 100 Feet Road towards Madiwala — either a one-way bus pattern or a gap in BMTC's app data.
+          Worth checking on the walk.</p>`)}
+        ${fold('How we know this', `<ul>
+          <li>Routes, stops and timetables: unofficial BMTC GTFS feed by Vonter, built from the Namma BMTC 2.0 app (ODbL), for a typical weekday. The app is known to have timetable errors, so treat counts as indicative.</li>
+          <li>Stop positions cross-checked with the Karnataka GIS (KGIS) BMTC stop layer published by OpenCity: ${B.filter(s => s.confirmed && s.timetabled).length} of ${B.filter(s => s.timetabled).length} timetabled stops match a KGIS stop within 60 m. ${kgisOnly} KGIS stops have no buses timetabled.</li>
+          <li>Route lines are the bus paths inside the 7-minute-walk area, simplified; overlapping routes on the same path are merged.</li></ul>`)}`;
     } },
 
   { id: 'footpaths', tab: 'Footpaths',
@@ -833,6 +898,7 @@ document.getElementById('about-open').onclick = () => {
       <li>OpenStreetMap contributors — road geometry, crossings, mapped places, construction (ODbL).</li>
       <li>Overture Maps Foundation — places from business listings, mainly Meta and Microsoft (CDLA-Permissive-2.0). Kept at confidence 0.5 or above, plus all schools, health facilities and places of worship.</li>
       <li>Foursquare Open Source Places (Apache 2.0) — only listings updated since 2024 and not marked closed.</li>
+      <li>Buses: unofficial BMTC GTFS feed by Vonter, built from the Namma BMTC 2.0 app (ODbL), with BMTC bus stop positions from the Karnataka GIS (KGIS) layer published by OpenCity.</li>
       <li>Esri World Imagery — satellite view and visual checks.</li></ul>
     <h3>Known gaps</h3><ul>
       <li>Places from business listings (shown as rings) are not checked on the ground; some may have closed or be slightly misplaced.</li>
@@ -841,6 +907,7 @@ document.getElementById('about-open').onclick = () => {
       <li>The contract's width survey covers 100 Feet Road (A–B) only; Hosur Road and Sarjapura Road need measuring on the walk.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
       <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
+      <li>Bus timetables come from BMTC's app, which is known to have errors; counts are indicative. The data shows no southbound buses on Hosur Road between St John's and Madiwala — to check on the walk.</li>
       <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items are not yet checked.</li></ul>
     <h3>For developers</h3>
     <p class="small">Data lives in <code>data/</code>; rebuild scripts are in <code>scripts/</code> (each has usage notes at the top).</p>`;
@@ -867,8 +934,8 @@ function startTour() {
     steps: [
       { popover: { title: 'Welcome',
           description: 'This page studies a loop of three busy roads around Madiwala — 100 Feet Road, Hosur Road and Sarjapura Road — and asks how they could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
-      { element: '#tabs', popover: { title: 'Five short chapters', side: 'bottom', align: 'start',
-          description: 'Each tab tells one part of the story — the road, crossing it, its footpaths, the flyover plans and whether it is ready for a trial. The map changes to match.' } },
+      { element: '#tabs', popover: { title: 'Six short chapters', side: 'bottom', align: 'start',
+          description: 'Each tab tells one part of the story — the loop, crossing it, its buses, its footpaths, the flyover plans and whether it is ready for a trial. The map changes to match.' } },
       { element: '.kpis', popover: { title: 'The key findings', side: phone ? 'top' : 'right', align: 'start',
           description: 'The three numbers that matter most. Tap any card to jump to its chapter.' } },
       { element: '#body .key', popover: { title: 'What the map is showing', side: phone ? 'top' : 'right', align: 'start',
