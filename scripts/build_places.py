@@ -136,8 +136,24 @@ for incoming in (ovt, fsq):
 extras_path = os.path.join(DATA, 'place_extras.json')
 extras = {k: v for k, v in json.load(open(extras_path)).items() if not k.startswith('_')} if os.path.exists(extras_path) else {}
 
+# Private (inter-city) bus operators get their own category: offices, lounges and boarding points of
+# SRS, KPN, VRL, Kerala Lines, FlixBus etc. Madiwala is a private-bus hub, so they matter for footfall.
+TRAVEL_TYPES = {'travel agency', 'travel agent', 'travel service', 'travel and transportation', 'ticket office or booth',
+                'bus station', 'bus ticket agency', 'transportation', 'rental service'}
+OPERATOR_WORDS = r'\b(flix ?bus|intr ?city|bus|buses|bus stand|travels?|tours?|tourist|transport|lines)\b'
+NOT_OPERATOR = r'\b(cafe|coffee|bar|pub|sheesha|salon|beauty|gastro|restaurant|cab|cabs|taxi|car rental|rent a car|visa|holidays?|' \
+               r'airlines?|airways|flights?|packers|movers|ksrtc|bmtc|metro|school|college|hospital)\b|\.com\b'
+def private_bus(p):
+    name, typ = p['name'].lower(), (p['type'] or '').lower()
+    if re.search(NOT_OPERATOR, name): return False
+    if p['category'] == 'Transit' and p['source'] == 'OpenStreetMap': return False     # public bus stops
+    return bool(re.search(OPERATOR_WORDS, name)) and (typ in TRAVEL_TYPES or re.search(r'flix|intr ?city|\bbus\b', name) is not None)
+
 feats = []
 for p in merged:
+    if private_bus(p): p['category'], p['type'] = 'Private buses', p['type'] or 'Bus operator'
+    # public bus stops now live in the bus layer (scripts/build_buses.py); OSM stops stay in poi_osm.geojson
+    if p['category'] == 'Transit': continue
     d = road_dist(p['c'])
     props = {'name': p['name'], 'category': p['category'], 'type': p['type'], 'dist_m': int(round(d / 10) * 10),
              'ring': 300 if d <= 300 else 500, 'source': p['source'], 'sources': p['sources'], 'listed': p['listed']}
@@ -154,7 +170,7 @@ json.dump({"type": "FeatureCollection", "features": feats}, open(os.path.join(DA
 for k, v in sorted(stats.items()): print(f'{k:45} {v}')
 by = collections.Counter(f['properties']['source'] for f in feats)
 print('\nplaces by first source:', dict(by), '| total', len(feats), '| within 300 m', sum(f['properties']['dist_m'] <= 300 for f in feats))
-cats = ['Transit', 'Institutional', 'Healthcare', 'Religious', 'Recreational', 'Public amenities', 'Commercial']
+cats = ['Private buses', 'Institutional', 'Healthcare', 'Religious', 'Recreational', 'Public amenities', 'Commercial']
 print(f'\n{"category":18}{"OSM":>6}{"+Overture":>11}{"+Foursquare":>13}{"total":>7}')
 for c in cats:
     n = collections.Counter(f['properties']['source'] for f in feats if f['properties']['category'] == c)

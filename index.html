@@ -255,6 +255,7 @@
   <h4>Buses</h4>
   <label><input type="checkbox" data-g="busStops"> Bus stops</label>
   <label><input type="checkbox" data-g="busRoutes"> Bus routes</label>
+  <label><input type="checkbox" data-g="busPrivate"> <span class="sw sw-dot" style="background:#e8590c;border-color:#fff;width:11px;height:11px"></span> Private bus operators</label>
   <h4>Places nearby</h4>
   <label><input type="checkbox" data-g="places"> Show places</label>
   <label class="sub"><input type="checkbox" id="tg-listed" checked> Include business listings <span class="n">not verified</span></label>
@@ -285,10 +286,11 @@ const ROADS = {
 };
 const JN = { A: 'Water Tank junction', B: 'Madiwala underpass', C: "St John's junction" };
 const CATS = {                                                // GIZ guidebook neighbourhood-mapping categories
-  'Transit': '#2a7de1', 'Institutional': '#e8a200', 'Healthcare': '#d6336c', 'Religious': '#8e5bd6',
+  'Institutional': '#e8a200', 'Healthcare': '#d6336c', 'Religious': '#8e5bd6',
   'Recreational': '#2f9e44', 'Public amenities': '#0c8599', 'Commercial': '#8a8780',
 };
-const CAT_LABEL = { 'Transit': 'Bus stops', 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
+const PRIVATE_BUS = '#e8590c';     // private inter-city bus operators (shown with the bus layers)
+const CAT_LABEL = { 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
   'Religious': 'Temples & mosques', 'Recreational': 'Parks & recreation', 'Public amenities': 'Public services', 'Commercial': 'Shops & food' };
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -314,6 +316,7 @@ const GROUPS = {
   footpaths:    ['ct-fp', 'ct-fp-label'],
   busRoutes:    ['bus-route-casing', 'bus-route'],
   busStops:     ['bus-stop', 'bus-stop-label'],
+  busPrivate:   ['bus-private', 'bus-private-label'],
   wall:         ['ct-wall'],
   construction: ['cons-casing', 'cons', 'cons-stripes', 'cons-label'],
   places:       ['poi', 'poi-label'],
@@ -321,7 +324,7 @@ const GROUPS = {
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
 };
-const vis = { crossings: false, busRoutes: false, busStops: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
+const vis = { crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
 let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
@@ -461,6 +464,15 @@ function addOverlays() {
       'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-anchor': 'left', 'text-offset': [1.3, 0], 'text-max-width': 12 },
     paint: { 'text-color': '#0b4f8a', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
 
+  // private inter-city bus operators (from the places data, category 'Private buses')
+  const privF = ['==', ['get', 'category'], 'Private buses'];
+  map.addLayer({ id: 'bus-private', type: 'circle', source: 'poi', filter: privF, layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 4, 19, 9], 'circle-color': PRIVATE_BUS,
+      'circle-stroke-color': '#fff', 'circle-stroke-width': 1.8 } });
+  map.addLayer({ id: 'bus-private-label', type: 'symbol', source: 'poi', filter: privF, minzoom: 17,
+    layout: { ...hidden, 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Regular'], 'text-size': 10, 'text-anchor': 'top', 'text-offset': [0, 0.8], 'text-max-width': 9 },
+    paint: { 'text-color': '#8a3204', 'text-halo-color': '#fff', 'text-halo-width': 1.5 } });
+
   // places nearby
   map.addLayer({ id: 'poi', type: 'circle', source: 'poi', filter: poiFilter(), layout: hidden,
     paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, ['match', ['get', 'category'], 'Commercial', 2.5, 4],
@@ -504,7 +516,10 @@ const POPUPS = {
   'bus-stop': f => { const p = f.properties; return [f.geometry.coordinates, p.timetabled
     ? `<strong>${esc(p.name)}</strong> bus stop<br><strong>${fmt(p.buses_day)}</strong> buses a weekday · ${p.buses_peak} between 8 and 9 am` +
       `<br><span class="pop-k">${p.n_routes} routes: ${routeList(p.routes, p.n_routes)}</span><br><span class="pop-k">From ${esc(p.source)} · timetables are indicative</span>`
-    : `<strong>${esc(p.name)}</strong> bus stop<br>Listed in the government (KGIS) stop layer, but no buses are timetabled here in the BMTC app data.<br><span class="pop-k">Check on the walk whether it's in use.</span>`]; },
+    : `<strong>${esc(p.name)}</strong> bus stop<br>${p.source.startsWith('OpenStreetMap')
+        ? 'Mapped in OpenStreetMap — often the stop on the other side of the road from a timetabled one.'
+        : 'Listed in the government (KGIS) stop layer, but no buses are timetabled here in the BMTC app data.'}<br><span class="pop-k">No timetable · check on the walk whether it's in use.</span>`]; },
+  'bus-private': f => { const [ll, html] = POPUPS.poi(f); return [ll, html.replace(esc(f.properties.category), 'Private bus operator')]; },
   'bus-route': (f, e) => { const p = f.properties; return [e.lngLat,
     `<strong>Bus routes on this road</strong><br>About <strong>${fmt(p.buses_day)}</strong> buses a weekday on this path<br><span class="pop-k">${p.n_routes} routes: ${routeList(p.routes, p.n_routes)}</span>`]; },
   'poi': f => { const p = f.properties; return [f.geometry.coordinates,
@@ -587,7 +602,7 @@ const SCENES = [
     view: () => map.fitBounds(boundsOf(D.catchments.features.flatMap(f => f.geometry.coordinates[0])), { padding: pad(), duration: 900 }),
     render() {
       const g = gapStats(), fp = fpStats();
-      const near = D.poi.features.filter(f => f.properties.dist_m <= 500);
+      const near = D.poi.features.filter(f => f.properties.dist_m <= 500 && CATS[f.properties.category]);
       const byCat = Object.keys(CATS).map(k => [k, near.filter(f => f.properties.category === k).length]);
       return `
         <h2 class="headline">A busy loop of streets about to be reshaped by a flyover</h2>
@@ -655,7 +670,7 @@ const SCENES = [
     } },
 
   { id: 'buses', tab: 'Buses',
-    layers: { busStops: true, busRoutes: true },
+    layers: { busStops: true, busRoutes: true, busPrivate: true },
     view: fitRoad,
     render() {
       const B = D.busStops.features.map(f => ({ ...f.properties, ll: f.geometry.coordinates }));
@@ -674,7 +689,11 @@ const SCENES = [
           ['<span class="sw sw-dot" style="background:#1c7ed6;border-color:#fff;width:16px;height:16px"></span>', 'Bus stop — bigger means more buses a day'],
           ['<span class="sw sw-dot" style="background:#fff;border-color:#1c7ed6"></span>', 'Stop in the government list with no buses timetabled'],
           ['<span class="sw" style="width:22px;height:6px;border-radius:3px;background:#1c7ed6;opacity:.7"></span>', 'Bus routes — thicker means more buses'],
+          ['<span class="sw sw-dot" style="background:#e8590c;border-color:#fff"></span>', 'Private bus operator — offices and boarding points'],
         ])}
+        <p class="lede"><strong>${D.poi.features.filter(f => f.properties.category === 'Private buses').length} private bus operators</strong> — SRS, KPN, VRL,
+        Kerala Lines, FlixBus and more — line Hosur Road near Madiwala. Inter-city passengers with luggage gather here in the evenings,
+        on the same narrow footpaths.</p>
         ${fold('Stops on the loop', `<ol class="rows">${loop.map(s => `<li data-ll="${s.ll}"><span class="at">${fmt(s.buses_day)}</span><span><span class="nm">${esc(s.name)}</span>
           <br><span class="meta">${esc(ROADS[s.side].name)} · ${s.buses_peak} in the 8–9 am hour · ${s.n_routes} routes</span></span></li>`).join('')}</ol>
           <p class="small" style="margin-top:8px">Buses per weekday. Tap a row to zoom in.</p>`, true, loop.length)}
