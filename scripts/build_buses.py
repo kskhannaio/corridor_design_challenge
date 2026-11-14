@@ -116,6 +116,17 @@ for k in kgis:
                   "properties": {"name": k['name'], "buses_day": 0, "buses_peak": 0, "n_routes": 0, "routes": [],
                                  "dist_m": round(d), "side": side, "on_loop": d <= ON_LOOP, "timetabled": False,
                                  "confirmed": True, "source": "KGIS only (no timetable)"}})
+# OpenStreetMap often maps each side of the road as its own stop. Keep the ones that aren't already
+# here (usually the platform on the other side), so the map shows people waiting on both sides.
+for f in json.load(open(os.path.join(DATA, 'poi_osm.geojson')))['features']:
+    p, c = f['properties'], f['geometry']['coordinates']
+    if p['category'] != 'Transit' or p['dist_m'] > MAX_DIST: continue
+    if any(math.dist(P(c), P(g['geometry']['coordinates'])) < 50 for g in feats): continue
+    d, side = nearest_side(c)
+    feats.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [round(v, 6) for v in c]},
+                  "properties": {"name": p['name'], "buses_day": 0, "buses_peak": 0, "n_routes": 0, "routes": [],
+                                 "dist_m": round(d), "side": side, "on_loop": d <= ON_LOOP, "timetabled": False,
+                                 "confirmed": False, "source": "OpenStreetMap (no timetable)", "osm": p.get('osm')}})
 feats.sort(key=lambda f: -f['properties']['buses_day'])
 json.dump({"type": "FeatureCollection", "features": feats}, open(os.path.join(DATA, 'bus_stops.geojson'), 'w'), separators=(',', ':'))
 
