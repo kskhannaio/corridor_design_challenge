@@ -1139,14 +1139,14 @@ const DRAW_OK = matchMedia('(hover: hover) and (pointer: fine)').matches && inne
 const DRAW_LIBS = ['https://unpkg.com/terra-draw@1.39.0/dist/terra-draw.umd.js',
                    'https://unpkg.com/terra-draw-maplibre-gl-adapter@1.5.0/dist/terra-draw-maplibre-gl-adapter.umd.js'];
 const DRAW_SHAPES = { point: { mode: 'point', word: 'point', geom: 'Point' }, line: { mode: 'linestring', word: 'line', geom: 'LineString' },
-                      area: { mode: 'polygon', word: 'area', geom: 'Polygon' } };
+                      area: { mode: 'polygon', word: 'area', geom: 'Polygon' }, circle: { mode: 'circle', word: 'circle', geom: 'Polygon' } };
 const DRAW_DEFAULT_TYPES = [
   { name: 'Signalised crossing', shape: 'point', colour: '#7048e8' }, { name: 'Zebra crossing', shape: 'point', colour: '#2f9e44' },
   { name: 'Remove crossing', shape: 'point', colour: '#e03131' }, { name: 'Move or add bus stop', shape: 'point', colour: '#1971c2' },
   { name: 'Turn ban', shape: 'point', colour: '#c2255c' }, { name: 'Note', shape: 'point', colour: '#495057' },
   { name: 'Close lanes', shape: 'line', colour: '#e8590c' }, { name: 'Widen footpath', shape: 'line', colour: '#0c8599' },
   { name: 'New footpath', shape: 'line', colour: '#37b24d' }, { name: 'Pedestrianise', shape: 'line', colour: '#9c36b5' },
-  { name: 'Area of concern', shape: 'area', colour: '#f08c00' },
+  { name: 'Area of concern', shape: 'area', colour: '#f08c00' }, { name: 'Zone around a point', shape: 'circle', colour: '#1098ad' },
 ];
 document.body.classList.toggle('no-draw', !DRAW_OK);
 const D2 = { types: DRAW_DEFAULT_TYPES.map(t => Object.assign({}, t)), name: '', file: '', active: null, sel: null, td: null, status: DRAW_OK ? 'loading' : 'phone', on: false, saveTimer: 0 };
@@ -1162,6 +1162,14 @@ function drawFileName(typed, who, when) {
 }
 const drawColour = c => /^#[0-9a-fA-F]{6}$/.test(String(c)) ? String(c).toLowerCase() : '#495057';
 const drawShapeOf = g => g === 'Point' ? 'point' : g === 'LineString' ? 'line' : g === 'Polygon' ? 'area' : null;
+// a circle is stored as a many-sided polygon, marked as a circle by Terra Draw (mode) or by our file (shape)
+const drawShapeF = f => f.geometry.type === 'Polygon' && f.properties && (f.properties.mode === 'circle' || f.properties.shape === 'circle') ? 'circle' : drawShapeOf(f.geometry.type);
+function drawCircle(geom) {               // centre and radius (m) of a circle polygon
+  const R = 6371008.8, rad = Math.PI / 180, c = geom.coordinates[0].slice(0, -1); let x = 0, y = 0;
+  c.forEach(p => { x += p[0]; y += p[1]; }); x /= c.length; y /= c.length;
+  const dx = (c[0][0] - x) * rad * Math.cos(y * rad), dy = (c[0][1] - y) * rad;
+  return { centre: [x, y], r: Math.sqrt(dx * dx + dy * dy) * R };
+}
 function drawType(name) { for (let i = 0; i < D2.types.length; i++) if (D2.types[i].name === name) return D2.types[i]; return null; }
 function drawAddType(name, shape, colour, custom) {
   name = drawClean(name, 40);
@@ -1172,8 +1180,9 @@ function drawAddType(name, shape, colour, custom) {
   if (custom) t.custom = true;
   D2.types.push(t); return t;
 }
-function drawMeasure(geom) {              // metres along a line, square metres of an area
+function drawMeasure(geom, shape) {       // metres along a line, square metres of an area, radius of a circle
   const R = 6371008.8, rad = Math.PI / 180;
+  if (shape === 'circle') return 'radius ' + Math.round(drawCircle(geom).r) + ' m';
   if (geom.type === 'LineString') {
     let m = 0;
     for (let i = 1; i < geom.coordinates.length; i++) {
@@ -1196,14 +1205,16 @@ function drawAnchor(geom) {               // where a shape's label sits
   if (geom.type === 'LineString') return c[Math.floor(c.length / 2)];
   let x = 0, y = 0; c.forEach(p => { x += p[0]; y += p[1]; }); return [x / c.length, y / c.length];
 }
-const drawIsShape = f => f && f.properties && ['point', 'linestring', 'polygon'].indexOf(f.properties.mode) >= 0 && drawShapeOf(f.geometry.type)
+const drawIsShape = f => f && f.properties && ['point', 'linestring', 'polygon', 'circle'].indexOf(f.properties.mode) >= 0 && drawShapeOf(f.geometry.type)
   && !f.properties.currentlyDrawing && !f.properties.closingPoint && !f.properties.coordinatePoint && !f.properties.snappingPoint;
 function drawToFile(features) {           // what the planner downloads
   return { type: 'FeatureCollection', name: 'Madiwala loop proposal', format: 'corridor_design_challenge draw v1',
     proposed_by: D2.name, saved: new Date().toISOString(), types: D2.types.map(t => ({ name: t.name, shape: t.shape, colour: t.colour, custom: !!t.custom })),
-    features: features.filter(drawIsShape).map(f => ({ type: 'Feature', geometry: f.geometry, properties: {
-      change_type: f.properties.change_type || '', label: f.properties.label || '', notes: f.properties.notes || '',
-      proposed_by: D2.name, colour: drawColour(f.properties.colour), shape: drawShapeOf(f.geometry.type) } })) };
+    features: features.filter(drawIsShape).map(f => {
+      const shape = drawShapeF(f), props = { change_type: f.properties.change_type || '', label: f.properties.label || '', notes: f.properties.notes || '',
+        proposed_by: D2.name, colour: drawColour(f.properties.colour), shape: shape };
+      if (shape === 'circle') { const c = drawCircle(f.geometry); props.radius_m = Math.round(c.r * 10) / 10; props.centre = [+c.centre[0].toFixed(7), +c.centre[1].toFixed(7)]; }
+      return { type: 'Feature', geometry: f.geometry, properties: props }; }) };
 }
 function drawFromFile(obj) {              // check a loaded file and turn it into shapes; throws with a plain message if it is not one
   if (!obj || obj.type !== 'FeatureCollection' || !Array.isArray(obj.features)) throw new Error('This is not a proposal file (it should be a GeoJSON file saved from this page or from the QGIS template).');
@@ -1212,10 +1223,11 @@ function drawFromFile(obj) {              // check a loaded file and turn it int
   const out = { name: drawClean(obj.proposed_by, 60), types: [], shapes: [], skipped: 0 };
   (Array.isArray(obj.types) ? obj.types : []).slice(0, 200).forEach(t => { if (t && DRAW_SHAPES[t.shape] && drawClean(t.name, 40)) out.types.push({ name: drawClean(t.name, 40), shape: t.shape, colour: drawColour(t.colour), custom: !!t.custom }); });
   obj.features.forEach(f => {
-    const g = f && f.geometry, shape = g && drawShapeOf(g.type), p = (f && f.properties) || {};
+    const g = f && f.geometry, p = (f && f.properties) || {}; let shape = g && drawShapeOf(g.type);
     const good = shape === 'point' ? ok(g.coordinates) : shape === 'line' ? Array.isArray(g.coordinates) && g.coordinates.length >= 2 && g.coordinates.every(ok)
       : shape === 'area' ? Array.isArray(g.coordinates) && Array.isArray(g.coordinates[0]) && g.coordinates[0].length >= 4 && g.coordinates[0].every(ok) : false;
     if (!good) { out.skipped++; return; }
+    if (shape === 'area' && (p.shape === 'circle' || p.mode === 'circle') && g.coordinates[0].length >= 12) shape = 'circle';
     const coords = shape === 'point' ? [+g.coordinates[0], +g.coordinates[1]] : shape === 'line' ? g.coordinates.map(c => [+c[0], +c[1]]) : [g.coordinates[0].map(c => [+c[0], +c[1]])];
     out.shapes.push({ geometry: { type: g.type, coordinates: coords }, change_type: drawClean(p.change_type, 40) || 'Note', label: drawClean(p.label, 80),
       notes: drawClean(p.notes, 600), colour: drawColour(p.colour), shape: shape });
@@ -1242,9 +1254,9 @@ function drawVisible(on) {                 // Terra Draw's own layers (ids start
   map.getStyle().layers.forEach(l => { if (l.id.indexOf('draw-td') === 0 || l.id === 'draw-label') map.setLayoutProperty(l.id, 'visibility', on ? 'visible' : 'none'); });
 }
 function drawPut(shape) {                  // add one shape (from a file or from storage) to the map
-  const mode = DRAW_SHAPES[shape.shape].mode;
-  return D2.td.addFeatures([{ type: 'Feature', id: D2.td.getFeatureId(), geometry: shape.geometry,
-    properties: { mode: mode, change_type: shape.change_type, label: shape.label, notes: shape.notes, colour: shape.colour } }]);
+  const mode = DRAW_SHAPES[shape.shape].mode, props = { mode: mode, change_type: shape.change_type, label: shape.label, notes: shape.notes, colour: shape.colour };
+  if (shape.shape === 'circle') props.radiusKilometers = drawCircle(shape.geometry).r / 1000;
+  return D2.td.addFeatures([{ type: 'Feature', id: D2.td.getFeatureId(), geometry: shape.geometry, properties: props }]);
 }
 function drawInit() {
   if (D2.td || !window.terraDraw || !window.terraDrawMaplibreGlAdapter || !map.getSource('stretch')) return;
@@ -1257,7 +1269,9 @@ function drawInit() {
         new T.TerraDrawPointMode({ styles: { pointColor: colour, pointWidth: 7, pointOutlineColor: '#ffffff', pointOutlineWidth: 2 } }),
         new T.TerraDrawLineStringMode({ styles: { lineStringColor: colour, lineStringWidth: 5 } }),
         new T.TerraDrawPolygonMode({ styles: { fillColor: colour, fillOpacity: 0.25, outlineColor: colour, outlineWidth: 3 } }),
-        new T.TerraDrawSelectMode({ flags: { point: { feature: { draggable: true } }, linestring: edit, polygon: edit },
+        new T.TerraDrawCircleMode({ styles: { fillColor: colour, fillOpacity: 0.2, outlineColor: colour, outlineWidth: 3 } }),
+        new T.TerraDrawSelectMode({ flags: { point: { feature: { draggable: true } }, linestring: edit, polygon: edit,
+            circle: { feature: { draggable: true, coordinates: { resizable: 'center' } } } },
           styles: { selectedPointColor: colour, selectedPointWidth: 9, selectedPointOutlineColor: '#1d1d1b', selectedPointOutlineWidth: 3,
             selectedLineStringColor: colour, selectedLineStringWidth: 7, selectedPolygonColor: colour, selectedPolygonFillOpacity: 0.35,
             selectedPolygonOutlineColor: '#1d1d1b', selectedPolygonOutlineWidth: 3 } }),
@@ -1274,7 +1288,7 @@ function drawInit() {
     try { saved = JSON.parse(localStorage.getItem(DRAW_KEY) || 'null'); } catch (e) { saved = null; }
     if (saved && saved.v === 1) {
       const got = drawFromFile({ type: 'FeatureCollection', proposed_by: saved.name, types: saved.types,
-        features: (saved.features || []).map(f => ({ geometry: f.geometry, properties: f.properties })) });
+        features: (saved.features || []).map(f => ({ geometry: f.geometry, properties: f.properties })) });   // circles are recognised by properties.mode
       D2.name = got.name; D2.file = drawSlug(saved.file); got.types.forEach(t => drawAddType(t.name, t.shape, t.colour, t.custom)); got.shapes.forEach(drawPut);
     }
     D2.td.clearUndoRedoHistory();
@@ -1301,7 +1315,8 @@ if (DRAW_OK) (function loadNext(i) {        // fetch the drawing library only wh
 })(0);
 
 // ---- the panel ----
-const drawSw = (t, big) => `<span class="sw" style="width:${t.shape === 'line' ? 18 : 12}px;height:${t.shape === 'line' ? 4 : 12}px;border-radius:${t.shape === 'point' ? '50%' : '2px'};background:${t.colour}${t.shape === 'area' ? ';opacity:.55;outline:2px solid ' + t.colour : ''}"></span>`;
+const drawSw = t => t.shape === 'circle' ? `<span class="sw" style="width:10px;height:10px;border-radius:50%;border:2px solid ${t.colour};background:${t.colour}55"></span>`
+  : `<span class="sw" style="width:${t.shape === 'line' ? 18 : 12}px;height:${t.shape === 'line' ? 4 : 12}px;border-radius:${t.shape === 'point' ? '50%' : '2px'};background:${t.colour}${t.shape === 'area' ? ';opacity:.55;outline:2px solid ' + t.colour : ''}"></span>`;
 function drawPanel() { if (current && current.id === 'draw') { const y = body.scrollTop; body.innerHTML = current.render(); body.scrollTop = y; } }
 function drawRender() {
   if (D2.status === 'phone') return `<h2 class="headline">Drawing needs a laptop or desktop</h2>
@@ -1312,19 +1327,20 @@ function drawRender() {
   const S = drawShapes(), sel = D2.sel != null ? D2.td.getSnapshotFeature(D2.sel) : null, mode = D2.td.getMode();
   const typeBtn = t => `<button class="dtype" data-draw-type="${esc(t.name)}" aria-pressed="${D2.active === t}">${drawSw(t)}<span>${esc(t.name)}</span><small>${DRAW_SHAPES[t.shape].word}</small></button>`;
   const hint = D2.active ? (D2.active.shape === 'point' ? 'Click the map to place it.'
+    : D2.active.shape === 'circle' ? 'Click where the centre should be, move outwards to set the size, then click again. Esc cancels.'
     : `Click the map to add each corner. To finish, click the last corner again or press Enter. Esc cancels.`) : '';
   const selBox = sel && drawIsShape(sel) ? (() => {
-    const p = sel.properties, shape = drawShapeOf(sel.geometry.type), m = drawMeasure(sel.geometry);
+    const p = sel.properties, shape = drawShapeF(sel), m = drawMeasure(sel.geometry, shape);
     return `<div class="dsel"><div class="dsel-h">${drawSw({ shape: shape, colour: drawColour(p.colour) })} <b>Selected ${DRAW_SHAPES[shape].word}</b>${m ? `<span>${m}</span>` : ''}</div>
       <label>Label on the map<input type="text" maxlength="80" data-draw-field="label" value="${esc(p.label || '')}" placeholder="e.g. Crossing at the mosque gate"></label>
       <label>Type<select data-draw-field="change_type">${D2.types.filter(t => t.shape === shape).map(t => `<option${t.name === p.change_type ? ' selected' : ''}>${esc(t.name)}</option>`).join('')}
         ${drawType(p.change_type) ? '' : `<option selected>${esc(p.change_type || '')}</option>`}</select></label>
       <label>Note (why, or any detail)<textarea rows="3" maxlength="600" data-draw-field="notes">${esc(p.notes || '')}</textarea></label>
-      <p class="small">Drag the shape to move it. On a line or area, drag a corner to move it, drag a midpoint to add one.</p>
-      <button class="btn" data-draw-act="delete">Delete this shape</button></div>`; })() : '';
+      <p class="small">${shape === 'circle' ? 'Drag the circle to move it. Drag a point on its edge to make it bigger or smaller.' : 'Drag the shape to move it. On a line or area, drag a corner to move it, drag a midpoint to add one.'}</p>
+      <button class="btn" data-draw-act="delete">Delete this shape</button> <span class="small">or press Delete</span></div>`; })() : '';
   const list = S.length ? `<table class="sidetab dlist"><tr><th>Your shapes</th><th></th></tr>${S.map(f => `<tr data-draw-pick="${esc(f.id)}"${f.id === D2.sel ? ' class="on"' : ''}>
-      <td>${drawSw({ shape: drawShapeOf(f.geometry.type), colour: drawColour(f.properties.colour) })} ${esc(f.properties.label || f.properties.change_type || 'Shape')}
-      ${f.properties.label ? `<small>${esc(f.properties.change_type || '')}</small>` : ''}</td><td>${drawMeasure(f.geometry)}</td></tr>`).join('')}</table>` : '';
+      <td>${drawSw({ shape: drawShapeF(f), colour: drawColour(f.properties.colour) })} ${esc(f.properties.label || f.properties.change_type || 'Shape')}
+      ${f.properties.label ? `<small>${esc(f.properties.change_type || '')}</small>` : ''}</td><td>${drawMeasure(f.geometry, drawShapeF(f))}</td></tr>`).join('')}</table>` : '';
   return `
     <h2 class="headline">Draw your proposal</h2>
     <p class="lede">Mark the changes you would make, label them, and download the result as one small file to send back.
@@ -1335,7 +1351,7 @@ function drawRender() {
     ${D2.active ? `<p class="dhint"><b>${esc(D2.active.name)}:</b> ${hint} <button class="btn" data-draw-act="cancel">Cancel</button></p>`
       : `<p class="dhint">${S.length ? 'Click a shape on the map to select it, or pick a type to add another.' : 'Pick a type above, then click on the map.'}</p>`}
     ${fold('Add your own type', `<div class="dnew"><label>Name<input type="text" maxlength="40" id="dnew-name" placeholder="e.g. Raised table"></label>
-      <label>Shape<select id="dnew-shape"><option value="point">Point</option><option value="line">Line</option><option value="area">Area</option></select></label>
+      <label>Shape<select id="dnew-shape"><option value="point">Point</option><option value="line">Line</option><option value="area">Area</option><option value="circle">Circle</option></select></label>
       <label>Colour<input type="color" id="dnew-colour" value="#d6336c"></label>
       <button class="btn" data-draw-act="addtype">Add type</button></div>
       <p class="small">Your own types stay in this browser for next time and travel inside the file you download.
@@ -1368,7 +1384,20 @@ const DRAW_SCENE = { id: 'draw', tab: 'Draw',
   render: drawRender };
 if (DRAW_OK) SCENES.push(DRAW_SCENE);
 
+function drawDelete() {                     // remove the selected shape (button, or the Delete / Backspace key)
+  if (!D2.td || D2.sel == null) return false;
+  const id = D2.sel; D2.sel = null;
+  try { D2.td.deselectFeature(id); } catch (e) { /* already deselected */ }
+  if (D2.td.hasFeature(id)) D2.td.removeFeatures([id]);
+  drawSave(); drawPanel(); return true;
+}
 function drawWire() {                       // called once the panel element exists (tabs section below)
+document.addEventListener('keydown', e => {
+  if (!D2.on || (e.key !== 'Delete' && e.key !== 'Backspace')) return;
+  const el = document.activeElement, tag = el && el.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) return;   // typing a label: Backspace edits text
+  if (drawDelete()) e.preventDefault();
+});
 body.addEventListener('click', e => {
   if (!current || current.id !== 'draw' || !D2.td) return;
   const t = e.target.closest('[data-draw-type]'), a = e.target.closest('[data-draw-act]'), pick = e.target.closest('[data-draw-pick]'), rm = e.target.closest('[data-draw-rmtype]');
@@ -1385,7 +1414,7 @@ body.addEventListener('click', e => {
   if (!a) return;
   const act = a.dataset.drawAct;
   if (act === 'cancel') { D2.active = null; D2.td.setMode('select'); }
-  if (act === 'delete' && D2.sel != null) { const id = D2.sel; D2.td.deselectFeature(id); D2.td.removeFeatures([id]); D2.sel = null; drawSave(); }
+  if (act === 'delete') drawDelete();
   if (act === 'undo') D2.td.undo();
   if (act === 'redo') D2.td.redo();
   if (act === 'clear' && confirm('Remove every shape in your drawing? Download it first if you want to keep a copy.')) { D2.sel = null; D2.td.clear(); D2.td.clearUndoRedoHistory(); drawSave(); }
