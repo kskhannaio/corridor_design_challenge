@@ -189,6 +189,26 @@
   .maplibregl-popup-tip { border-top-color: var(--panel) !important; border-bottom-color: var(--panel) !important; }
   .pop-k { color: var(--muted); font-size: 12px; }
   .hide-jn .jn-marker { display: none; }
+  .no-draw .draw-only { display: none; }
+  .dh { font-size: 13px; font-weight: 700; margin: 16px 0 6px; }
+  .dname, .dsel label, .dnew label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+  .dname input, .dsel input, .dsel select, .dsel textarea, .dnew input[type=text], .dnew select { font: inherit; font-size: 14px; color: var(--ink, #1d1d1b);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--panel); width: 100%; box-sizing: border-box; }
+  .dtypes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .dtype { display: flex; align-items: center; gap: 7px; text-align: left; border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
+    padding: 6px 8px; cursor: pointer; font-size: 13px; }
+  .dtype span:nth-child(2) { flex: 1; } .dtype small { color: var(--muted); font-size: 11px; }
+  .dtype:hover { background: var(--soft); } .dtype[aria-pressed=true] { border-color: #1d1d1b; box-shadow: inset 0 0 0 1px #1d1d1b; background: var(--soft); }
+  .dhint { font-size: 13px; margin: 8px 0; } .dhint .btn { padding: 2px 8px; margin-left: 4px; }
+  .dsel { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 0 0 10px; background: var(--soft); }
+  .dsel-h { display: flex; align-items: center; gap: 7px; font-size: 13px; margin-bottom: 8px; } .dsel-h span:last-child { margin-left: auto; color: var(--muted); }
+  .dnew { display: grid; grid-template-columns: 1fr 90px 60px; gap: 6px; align-items: end; } .dnew .btn { grid-column: 1 / -1; }
+  .dnew input[type=color] { width: 100%; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+  .dchip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 4px 1px 8px; margin: 2px 0; }
+  .dchip button { border: 0; background: none; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 3px; }
+  .dlist tr { cursor: pointer; } .dlist tr.on td { background: var(--soft); font-weight: 600; } .dlist small { color: var(--muted); margin-left: 4px; font-weight: 400; }
+  .dacts { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; } .dprimary { background: #1d1d1b; color: #fff; border-color: #1d1d1b; }
+  .dprimary:hover { background: #343a40; } .dfile { display: inline-flex; align-items: center; }
   .jn-marker { width: 26px; height: 26px; border-radius: 50%; background: #1d1d1b; color: #fff; font: 700 13px system-ui, sans-serif;
     display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
   .xs-marker { background: #1d1d1b; color: #fff; font: 600 12px system-ui, sans-serif; padding: 4px 8px; border-radius: 6px;
@@ -247,6 +267,8 @@
     <button id="bm-map" aria-pressed="true">Street map</button>
     <button id="bm-sat" aria-pressed="false">Satellite</button>
   </div>
+  <h4 class="draw-only">Your proposal</h4>
+  <label class="draw-only"><input type="checkbox" data-g="drawn"> My drawing (from the Draw tab)</label>
   <h4>Study</h4>
   <label><input type="checkbox" data-g="loop"> <span class="sw" style="width:16px;height:5px;border-radius:3px;background:#e4572e"></span> The loop (A–B–C)</label>
   <label><input type="checkbox" data-g="junctions"> <span class="sw" style="width:14px;height:14px;border-radius:50%;background:#1d1d1b"></span> Junction markers A, B, C</label>
@@ -353,6 +375,7 @@ const GROUPS = {
   sat:          ['sat'],
   loop:         ['stretch-halo', 'stretch-line', 'stretch-arrows'],
   junctions:    [],                                             // DOM markers, shown or hidden in applyVis
+  drawn:        [],                                             // the Draw tab's shapes (Terra Draw's layers), see drawVisible
   plansRoads:   ['pl-roads', 'pl-roads-line'],
   plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
   plansLand:    ['pl-land'],
@@ -361,7 +384,7 @@ const GROUPS = {
   simCross:     ['sim-cross', 'sim-cross-label'],
   simSpeed:     ['sim-speed'],
 };
-const vis = { loop: true, junctions: true, crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
+const vis = { loop: true, junctions: true, drawn: false, crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
   plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false,
   simWalk: false, simCross: false, simSpeed: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
@@ -372,6 +395,7 @@ const poiFilter = () => ['all', ['in', ['get', 'category'], ['literal', Object.k
 
 function applyVis() {
   document.body.classList.toggle('hide-jn', !vis.junctions);
+  drawVisible(vis.drawn);
   for (const [g, ids] of Object.entries(GROUPS))
     ids.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', vis[g] ? 'visible' : 'none'));
   map.getLayer('poi') && map.setFilter('poi', poiFilter());
@@ -578,6 +602,7 @@ function addOverlays() {
     paint: { 'text-color': '#862e9c', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
 
   applyVis();
+  drawInit();
 }
 map.on('style.load', () => load.then(addOverlays));
 
@@ -659,12 +684,13 @@ function planPopup(f, e) {
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
 map.on('click', e => {
+  if (D2.on) return;                                  // the Draw tab owns clicks on the map
   const hits = hitsAt(e.point); if (!hits.length) return;
   const top = CLICKABLE.map(id => hits.find(h => h.layer.id === id)).find(Boolean);
   const [ll, html] = POPUPS[top.layer.id](top, e);
   new maplibregl.Popup({ offset: 8, maxWidth: '280px' }).setLngLat(ll).setHTML(html).addTo(map);
 });
-map.on('mousemove', e => { map.getCanvas().style.cursor = hitsAt(e.point).length ? 'pointer' : ''; });
+map.on('mousemove', e => { if (D2.on) return; map.getCanvas().style.cursor = hitsAt(e.point).length ? 'pointer' : ''; });
 
 /* =====================================================================
    Story — each tab sets the map and renders its own content
@@ -1100,10 +1126,320 @@ function sectionsHTML() {
   return `<p class="small" style="margin:0 0 8px">Cross-sections 330 m from the Water Tank junction, drawn to scale across the ~30 m between property walls (numbers in metres).</p>${bars}${legend}`;
 }
 
+/* =====================================================================
+   Draw tab — a proposal drawn in the browser, saved as a file to share.
+   Nothing is uploaded: the drawing lives in this browser (localStorage) until it is downloaded.
+   Drawing and editing use Terra Draw; types, labels, the file format and the panel are ours.
+   File format (GeoJSON): each feature has change_type, label, notes, proposed_by, colour, shape;
+   the collection also carries "types" (the palette, incl. custom types) and "proposed_by".
+   ===================================================================== */
+const DRAW_KEY = 'madiwala-draw-v1';
+// laptops and desktops only: a mouse or trackpad, and wider than the phone layout
+const DRAW_OK = matchMedia('(hover: hover) and (pointer: fine)').matches && innerWidth > 720;
+const DRAW_LIBS = ['https://unpkg.com/terra-draw@1.39.0/dist/terra-draw.umd.js',
+                   'https://unpkg.com/terra-draw-maplibre-gl-adapter@1.5.0/dist/terra-draw-maplibre-gl-adapter.umd.js'];
+const DRAW_SHAPES = { point: { mode: 'point', word: 'point', geom: 'Point' }, line: { mode: 'linestring', word: 'line', geom: 'LineString' },
+                      area: { mode: 'polygon', word: 'area', geom: 'Polygon' } };
+const DRAW_DEFAULT_TYPES = [
+  { name: 'Signalised crossing', shape: 'point', colour: '#7048e8' }, { name: 'Zebra crossing', shape: 'point', colour: '#2f9e44' },
+  { name: 'Remove crossing', shape: 'point', colour: '#e03131' }, { name: 'Move or add bus stop', shape: 'point', colour: '#1971c2' },
+  { name: 'Turn ban', shape: 'point', colour: '#c2255c' }, { name: 'Note', shape: 'point', colour: '#495057' },
+  { name: 'Close lanes', shape: 'line', colour: '#e8590c' }, { name: 'Widen footpath', shape: 'line', colour: '#0c8599' },
+  { name: 'New footpath', shape: 'line', colour: '#37b24d' }, { name: 'Pedestrianise', shape: 'line', colour: '#9c36b5' },
+  { name: 'Area of concern', shape: 'area', colour: '#f08c00' },
+];
+document.body.classList.toggle('no-draw', !DRAW_OK);
+const D2 = { types: DRAW_DEFAULT_TYPES.map(t => Object.assign({}, t)), name: '', file: '', active: null, sel: null, td: null, status: DRAW_OK ? 'loading' : 'phone', on: false, saveTimer: 0 };
+
+// ---- pure helpers (no map needed) ----
+const drawClean = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+// file name: always DDMMYY-hhmmss-<name>.geojson, in the computer's own time; the name part is whatever the planner typed
+const drawSlug = s => String(s == null ? '' : s).replace(/\.geojson$|\.json$/i, '').replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+function drawFileName(typed, who, when) {
+  const two = n => (n < 10 ? '0' : '') + n;
+  const stamp = two(when.getDate()) + two(when.getMonth() + 1) + two(when.getFullYear() % 100) + '-' + two(when.getHours()) + two(when.getMinutes()) + two(when.getSeconds());
+  return stamp + '-' + (drawSlug(typed) || drawSlug(who) || 'proposal') + '.geojson';
+}
+const drawColour = c => /^#[0-9a-fA-F]{6}$/.test(String(c)) ? String(c).toLowerCase() : '#495057';
+const drawShapeOf = g => g === 'Point' ? 'point' : g === 'LineString' ? 'line' : g === 'Polygon' ? 'area' : null;
+function drawType(name) { for (let i = 0; i < D2.types.length; i++) if (D2.types[i].name === name) return D2.types[i]; return null; }
+function drawAddType(name, shape, colour, custom) {
+  name = drawClean(name, 40);
+  if (!name || !DRAW_SHAPES[shape]) return null;
+  const had = drawType(name);
+  if (had) return had;
+  const t = { name: name, shape: shape, colour: drawColour(colour) };
+  if (custom) t.custom = true;
+  D2.types.push(t); return t;
+}
+function drawMeasure(geom) {              // metres along a line, square metres of an area
+  const R = 6371008.8, rad = Math.PI / 180;
+  if (geom.type === 'LineString') {
+    let m = 0;
+    for (let i = 1; i < geom.coordinates.length; i++) {
+      const a = geom.coordinates[i - 1], b = geom.coordinates[i];
+      const x = (b[0] - a[0]) * rad * Math.cos((a[1] + b[1]) / 2 * rad), y = (b[1] - a[1]) * rad;
+      m += Math.sqrt(x * x + y * y) * R;
+    }
+    return Math.round(m) + ' m';
+  }
+  if (geom.type === 'Polygon') {
+    const r = geom.coordinates[0], k = Math.cos(r[0][1] * rad); let s = 0;
+    for (let i = 1; i < r.length; i++) s += (r[i - 1][0] * r[i][1] - r[i][0] * r[i - 1][1]);
+    return fmt(Math.round(Math.abs(s) / 2 * rad * rad * R * R * k / 10) * 10) + ' m²';
+  }
+  return '';
+}
+function drawAnchor(geom) {               // where a shape's label sits
+  if (geom.type === 'Point') return geom.coordinates;
+  const c = geom.type === 'LineString' ? geom.coordinates : geom.coordinates[0].slice(0, -1);
+  if (geom.type === 'LineString') return c[Math.floor(c.length / 2)];
+  let x = 0, y = 0; c.forEach(p => { x += p[0]; y += p[1]; }); return [x / c.length, y / c.length];
+}
+const drawIsShape = f => f && f.properties && ['point', 'linestring', 'polygon'].indexOf(f.properties.mode) >= 0 && drawShapeOf(f.geometry.type)
+  && !f.properties.currentlyDrawing && !f.properties.closingPoint && !f.properties.coordinatePoint && !f.properties.snappingPoint;
+function drawToFile(features) {           // what the planner downloads
+  return { type: 'FeatureCollection', name: 'Madiwala loop proposal', format: 'corridor_design_challenge draw v1',
+    proposed_by: D2.name, saved: new Date().toISOString(), types: D2.types.map(t => ({ name: t.name, shape: t.shape, colour: t.colour, custom: !!t.custom })),
+    features: features.filter(drawIsShape).map(f => ({ type: 'Feature', geometry: f.geometry, properties: {
+      change_type: f.properties.change_type || '', label: f.properties.label || '', notes: f.properties.notes || '',
+      proposed_by: D2.name, colour: drawColour(f.properties.colour), shape: drawShapeOf(f.geometry.type) } })) };
+}
+function drawFromFile(obj) {              // check a loaded file and turn it into shapes; throws with a plain message if it is not one
+  if (!obj || obj.type !== 'FeatureCollection' || !Array.isArray(obj.features)) throw new Error('This is not a proposal file (it should be a GeoJSON file saved from this page or from the QGIS template).');
+  if (obj.features.length > 2000) throw new Error('This file has more than 2,000 shapes, which is more than this page can load.');
+  const ok = v => Array.isArray(v) && v.length >= 2 && isFinite(v[0]) && isFinite(v[1]) && Math.abs(v[0]) <= 180 && Math.abs(v[1]) <= 90;
+  const out = { name: drawClean(obj.proposed_by, 60), types: [], shapes: [], skipped: 0 };
+  (Array.isArray(obj.types) ? obj.types : []).slice(0, 200).forEach(t => { if (t && DRAW_SHAPES[t.shape] && drawClean(t.name, 40)) out.types.push({ name: drawClean(t.name, 40), shape: t.shape, colour: drawColour(t.colour), custom: !!t.custom }); });
+  obj.features.forEach(f => {
+    const g = f && f.geometry, shape = g && drawShapeOf(g.type), p = (f && f.properties) || {};
+    const good = shape === 'point' ? ok(g.coordinates) : shape === 'line' ? Array.isArray(g.coordinates) && g.coordinates.length >= 2 && g.coordinates.every(ok)
+      : shape === 'area' ? Array.isArray(g.coordinates) && Array.isArray(g.coordinates[0]) && g.coordinates[0].length >= 4 && g.coordinates[0].every(ok) : false;
+    if (!good) { out.skipped++; return; }
+    const coords = shape === 'point' ? [+g.coordinates[0], +g.coordinates[1]] : shape === 'line' ? g.coordinates.map(c => [+c[0], +c[1]]) : [g.coordinates[0].map(c => [+c[0], +c[1]])];
+    out.shapes.push({ geometry: { type: g.type, coordinates: coords }, change_type: drawClean(p.change_type, 40) || 'Note', label: drawClean(p.label, 80),
+      notes: drawClean(p.notes, 600), colour: drawColour(p.colour), shape: shape });
+  });
+  return out;
+}
+
+// ---- Terra Draw: start-up, shapes on the map, autosave ----
+function drawShapes() { return D2.td ? D2.td.getSnapshot().filter(drawIsShape) : []; }
+function drawSave() {
+  clearTimeout(D2.saveTimer);
+  D2.saveTimer = setTimeout(() => {
+    try { localStorage.setItem(DRAW_KEY, JSON.stringify({ v: 1, name: D2.name, file: D2.file, types: D2.types, features: drawShapes() })); } catch (e) { /* private window or storage full: the drawing still downloads */ }
+    drawLabels(); drawVisible(vis.drawn);
+  }, 300);
+}
+function drawLabels() {
+  const src = map.getSource('draw-labels'); if (!src) return;
+  src.setData({ type: 'FeatureCollection', features: drawShapes().map(f => ({ type: 'Feature', geometry: { type: 'Point', coordinates: drawAnchor(f.geometry) },
+    properties: { text: f.properties.label || f.properties.change_type || '', point: f.geometry.type === 'Point' } })) });
+}
+function drawVisible(on) {                 // Terra Draw's own layers (ids start "draw-td") and our label layer
+  if (!map.getStyle()) return;
+  map.getStyle().layers.forEach(l => { if (l.id.indexOf('draw-td') === 0 || l.id === 'draw-label') map.setLayoutProperty(l.id, 'visibility', on ? 'visible' : 'none'); });
+}
+function drawPut(shape) {                  // add one shape (from a file or from storage) to the map
+  const mode = DRAW_SHAPES[shape.shape].mode;
+  return D2.td.addFeatures([{ type: 'Feature', id: D2.td.getFeatureId(), geometry: shape.geometry,
+    properties: { mode: mode, change_type: shape.change_type, label: shape.label, notes: shape.notes, colour: shape.colour } }]);
+}
+function drawInit() {
+  if (D2.td || !window.terraDraw || !window.terraDrawMaplibreGlAdapter || !map.getSource('stretch')) return;
+  const T = window.terraDraw, colour = f => (f.properties && f.properties.colour) || (D2.active ? D2.active.colour : '#495057');
+  const edit = { feature: { draggable: true, coordinates: { midpoints: true, draggable: true, deletable: true } } };
+  try {
+    D2.td = new T.TerraDraw({
+      adapter: new window.terraDrawMaplibreGlAdapter.TerraDrawMapLibreGLAdapter({ map: map, prefixId: 'draw-td' }),
+      modes: [
+        new T.TerraDrawPointMode({ styles: { pointColor: colour, pointWidth: 7, pointOutlineColor: '#ffffff', pointOutlineWidth: 2 } }),
+        new T.TerraDrawLineStringMode({ styles: { lineStringColor: colour, lineStringWidth: 5 } }),
+        new T.TerraDrawPolygonMode({ styles: { fillColor: colour, fillOpacity: 0.25, outlineColor: colour, outlineWidth: 3 } }),
+        new T.TerraDrawSelectMode({ flags: { point: { feature: { draggable: true } }, linestring: edit, polygon: edit },
+          styles: { selectedPointColor: colour, selectedPointWidth: 9, selectedPointOutlineColor: '#1d1d1b', selectedPointOutlineWidth: 3,
+            selectedLineStringColor: colour, selectedLineStringWidth: 7, selectedPolygonColor: colour, selectedPolygonFillOpacity: 0.35,
+            selectedPolygonOutlineColor: '#1d1d1b', selectedPolygonOutlineWidth: 3 } }),
+      ],
+      undoRedo: { sessionLevel: new T.TerraDrawSessionUndoRedo(), keyboardShortcuts: new T.TerraDrawUndoRedoKeyboardShortcuts() },
+    });
+    D2.td.start();
+    map.addSource('draw-labels', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    map.addLayer({ id: 'draw-label', type: 'symbol', source: 'draw-labels',
+      layout: { 'text-field': ['get', 'text'], 'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-max-width': 12,
+        'text-anchor': 'top', 'text-offset': [0, 0.8], 'text-allow-overlap': true },
+      paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#ffffff', 'text-halo-width': 2 } });
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(DRAW_KEY) || 'null'); } catch (e) { saved = null; }
+    if (saved && saved.v === 1) {
+      const got = drawFromFile({ type: 'FeatureCollection', proposed_by: saved.name, types: saved.types,
+        features: (saved.features || []).map(f => ({ geometry: f.geometry, properties: f.properties })) });
+      D2.name = got.name; D2.file = drawSlug(saved.file); got.types.forEach(t => drawAddType(t.name, t.shape, t.colour, t.custom)); got.shapes.forEach(drawPut);
+    }
+    D2.td.clearUndoRedoHistory();
+    D2.td.on('finish', (id, ctx) => {       // a new shape was completed: give it its type, then open it for labelling
+      if (ctx && ctx.action === 'draw' && D2.active) {
+        D2.td.updateFeatureProperties(id, { change_type: D2.active.name, colour: D2.active.colour, label: '', notes: '' });
+        D2.active = null; D2.td.setMode('select'); D2.td.selectFeature(id);
+      }
+      drawSave(); drawPanel();
+    });
+    D2.td.on('change', () => drawSave());
+    D2.td.on('select', id => { D2.sel = id; drawPanel(); });
+    D2.td.on('deselect', () => { D2.sel = null; drawPanel(); });
+    D2.td.on('history', () => drawPanel());
+    D2.td.setMode(D2.on ? 'select' : 'static');
+    D2.status = 'ready'; drawLabels(); applyVis(); drawPanel();
+    map.once('idle', () => drawVisible(vis.drawn));     // Terra Draw adds its layers on the next frame
+  } catch (e) { console.error(e); D2.status = 'failed'; drawPanel(); }
+}
+if (DRAW_OK) (function loadNext(i) {        // fetch the drawing library only where the Draw tab is offered
+  if (i >= DRAW_LIBS.length) { load.then(() => map.loaded() ? drawInit() : map.once('idle', drawInit)); return; }
+  const s = document.createElement('script'); s.src = DRAW_LIBS[i]; s.onload = () => loadNext(i + 1);
+  s.onerror = () => { D2.status = 'failed'; drawPanel(); }; document.head.appendChild(s);
+})(0);
+
+// ---- the panel ----
+const drawSw = (t, big) => `<span class="sw" style="width:${t.shape === 'line' ? 18 : 12}px;height:${t.shape === 'line' ? 4 : 12}px;border-radius:${t.shape === 'point' ? '50%' : '2px'};background:${t.colour}${t.shape === 'area' ? ';opacity:.55;outline:2px solid ' + t.colour : ''}"></span>`;
+function drawPanel() { if (current && current.id === 'draw') { const y = body.scrollTop; body.innerHTML = current.render(); body.scrollTop = y; } }
+function drawRender() {
+  if (D2.status === 'phone') return `<h2 class="headline">Drawing needs a laptop or desktop</h2>
+    <p class="lede">Placing and moving shapes on the map needs a mouse or trackpad and a wider screen. Open this page on a computer to draw a proposal.</p>`;
+  if (D2.status === 'failed') return `<h2 class="headline">The drawing tools did not load</h2>
+    <p class="lede">The drawing library could not be fetched. Check the internet connection and reload the page. The rest of the site works without it.</p>`;
+  if (D2.status !== 'ready') return `<h2 class="headline">Draw your proposal</h2><p class="lede">Loading the drawing tools…</p>`;
+  const S = drawShapes(), sel = D2.sel != null ? D2.td.getSnapshotFeature(D2.sel) : null, mode = D2.td.getMode();
+  const typeBtn = t => `<button class="dtype" data-draw-type="${esc(t.name)}" aria-pressed="${D2.active === t}">${drawSw(t)}<span>${esc(t.name)}</span><small>${DRAW_SHAPES[t.shape].word}</small></button>`;
+  const hint = D2.active ? (D2.active.shape === 'point' ? 'Click the map to place it.'
+    : `Click the map to add each corner. To finish, click the last corner again or press Enter. Esc cancels.`) : '';
+  const selBox = sel && drawIsShape(sel) ? (() => {
+    const p = sel.properties, shape = drawShapeOf(sel.geometry.type), m = drawMeasure(sel.geometry);
+    return `<div class="dsel"><div class="dsel-h">${drawSw({ shape: shape, colour: drawColour(p.colour) })} <b>Selected ${DRAW_SHAPES[shape].word}</b>${m ? `<span>${m}</span>` : ''}</div>
+      <label>Label on the map<input type="text" maxlength="80" data-draw-field="label" value="${esc(p.label || '')}" placeholder="e.g. Crossing at the mosque gate"></label>
+      <label>Type<select data-draw-field="change_type">${D2.types.filter(t => t.shape === shape).map(t => `<option${t.name === p.change_type ? ' selected' : ''}>${esc(t.name)}</option>`).join('')}
+        ${drawType(p.change_type) ? '' : `<option selected>${esc(p.change_type || '')}</option>`}</select></label>
+      <label>Note (why, or any detail)<textarea rows="3" maxlength="600" data-draw-field="notes">${esc(p.notes || '')}</textarea></label>
+      <p class="small">Drag the shape to move it. On a line or area, drag a corner to move it, drag a midpoint to add one.</p>
+      <button class="btn" data-draw-act="delete">Delete this shape</button></div>`; })() : '';
+  const list = S.length ? `<table class="sidetab dlist"><tr><th>Your shapes</th><th></th></tr>${S.map(f => `<tr data-draw-pick="${esc(f.id)}"${f.id === D2.sel ? ' class="on"' : ''}>
+      <td>${drawSw({ shape: drawShapeOf(f.geometry.type), colour: drawColour(f.properties.colour) })} ${esc(f.properties.label || f.properties.change_type || 'Shape')}
+      ${f.properties.label ? `<small>${esc(f.properties.change_type || '')}</small>` : ''}</td><td>${drawMeasure(f.geometry)}</td></tr>`).join('')}</table>` : '';
+  return `
+    <h2 class="headline">Draw your proposal</h2>
+    <p class="lede">Mark the changes you would make, label them, and download the result as one small file to send back.
+    Your drawing stays in this browser until you download it. Nothing is uploaded.</p>
+    <label class="dname">Your name<input type="text" maxlength="60" data-draw-field="name" value="${esc(D2.name)}" placeholder="so we know whose proposal this is"></label>
+    <h3 class="dh">1 · Pick what to add</h3>
+    <div class="dtypes">${D2.types.map(typeBtn).join('')}</div>
+    ${D2.active ? `<p class="dhint"><b>${esc(D2.active.name)}:</b> ${hint} <button class="btn" data-draw-act="cancel">Cancel</button></p>`
+      : `<p class="dhint">${S.length ? 'Click a shape on the map to select it, or pick a type to add another.' : 'Pick a type above, then click on the map.'}</p>`}
+    ${fold('Add your own type', `<div class="dnew"><label>Name<input type="text" maxlength="40" id="dnew-name" placeholder="e.g. Raised table"></label>
+      <label>Shape<select id="dnew-shape"><option value="point">Point</option><option value="line">Line</option><option value="area">Area</option></select></label>
+      <label>Colour<input type="color" id="dnew-colour" value="#d6336c"></label>
+      <button class="btn" data-draw-act="addtype">Add type</button></div>
+      <p class="small">Your own types stay in this browser for next time and travel inside the file you download.
+      ${D2.types.filter(t => t.custom).length ? 'Yours: ' + D2.types.filter(t => t.custom).map(t => `<span class="dchip">${drawSw(t)} ${esc(t.name)} <button data-draw-rmtype="${esc(t.name)}" aria-label="Remove type ${esc(t.name)}">×</button></span>`).join(' ') : ''}</p>`)}
+    <h3 class="dh">2 · Label it</h3>
+    ${selBox || `<p class="small">Select a shape to give it a label and a note.</p>`}
+    ${list}
+    <h3 class="dh">3 · Save and send</h3>
+    <label class="dname">File name (optional)<input type="text" maxlength="60" data-draw-field="file" value="${esc(D2.file)}" placeholder="${esc(drawSlug(D2.name) || 'proposal')}"></label>
+    <p class="small dfname">Saves as <code>${esc(drawFileName(D2.file, D2.name, new Date()))}</code>. The date and time are always added in front.</p>
+    <div class="dacts">
+      <button class="btn dprimary" data-draw-act="download"${S.length ? '' : ' disabled'}>Download my proposal</button>
+      <button class="btn" data-draw-act="undo"${D2.td.canUndo() ? '' : ' disabled'}>Undo</button>
+      <button class="btn" data-draw-act="redo"${D2.td.canRedo() ? '' : ' disabled'}>Redo</button>
+      <label class="btn dfile">Load a proposal<input type="file" accept=".geojson,.json,application/geo+json,application/json" data-draw-file hidden></label>
+      <button class="btn" data-draw-act="clear"${S.length ? '' : ' disabled'}>Clear everything</button>
+    </div>
+    <p class="small">The download is a .geojson file. Email it back; it also opens in QGIS.</p>
+    ${fold('How this works', `<ul>
+      <li><strong>It saves as you go</strong>, in this browser on this computer. Closing the tab keeps your drawing; clearing the browser's data, or using a private window, does not.</li>
+      <li><strong>Nothing is sent anywhere.</strong> The file you download is the only copy that leaves your computer.</li>
+      <li><strong>Turn other layers on</strong> from Layers (top right) to draw over the crossings, bus stops, footpaths or the planned flyover.</li>
+      <li><strong>Loading a proposal</strong> shows someone else's file on the map. It asks before replacing your own drawing.</li></ul>`)}`;
+}
+const DRAW_SCENE = { id: 'draw', tab: 'Draw',
+  layers: { drawn: true, crossings: true, wall: true },
+  view() { if (!drawShapes().length) fitRoad(); },
+  enter() { D2.on = true; map.doubleClickZoom.disable(); if (D2.td) D2.td.setMode('select'); },
+  leave() { D2.on = false; D2.active = null; D2.sel = null; map.doubleClickZoom.enable(); if (D2.td) D2.td.setMode('static'); },
+  render: drawRender };
+if (DRAW_OK) SCENES.push(DRAW_SCENE);
+
+function drawWire() {                       // called once the panel element exists (tabs section below)
+body.addEventListener('click', e => {
+  if (!current || current.id !== 'draw' || !D2.td) return;
+  const t = e.target.closest('[data-draw-type]'), a = e.target.closest('[data-draw-act]'), pick = e.target.closest('[data-draw-pick]'), rm = e.target.closest('[data-draw-rmtype]');
+  if (t) {
+    const type = drawType(t.dataset.drawType); if (!type) return;
+    D2.active = D2.active === type ? null : type;
+    D2.td.setMode(D2.active ? DRAW_SHAPES[D2.active.shape].mode : 'select'); return drawPanel();
+  }
+  if (pick) { const f = D2.td.getSnapshotFeature(pick.dataset.drawPick); if (!f) return;
+    D2.active = null; D2.td.setMode('select'); D2.td.selectFeature(f.id); return flyTo(drawAnchor(f.geometry)); }
+  if (rm) { const name = rm.dataset.drawRmtype;
+    if (drawShapes().some(f => f.properties.change_type === name)) return alert('This type is used by a shape in your drawing. Change or delete those shapes first.');
+    D2.types = D2.types.filter(x => !(x.custom && x.name === name)); drawSave(); return drawPanel(); }
+  if (!a) return;
+  const act = a.dataset.drawAct;
+  if (act === 'cancel') { D2.active = null; D2.td.setMode('select'); }
+  if (act === 'delete' && D2.sel != null) { const id = D2.sel; D2.td.deselectFeature(id); D2.td.removeFeatures([id]); D2.sel = null; drawSave(); }
+  if (act === 'undo') D2.td.undo();
+  if (act === 'redo') D2.td.redo();
+  if (act === 'clear' && confirm('Remove every shape in your drawing? Download it first if you want to keep a copy.')) { D2.sel = null; D2.td.clear(); D2.td.clearUndoRedoHistory(); drawSave(); }
+  if (act === 'addtype') {
+    const n = document.getElementById('dnew-name').value, made = drawAddType(n, document.getElementById('dnew-shape').value, document.getElementById('dnew-colour').value, true);
+    if (!made) return alert('Give the new type a name.');
+    D2.active = made; D2.td.setMode(DRAW_SHAPES[made.shape].mode); drawSave();
+  }
+  if (act === 'download') {
+    const file = drawToFile(D2.td.getSnapshot());
+    const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 1)], { type: 'application/geo+json' }));
+    const link = Object.assign(document.createElement('a'), { href: url, download: drawFileName(D2.file, D2.name, new Date()) });
+    document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); return;
+  }
+  drawPanel();
+});
+body.addEventListener('input', e => {       // typing: keep the shape and the storage in step, without redrawing the panel under the cursor
+  const f = e.target.dataset && e.target.dataset.drawField; if (!f || !D2.td) return;
+  if (f === 'name') { D2.name = drawClean(e.target.value, 60); return drawSave(); }
+  if (f === 'file') { D2.file = drawClean(e.target.value, 60); const el = body.querySelector('.dfname code'); if (el) el.textContent = drawFileName(D2.file, D2.name, new Date()); return drawSave(); }
+  if (D2.sel == null) return;
+  if (f === 'label') D2.td.updateFeatureProperties(D2.sel, { label: drawClean(e.target.value, 80) });
+  if (f === 'notes') D2.td.updateFeatureProperties(D2.sel, { notes: drawClean(e.target.value, 600) });
+  drawSave();
+});
+body.addEventListener('change', e => {
+  if (!D2.td) return;
+  const f = e.target.dataset && e.target.dataset.drawField;
+  if (f === 'change_type' && D2.sel != null) { const t = drawType(e.target.value); if (t) { D2.td.updateFeatureProperties(D2.sel, { change_type: t.name, colour: t.colour }); drawSave(); } return drawPanel(); }
+  if (f === 'label' || f === 'notes' || f === 'name' || f === 'file') return drawPanel();
+  if (e.target.dataset && 'drawFile' in e.target.dataset && e.target.files[0]) {
+    const file = e.target.files[0]; e.target.value = '';
+    if (file.size > 5e6) return alert('This file is larger than 5 MB, which is more than a proposal should be.');
+    file.text().then(txt => {
+      let got; try { got = drawFromFile(JSON.parse(txt)); } catch (err) { return alert(err instanceof SyntaxError ? 'This file could not be read as a proposal.' : err.message); }
+      if (!got.shapes.length) return alert('No shapes were found in this file.');
+      if (drawShapes().length && !confirm(`Replace your current drawing with the ${got.shapes.length} shape(s) in "${file.name}"? Download yours first if you want to keep it.`)) return;
+      D2.sel = null; D2.td.setMode('select'); D2.td.clear();
+      got.types.forEach(t => drawAddType(t.name, t.shape, t.colour, t.custom));
+      got.shapes.forEach(s => { if (!drawType(s.change_type)) drawAddType(s.change_type, s.shape, s.colour, true); drawPut(s); });
+      if (got.name && !D2.name) D2.name = got.name;
+      D2.td.clearUndoRedoHistory(); drawSave(); drawPanel();
+      map.fitBounds(boundsOf(got.shapes.map(s => drawAnchor(s.geometry))), { padding: pad(), maxZoom: 18, duration: 900 });
+      if (got.skipped) alert(`${got.skipped} item(s) in the file were not points, lines or areas and were left out.`);
+    });
+  }
+});
+}
+
 /* tabs, navigation, deep links */
 const tabsEl = document.getElementById('tabs'), body = document.getElementById('body');
 tabsEl.innerHTML = SCENES.map(s => `<button class="tab" role="tab" id="tab-${s.id}" data-id="${s.id}" aria-selected="false">${s.tab}</button>`).join('');
 let current = null;
+drawWire();
 function show(id, { fly = true } = {}) {
   const i = Math.max(0, SCENES.findIndex(s => s.id === id)), s = SCENES[i];
   if (current && current !== s) current.leave?.();
