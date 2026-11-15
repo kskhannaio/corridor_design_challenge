@@ -188,6 +188,7 @@
   .maplibregl-popup-content { background: var(--panel); color: var(--ink); border-radius: 8px; font: 13px/1.45 system-ui, sans-serif; padding: 10px 14px; }
   .maplibregl-popup-tip { border-top-color: var(--panel) !important; border-bottom-color: var(--panel) !important; }
   .pop-k { color: var(--muted); font-size: 12px; }
+  .hide-jn .jn-marker { display: none; }
   .jn-marker { width: 26px; height: 26px; border-radius: 50%; background: #1d1d1b; color: #fff; font: 700 13px system-ui, sans-serif;
     display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
   .xs-marker { background: #1d1d1b; color: #fff; font: 600 12px system-ui, sans-serif; padding: 4px 8px; border-radius: 6px;
@@ -247,6 +248,8 @@
     <button id="bm-sat" aria-pressed="false">Satellite</button>
   </div>
   <h4>Study</h4>
+  <label><input type="checkbox" data-g="loop"> <span class="sw" style="width:16px;height:5px;border-radius:3px;background:#e4572e"></span> The loop (A–B–C)</label>
+  <label><input type="checkbox" data-g="junctions"> <span class="sw" style="width:14px;height:14px;border-radius:50%;background:#1d1d1b"></span> Junction markers A, B, C</label>
   <label><input type="checkbox" data-g="crossings"> Crossings &amp; gaps</label>
   <label><input type="checkbox" data-g="footpaths"> Footpath widths</label>
   <label><input type="checkbox" data-g="wall"> Flyover ramp wall</label>
@@ -348,6 +351,8 @@ const GROUPS = {
   r300:         ['ring-300-casing', 'ring-300', 'ring-300-label'],
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
+  loop:         ['stretch-halo', 'stretch-line', 'stretch-arrows'],
+  junctions:    [],                                             // DOM markers, shown or hidden in applyVis
   plansRoads:   ['pl-roads', 'pl-roads-line'],
   plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
   plansLand:    ['pl-land'],
@@ -356,7 +361,7 @@ const GROUPS = {
   simCross:     ['sim-cross', 'sim-cross-label'],
   simSpeed:     ['sim-speed'],
 };
-const vis = { crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
+const vis = { loop: true, junctions: true, crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
   plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false,
   simWalk: false, simCross: false, simSpeed: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
@@ -366,6 +371,7 @@ const poiFilter = () => ['all', ['in', ['get', 'category'], ['literal', Object.k
   ...(listedOn ? [] : [['!', ['get', 'listed']]])];
 
 function applyVis() {
+  document.body.classList.toggle('hide-jn', !vis.junctions);
   for (const [g, ids] of Object.entries(GROUPS))
     ids.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', vis[g] ? 'visible' : 'none'));
   map.getLayer('poi') && map.setFilter('poi', poiFilter());
@@ -1107,7 +1113,7 @@ function show(id, { fly = true } = {}) {
   document.getElementById(`tab-${s.id}`).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   body.setAttribute('aria-labelledby', `tab-${s.id}`);
   body.innerHTML = s.render(); body.scrollTop = 0;
-  Object.keys(vis).forEach(g => { if (g !== 'sat') vis[g] = !!s.layers[g]; });
+  Object.keys(vis).forEach(g => { if (g !== 'sat' && g !== 'loop' && g !== 'junctions') vis[g] = !!s.layers[g]; });   // base map and the loop stay as the reader set them
   if (map.getLayer('poi')) applyVis(); else refreshCats();
   if (entering) s.enter?.();
   if (fly) s.view();
