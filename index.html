@@ -633,7 +633,7 @@ const POPUPS = {
 };
 function planPopup(f, e) {
   const p = f.properties, note = { proposed_deck_level2: ' Separated from Level-1 using the drawings\' second-level lines: an interpretation.',
-    metro_tunnel: ' Underground: both tubes are drawn in one band.', bmrcl_land: ' The metro survey sheets show the Phase-3A line and a St John\'s Hospital station along Sarjapura Road here.',
+    metro_tunnel: ' Underground.', bmrcl_land: ' The metro survey sheets show the Phase-3A line and a St John\'s Hospital station along Sarjapura Road here.',
     underpass: ' Only partly traced.' }[p.layer] || '';
   return [e.lngLat, `<strong>${esc(p.what)}</strong><br>About ${fmt(Math.round(p.area_m2 / 10) * 10)} m² on the drawings` +
     `<br><span class="pop-k">${p.scan ? 'From the scanned metro survey sheets: placed from a survey benchmark, outline picked by hand, good to a few metres. The sheets do not say whether the station is underground or at street level.' : 'Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.'}${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
@@ -875,7 +875,7 @@ const SCENES = [
       const sq = (c, o = 0.55) => `<span class="sw" style="width:22px;height:10px;border-radius:2px;background:${c};opacity:${o}"></span>`;
       const rows = [['proposed_deck', 'Proposed deck, Level-1: loops, rotary, ramps'], ['proposed_deck_level2', 'Proposed deck, second level over Level-1 (Silk Board)'],
         ['existing_flyover', 'Existing flyovers, incl. the Silk Board double-decker'], ['ejipura_flyover', 'Ejipura flyover approach (under construction)'],
-        ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Tunnel, most likely the North–South road tunnel (underground)'],
+        ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Entry Ramp 08: ramp from Sarjapura Road into the road tunnel (underground)'],
         ['metro_station', "St John's Hospital metro station box (from the metro survey sheets)"], ['metro_station_land', 'Land, parking and north-side structure for that station'],
         ['land_acquisition', 'Land to be acquired'], ['bmrcl_land', 'BMRCL (metro) land']]
         .filter(([l]) => area(l)).map(([l, t]) => `<tr><td>${sq(PLAN_COLORS[l])} ${t}</td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
@@ -889,16 +889,17 @@ const SCENES = [
         <h2 class="headline">A flyover deck over the loop, a tunnel beneath it and a metro station beside it</h2>
         <p class="lede">The elevated-corridor tender drawings show what is planned from the loop south to Bommanahalli. A Level-1 deck runs
         above 100 Feet Road and Hosur Road, with a <strong>rotary above the Madiwala junction (B)</strong>, a loop and ramps. At Silk Board a
-        second level rises over it. A <strong>tunnel</strong> passes under Hosur Road and the St John's grounds near St John's junction (C).
-        The drawings call its tubes "Main Tunnel Tube 1" and "Tube 2", and the corridor's concept drawing names a North–South tunnel with
-        vehicle cross-passages, so it is most likely a <strong>road tunnel</strong>. The <strong>Metro Phase-3A</strong> line is separate:
-        the metro's own survey sheets run it along Sarjapura Road, with a <strong>St John's Hospital station</strong> in the St John's
-        sports ground beside the road at junction C, and on a viaduct east of junction A.</p>
+        second level rises over it. A <strong>road tunnel</strong> runs under Hosur Road (the drawings call its tubes "Main Tunnel Tube 1" and "Tube 2"),
+        and it has ramps on the loop: <strong>Entry Ramp 08</strong> leaves Sarjapura Road by St John's, drops under the college
+        playground and joins the tunnel at St John's junction (C); <strong>Exit Ramp 01</strong> brings tunnel traffic up onto Sarjapura
+        Road at the same junction. The <strong>Metro Phase-3A</strong> line is separate: it runs along Sarjapura Road, with a station in
+        the St John's sports ground beside the road at junction C, and on a viaduct east of junction A. The metro's survey sheets call
+        the station St John's Hospital; the corridor's loop plan calls it Koramangala 2nd Block.</p>
         ${key([
           [sq(PLAN_COLORS.proposed_deck), 'Proposed deck, Level-1 · ' + sq(PLAN_COLORS.proposed_deck_level2) + '&nbsp;second level'],
           [sq(PLAN_COLORS.existing_flyover), 'Existing flyovers · ' + sq(PLAN_COLORS.ejipura_flyover) + '&nbsp;Ejipura flyover'],
           [sq(PLAN_COLORS.metro), 'Metro line and stations · ' + sq(PLAN_COLORS.metro_station) + "&nbsp;St John's Hospital station"],
-          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Tunnel, most likely a road tunnel, underground'],
+          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Entry Ramp 08 into the road tunnel, underground'],
           [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land'],
         ])}
         <table class="sidetab"><tr><th>What the drawings show</th><th>Area</th></tr>${rows}</table>
@@ -906,8 +907,8 @@ const SCENES = [
           shape on the map for the reason.</p>
           <table class="sidetab"><tr><th>Part</th><th>How sure</th></tr>${parts}</table>`)}
         <p class="lede">For people on foot the deck is what matters at street level: on 100 Feet Road and Hosur Road any new crossing would sit
-        beneath it. A metro station at junction C would bring crowds on foot to the corner where crossing is already hardest. The tunnel
-        does not change the street above it once built, unless it surfaces nearby; building any of this will.</p>
+        beneath it. A metro station at junction C would bring crowds on foot to the corner where crossing is already hardest. And the
+        tunnel does surface here: its entry and exit ramps put tunnel traffic onto Sarjapura Road beside the hospital.</p>
         ${fold('Limits and caveats', `<ul>
           <li><strong>Tender drawings, not final designs.</strong> They are from the tender stage (October 2026) and may change.</li>
           <li><strong>Positions are approximate.</strong> The drawings were placed on the map by matching their roads to OpenStreetMap: usually
@@ -915,10 +916,12 @@ const SCENES = [
           <li><strong>Level-1 and the second level are drawn in the same colour.</strong> The second level is separated using the lines the
             drawings mark "Start / End of approach, second level". That is our reading, and a short piece of Level-1 deck at the start
             line is shown as second level.</li>
-          <li><strong>Road tunnel or metro tunnel?</strong> The tender drawings label the band both "Main Tunnel Tube" and "Metro Line
-            (Phase-3A)". Its chainage (16+300) does not match the metro's at St John's (20+256), which is why we read it as the road
-            tunnel. That is a judgement, not something the drawings state. Both tubes are drawn as one band, and where the tunnel
-            surfaces is not traced.</li>
+          <li><strong>The tunnel is only partly on the map.</strong> The traced band is Entry Ramp 08, the ramp from Sarjapura Road into
+            the road tunnel; the corridor's loop plan ("Kendriya Sadana" sheet) points that label at it. The tunnel tubes under Hosur
+            Road and Exit Ramp 01 are on that plan but not traced yet, because it is a scanned image. We first labelled this band a metro
+            tunnel, then a road tunnel; the loop plan settles it.</li>
+          <li><strong>A pedestrian subway</strong> is marked under Sarjapura Road at the metro station on the loop plan. It is not on the
+            map or in the crossing counts.</li>
           <li><strong>The metro station comes from scans.</strong> The metro survey sheets ("BMRCL without tunnel") are scanned paper. The
             station box, the land around it, the parking area at the corner and the structure across Sarjapura Road were placed from the
             sheet's survey benchmark and outlined by hand: good to a few metres. The sheets do not say whether the station is underground
@@ -935,8 +938,9 @@ const SCENES = [
         ${fold('How we know this', `<ul>
           <li>B-SMILE elevated-corridor tender, Schedules A–I: topographical survey, general alignment drawing and land acquisition plan
             sheets (17 sheets at 1:2000), traced by the colours the drawings use for each structure.</li>
-          <li>Corridor concept drawing, Old Madras Road to Silk Board (September 2025), and the metro survey sheets for Sarjapura Road
-            ("BMRCL without tunnel", 8 sheets), read by eye for the tunnel and the St John's Hospital station.</li>
+          <li>Corridor concept drawing, Old Madras Road to Silk Board (September 2025), the corridor's plan of the loop ("Kendriya Sadana"
+            sheet, August 2026) and the metro survey sheets for Sarjapura Road ("BMRCL without tunnel", 8 sheets), read by eye for the
+            tunnel, its ramps and the metro station.</li>
           <li>The sheets are vector drawings. All were fitted together to OpenStreetMap roads in one go; the median distance between the
             drawings' road edges and the mapped roads is 1–1.5 m.</li>
           <li>Rebuild: the PDF pipeline repo (<code>corridor_pdf_pipeline</code>) traces the drawings; <code>scripts/build_plans.py</code> copies the
