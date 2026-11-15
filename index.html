@@ -249,6 +249,12 @@
   <label><input type="checkbox" data-g="footpaths"> Footpath widths</label>
   <label><input type="checkbox" data-g="wall"> Flyover ramp wall</label>
   <label><input type="checkbox" data-g="construction"> Ejipura flyover (under construction)</label>
+  <h4>Planned (flyover tender drawings)</h4>
+  <label><input type="checkbox" data-g="plansRoads"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f76707;opacity:.75"></span> Flyover decks &amp; existing flyovers</label>
+  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#9c36b5;opacity:.75"></span> Metro line, stations &amp; tunnel</label>
+  <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#fab005;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
+  <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
+  <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
   <h4>Walking distance from the road</h4>
   <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
@@ -289,7 +295,11 @@ const CATS = {                                                // GIZ guidebook n
   'Institutional': '#e8a200', 'Healthcare': '#d6336c', 'Religious': '#8e5bd6',
   'Recreational': '#2f9e44', 'Public amenities': '#0c8599', 'Commercial': '#8a8780',
 };
-const PRIVATE_BUS = '#e8590c';     // private inter-city bus operators (shown with the bus layers)
+const PRIVATE_BUS = '#e8590c';
+// planned and existing structures traced from the elevated-corridor tender drawings (data/plans.geojson)
+const PLAN_COLORS = { proposed_deck: '#f76707', proposed_deck_level2: '#e03131', existing_flyover: '#74b816', ejipura_flyover: '#4dabf7',
+  underpass: '#868e96', metro: '#9c36b5', metro_tunnel: '#d6336c', bmrcl_land: '#38d9a9', land_acquisition: '#fab005' };
+const PLAN_ROADS = ['proposed_deck', 'proposed_deck_level2', 'existing_flyover', 'ejipura_flyover', 'underpass'];     // private inter-city bus operators (shown with the bus layers)
 const CAT_LABEL = { 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
   'Religious': 'Temples & mosques', 'Recreational': 'Parks & recreation', 'Public amenities': 'Public services', 'Commercial': 'Shops & food' };
 
@@ -323,8 +333,13 @@ const GROUPS = {
   r300:         ['ring-300-casing', 'ring-300', 'ring-300-label'],
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
+  plansRoads:   ['pl-roads', 'pl-roads-line'],
+  plansMetro:   ['pl-metro', 'pl-tunnel', 'pl-tunnel-line'],
+  plansLand:    ['pl-land'],
+  plansLabels:  ['pl-label'],
 };
-const vis = { crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false };
+const vis = { crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
+  plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
 let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
@@ -346,10 +361,10 @@ let D = {};   // all loaded data
 const load = Promise.all([
   'data/stretch.geojson', 'data/poi.geojson', 'data/catchments.geojson', 'data/crossings.geojson',
   'data/construction.geojson', 'data/scorecard.json', 'data/contract.json', 'data/contract.geojson',
-  'data/bus_stops.geojson', 'data/bus_routes.geojson', 'data/bus_summary.json',
+  'data/bus_stops.geojson', 'data/bus_routes.geojson', 'data/bus_summary.json', 'data/plans.geojson',
 ].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
-  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary]) =>
-    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary }));
+  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans]) =>
+    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans }));
 
 function addOverlays() {
   const K = k => ['==', ['get', 'kind'], k];
@@ -399,6 +414,23 @@ function addOverlays() {
     paint: { 'line-color': ['match', ['get', 'status'], 'feasible', '#2f9e44', '#6b5a49'],
       'line-opacity': ['match', ['get', 'status'], 'feasible', 0.4, 0.5],
       'line-width': ['interpolate', ['exponential', 2], ['zoom'], 15, 10, 19, 60] } });
+
+  // planned and existing structures from the tender drawings (below the study road)
+  src('plans', D.plans);
+  const plIn = ls => ['all', ['==', ['get', 'kind'], 'structure'], ['in', ['get', 'layer'], ['literal', ls]]];
+  const plColor = ['match', ['get', 'layer'], ...Object.entries(PLAN_COLORS).flat(), '#888'];
+  map.addLayer({ id: 'pl-land', type: 'fill', source: 'plans', filter: plIn(['bmrcl_land', 'land_acquisition']), layout: hidden,
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.4, 'fill-outline-color': plColor } });
+  map.addLayer({ id: 'pl-tunnel', type: 'fill', source: 'plans', filter: plIn(['metro_tunnel']), layout: hidden,
+    paint: { 'fill-color': PLAN_COLORS.metro_tunnel, 'fill-opacity': 0.18 } });
+  map.addLayer({ id: 'pl-tunnel-line', type: 'line', source: 'plans', filter: plIn(['metro_tunnel']), layout: hidden,
+    paint: { 'line-color': PLAN_COLORS.metro_tunnel, 'line-width': 2, 'line-dasharray': [2, 1.5] } });
+  map.addLayer({ id: 'pl-metro', type: 'fill', source: 'plans', filter: plIn(['metro']), layout: hidden,
+    paint: { 'fill-color': PLAN_COLORS.metro, 'fill-opacity': 0.5, 'fill-outline-color': PLAN_COLORS.metro } });
+  map.addLayer({ id: 'pl-roads', type: 'fill', source: 'plans', filter: plIn(PLAN_ROADS), layout: hidden,
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.5 } });
+  map.addLayer({ id: 'pl-roads-line', type: 'line', source: 'plans', filter: plIn(PLAN_ROADS), layout: hidden,
+    paint: { 'line-color': plColor, 'line-width': 1 } });
 
   // study road
   const isCW = K('carriageway');
@@ -486,6 +518,12 @@ function addOverlays() {
     filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
     paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
 
+  // labels from the tender drawings, above everything
+  map.addLayer({ id: 'pl-label', type: 'symbol', source: 'plans', filter: ['==', ['get', 'kind'], 'label'], minzoom: 14.5,
+    layout: { ...hidden, 'text-field': ['get', 'label'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-max-width': 14,
+      'text-anchor': 'left', 'text-offset': [0.6, 0] },
+    paint: { 'text-color': '#862e9c', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
+
   applyVis();
 }
 map.on('style.load', () => load.then(addOverlays));
@@ -546,7 +584,17 @@ const POPUPS = {
   'cons': (f, e) => [e.lngLat, `<strong>Ejipura flyover — under construction</strong><br>${f.properties.elevated ? 'Raised section, heading north-east to Ejipura' : 'Ramp coming down to street level'}` +
     `<br><span class="pop-k">From OpenStreetMap · ${OSM(f.properties.osm)}</span>`],
   'cons-stripes': (f, e) => POPUPS.cons(f, e),
+  'pl-label': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${esc(p.label)}</strong><br><span class="pop-k">Label on the tender drawings (${esc(p.source)})` +
+    `${p.ocr ? '. Drawn as linework, read by text recognition' : ''}. It sits where the text is on the drawing, which can be some way from what it points to.</span>`]; },
+  'pl-roads': (f, e) => planPopup(f, e), 'pl-metro': (f, e) => planPopup(f, e), 'pl-tunnel': (f, e) => planPopup(f, e), 'pl-land': (f, e) => planPopup(f, e),
 };
+function planPopup(f, e) {
+  const p = f.properties, note = { proposed_deck_level2: ' Separated from Level-1 using the drawings\' second-level lines: an interpretation.',
+    metro_tunnel: ' Underground: both tubes are drawn in one band.', bmrcl_land: ' The drawings do not say what it is for.',
+    underpass: ' Only partly traced.' }[p.layer] || '';
+  return [e.lngLat, `<strong>${esc(p.what)}</strong><br>About ${fmt(Math.round(p.area_m2 / 10) * 10)} m² on the drawings` +
+    `<br><span class="pop-k">Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.${note}</span>`];
+}
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
 map.on('click', e => {
@@ -768,6 +816,58 @@ const SCENES = [
           <li>Traffic: the flyover's OD and toll analysis, for the whole Indiranagar–Silk Board corridor, not a count on this stretch.</li></ul>`)}`;
     } },
 
+  { id: 'plans', tab: "What's planned",
+    layers: { plansRoads: true, plansMetro: true, plansLand: true, plansLabels: true, construction: true },
+    view: () => map.fitBounds(boundsOf(D.plans.features.filter(f => f.properties.kind === 'structure').flatMap(f => f.geometry.coordinates.flat(1))),
+      { padding: pad(), duration: 900 }),
+    render() {
+      const S = D.plans.features.filter(f => f.properties.kind === 'structure').map(f => f.properties);
+      const area = l => S.filter(p => p.layer === l).reduce((a, p) => a + p.area_m2, 0);
+      const sq = (c, o = 0.55) => `<span class="sw" style="width:22px;height:10px;border-radius:2px;background:${c};opacity:${o}"></span>`;
+      const rows = [['proposed_deck', 'Proposed deck, Level-1: loops, rotary, ramps'], ['proposed_deck_level2', 'Proposed deck, second level over Level-1 (Silk Board)'],
+        ['existing_flyover', 'Existing flyovers, incl. the Silk Board double-decker'], ['ejipura_flyover', 'Ejipura flyover approach (under construction)'],
+        ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Metro Phase-3A tunnel (underground)'],
+        ['land_acquisition', 'Land to be acquired'], ['bmrcl_land', 'BMRCL (metro) land']]
+        .filter(([l]) => area(l)).map(([l, t]) => `<tr><td>${sq(PLAN_COLORS[l])} ${t}</td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
+      return `
+        <h2 class="headline">A flyover deck over the loop, and a metro tunnel beneath it</h2>
+        <p class="lede">The elevated-corridor tender drawings show what is planned from the loop south to Bommanahalli. A Level-1 deck runs
+        above 100 Feet Road and Hosur Road, with a <strong>rotary above the Madiwala junction (B)</strong>, a loop and ramps. At Silk Board a
+        second level rises over it. The <strong>Metro Phase-3A</strong> line runs in a tunnel under Hosur Road and the St John's grounds,
+        near St John's junction (C).</p>
+        ${key([
+          [sq(PLAN_COLORS.proposed_deck), 'Proposed deck, Level-1 · ' + sq(PLAN_COLORS.proposed_deck_level2) + '&nbsp;second level'],
+          [sq(PLAN_COLORS.existing_flyover), 'Existing flyovers · ' + sq(PLAN_COLORS.ejipura_flyover) + '&nbsp;Ejipura flyover'],
+          [sq(PLAN_COLORS.metro), 'Metro line and stations'],
+          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Metro Phase-3A tunnel, underground'],
+          [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land'],
+        ])}
+        <table class="sidetab"><tr><th>What the drawings show</th><th>Area</th></tr>${rows}</table>
+        <p class="lede">For people on foot the deck is what matters at street level: on 100 Feet Road and Hosur Road any new crossing would sit
+        beneath it. The tunnel does not change the street once it is built; building it will.</p>
+        ${fold('Limits and caveats', `<ul>
+          <li><strong>Tender drawings, not final designs.</strong> They are from the tender stage (October 2026) and may change.</li>
+          <li><strong>Positions are approximate.</strong> The drawings were placed on the map by matching their roads to OpenStreetMap: usually
+            within 1–2 m, a few metres out in places.</li>
+          <li><strong>Level-1 and the second level are drawn in the same colour.</strong> The second level is separated using the lines the
+            drawings mark "Start / End of approach, second level". That is our reading, and a short piece of Level-1 deck at the start
+            line is shown as second level.</li>
+          <li><strong>The tunnel's two tubes are drawn as one band.</strong> The drawings do not show metro stations, entrances or
+            construction sites near the loop.</li>
+          <li><strong>BMRCL land:</strong> the drawings do not say what it is for.</li>
+          <li><strong>The Madiwala underpass is only partly traced</strong>: only some of it is drawn in a colour we can pick out.</li>
+          <li><strong>Some labels are drawn as linework, not text.</strong> They were read by text recognition and matched to the drawings'
+            own wording. Labels sit where the text is on the drawing, which can be some way from what they point to.</li>
+          <li><strong>Land to be acquired:</strong> parcel outlines from the land acquisition plan, approximate.</li></ul>`, true)}
+        ${fold('How we know this', `<ul>
+          <li>B-SMILE elevated-corridor tender, Schedules A–I: topographical survey, general alignment drawing and land acquisition plan
+            sheets (17 sheets at 1:2000), traced by the colours the drawings use for each structure.</li>
+          <li>The sheets are vector drawings. All were fitted together to OpenStreetMap roads in one go; the median distance between the
+            drawings' road edges and the mapped roads is 1–1.5 m.</li>
+          <li>Rebuild: the SUMO repo's <code>qgis/contract/</code> scripts trace the drawings; <code>scripts/build_plans.py</code> copies the
+            result into <code>data/plans.geojson</code>.</li></ul>`)}`;
+    } },
+
   { id: 'check', tab: 'Site check',
     layers: { construction: true },
     view: fitRoad,
@@ -920,7 +1020,9 @@ document.getElementById('about-open').onclick = () => {
       <li>Overture Maps Foundation — places from business listings, mainly Meta and Microsoft (CDLA-Permissive-2.0). Kept at confidence 0.5 or above, plus all schools, health facilities and places of worship.</li>
       <li>Foursquare Open Source Places (Apache 2.0) — only listings updated since 2024 and not marked closed.</li>
       <li>Buses: unofficial BMTC GTFS feed by Vonter, built from the Namma BMTC 2.0 app (ODbL), with BMTC bus stop positions from the Karnataka GIS (KGIS) layer published by OpenCity.</li>
-      <li>Esri World Imagery — satellite view and visual checks.</li></ul>
+      <li>Esri World Imagery — satellite view and visual checks.</li>
+      <li>Elevated-corridor tender drawings (topographical survey, general alignment and land acquisition sheets) — traced into the
+      planned-structure layers on <em>What's planned</em>.</li></ul>
     <h3>Known gaps</h3><ul>
       <li>Places from business listings (shown as rings) are not checked on the ground; some may have closed or be slightly misplaced.</li>
       <li>No source covers street vendors, tea stalls or informal stops — the site walk will add them.</li>
@@ -928,6 +1030,8 @@ document.getElementById('about-open').onclick = () => {
       <li>The contract's width survey covers 100 Feet Road (A–B) only; Hosur Road and Sarjapura Road need measuring on the walk.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
       <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
+      <li>Planned structures are traced from tender drawings and placed by matching roads to OpenStreetMap (about 1–2 m); the second
+      level, the underpass and labels drawn as linework are approximate — see <em>What's planned</em>.</li>
       <li>Bus timetables come from BMTC's app, which is known to have errors; counts are indicative. The data shows no southbound buses on Hosur Road between St John's and Madiwala — to check on the walk.</li>
       <li>${D.scorecard.criteria.filter(x => x.rating === 'verify').length} site-check items are not yet checked.</li></ul>
     <h3>For developers</h3>
@@ -955,8 +1059,8 @@ function startTour() {
     steps: [
       { popover: { title: 'Welcome',
           description: 'This page studies a loop of three busy roads around Madiwala — 100 Feet Road, Hosur Road and Sarjapura Road — and asks how they could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
-      { element: '#tabs', popover: { title: 'Six short chapters', side: 'bottom', align: 'start',
-          description: 'Each tab tells one part of the story — the loop, crossing it, its buses, its footpaths, the flyover plans and whether it is ready for a trial. The map changes to match.' } },
+      { element: '#tabs', popover: { title: 'Seven short chapters', side: 'bottom', align: 'start',
+          description: 'Each tab tells one part of the story — the loop, crossing it, its buses, its footpaths, the flyover plans, what else is planned and whether it is ready for a trial. The map changes to match.' } },
       { element: '.kpis', popover: { title: 'The key findings', side: phone ? 'top' : 'right', align: 'start',
           description: 'The three numbers that matter most. Tap any card to jump to its chapter.' } },
       { element: '#body .key', popover: { title: 'What the map is showing', side: phone ? 'top' : 'right', align: 'start',
