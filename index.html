@@ -130,6 +130,8 @@
   table.sidetab th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); }
   table.sidetab td { padding: 6px 6px 6px 0; border-bottom: 1px dashed var(--line); }
   table.sidetab tr[data-side] { cursor: pointer; }
+  .plrow { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+  .plrow input { flex: none; margin: 0; }
   table.sidetab tr[data-side]:hover td { background: var(--soft); }
   h4.grp { font-size: 13px; margin: 10px 0 2px; }
   h4.grp:first-child { margin-top: 0; }
@@ -303,7 +305,14 @@ const PRIVATE_BUS = '#e8590c';
 // planned and existing structures traced from the elevated-corridor tender drawings (data/plans.geojson)
 const PLAN_COLORS = { proposed_deck: '#f76707', proposed_deck_level2: '#e03131', existing_flyover: '#74b816', ejipura_flyover: '#4dabf7',
   underpass: '#868e96', metro: '#9c36b5', metro_tunnel: '#d6336c', bmrcl_land: '#38d9a9', land_acquisition: '#fab005',
-  metro_station: '#7048e8', metro_station_land: '#b197fc' };
+  metro_station: '#7048e8', metro_station_land: '#b197fc', tunnel_ramp: '#d6336c', tunnel_strip: '#f06595', subway: '#1864ab' };
+// each kind of planned structure can be hidden from the "What's planned" table; these are the map layers that draw them
+const planOff = new Set();
+const PLAN_SETS = { 'pl-land': ['bmrcl_land', 'land_acquisition'], 'pl-tunnel': ['metro_tunnel', 'tunnel_ramp', 'tunnel_strip'],
+  'pl-tunnel-line': ['metro_tunnel', 'tunnel_ramp', 'tunnel_strip'], 'pl-subway': ['subway'], 'pl-station-land': ['metro_station_land'],
+  'pl-metro': ['metro', 'metro_station'], 'pl-roads': null, 'pl-roads-line': null };      // null = PLAN_ROADS
+const planFilter = ls => ['all', ['==', ['get', 'kind'], 'structure'], ['in', ['get', 'layer'], ['literal', ls.filter(l => !planOff.has(l))]]];
+const applyPlanFilter = () => Object.entries(PLAN_SETS).forEach(([id, ls]) => map.getLayer(id) && map.setFilter(id, planFilter(ls || PLAN_ROADS)));
 const PLAN_ROADS = ['proposed_deck', 'proposed_deck_level2', 'existing_flyover', 'ejipura_flyover', 'underpass'];     // private inter-city bus operators (shown with the bus layers)
 const CAT_LABEL = { 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
   'Religious': 'Temples & mosques', 'Recreational': 'Parks & recreation', 'Public amenities': 'Public services', 'Commercial': 'Shops & food' };
@@ -339,7 +348,7 @@ const GROUPS = {
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
   plansRoads:   ['pl-roads', 'pl-roads-line'],
-  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line'],
+  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
   plansLand:    ['pl-land'],
   plansLabels:  ['pl-label'],
   simWalk:      ['sim-walk-casing', 'sim-walk', 'sim-walk-label'],
@@ -431,10 +440,12 @@ function addOverlays() {
   const plColor = ['match', ['get', 'layer'], ...Object.entries(PLAN_COLORS).flat(), '#888'];
   map.addLayer({ id: 'pl-land', type: 'fill', source: 'plans', filter: plIn(['bmrcl_land', 'land_acquisition']), layout: hidden,
     paint: { 'fill-color': plColor, 'fill-opacity': 0.4, 'fill-outline-color': plColor } });
-  map.addLayer({ id: 'pl-tunnel', type: 'fill', source: 'plans', filter: plIn(['metro_tunnel']), layout: hidden,
-    paint: { 'fill-color': PLAN_COLORS.metro_tunnel, 'fill-opacity': 0.18 } });
-  map.addLayer({ id: 'pl-tunnel-line', type: 'line', source: 'plans', filter: plIn(['metro_tunnel']), layout: hidden,
-    paint: { 'line-color': PLAN_COLORS.metro_tunnel, 'line-width': 2, 'line-dasharray': [2, 1.5] } });
+  map.addLayer({ id: 'pl-tunnel', type: 'fill', source: 'plans', filter: plIn(['metro_tunnel', 'tunnel_ramp', 'tunnel_strip']), layout: hidden,
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.18 } });
+  map.addLayer({ id: 'pl-tunnel-line', type: 'line', source: 'plans', filter: plIn(['metro_tunnel', 'tunnel_ramp', 'tunnel_strip']), layout: hidden,
+    paint: { 'line-color': plColor, 'line-width': 2, 'line-dasharray': [2, 1.5] } });
+  map.addLayer({ id: 'pl-subway', type: 'fill', source: 'plans', filter: plIn(['subway']), layout: hidden,
+    paint: { 'fill-color': PLAN_COLORS.subway, 'fill-opacity': 0.55, 'fill-outline-color': PLAN_COLORS.subway } });
   map.addLayer({ id: 'pl-station-land', type: 'fill', source: 'plans', filter: plIn(['metro_station_land']), layout: hidden,
     paint: { 'fill-color': PLAN_COLORS.metro_station_land, 'fill-opacity': 0.3, 'fill-outline-color': PLAN_COLORS.metro_station } });
   map.addLayer({ id: 'pl-metro', type: 'fill', source: 'plans', filter: plIn(['metro', 'metro_station']), layout: hidden,
@@ -629,14 +640,14 @@ const POPUPS = {
   'sim-speed': (f, e) => { const p = f.properties; return [e.lngLat, `<strong>${p.speed_kmh} km/h</strong> · ${esc(ROADS[p.side].name)}, ${p.direction.replace('>', ' to ')}` +
     `<br>${fmt(p.vehicles_h)} vehicles an hour, ${Math.round(p.delay_s)} s delay each<br><span class="pop-k">Provisional: traffic volumes and signal timings are assumed, not counted.</span>`]; },
   'pl-roads': (f, e) => planPopup(f, e), 'pl-metro': (f, e) => planPopup(f, e), 'pl-tunnel': (f, e) => planPopup(f, e), 'pl-land': (f, e) => planPopup(f, e),
-  'pl-station-land': (f, e) => planPopup(f, e),
+  'pl-station-land': (f, e) => planPopup(f, e), 'pl-subway': (f, e) => planPopup(f, e),
 };
 function planPopup(f, e) {
   const p = f.properties, note = { proposed_deck_level2: ' Separated from Level-1 using the drawings\' second-level lines: an interpretation.',
     metro_tunnel: ' Underground.', bmrcl_land: ' The metro survey sheets show the Phase-3A line and a St John\'s Hospital station along Sarjapura Road here.',
     underpass: ' Only partly traced.' }[p.layer] || '';
   return [e.lngLat, `<strong>${esc(p.what)}</strong><br>About ${fmt(Math.round(p.area_m2 / 10) * 10)} m² on the drawings` +
-    `<br><span class="pop-k">${p.scan ? 'From the scanned metro survey sheets: placed from a survey benchmark, outline picked by hand, good to a few metres. The sheets do not say whether the station is underground or at street level.' : 'Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.'}${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
+    `<br><span class="pop-k">${p.scan === 'metro' ? 'From the scanned metro survey sheets: placed from a survey benchmark, outline picked by hand, good to a few metres. The sheets do not say whether the station is underground or at street level.' : p.scan === 'loop' ? 'From the corridor\'s plan of the loop, which is an image: placed by fitting known points, outline picked by hand, good to several metres.' : 'Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.'}${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
 }
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
@@ -876,9 +887,11 @@ const SCENES = [
       const rows = [['proposed_deck', 'Proposed deck, Level-1: loops, rotary, ramps'], ['proposed_deck_level2', 'Proposed deck, second level over Level-1 (Silk Board)'],
         ['existing_flyover', 'Existing flyovers, incl. the Silk Board double-decker'], ['ejipura_flyover', 'Ejipura flyover approach (under construction)'],
         ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Entry Ramp 08: ramp from Sarjapura Road into the road tunnel (underground)'],
+        ['tunnel_ramp', 'Exit Ramp 01: ramp from the road tunnel up onto Sarjapura Road (part)'], ['tunnel_strip', 'Tunnel approach connecting the road tunnel to the Audgodi loop'],
+        ['subway', 'Pedestrian subway under Sarjapura Road at the metro station'],
         ['metro_station', "St John's Hospital metro station box (from the metro survey sheets)"], ['metro_station_land', 'Land, parking and north-side structure for that station'],
         ['land_acquisition', 'Land to be acquired'], ['bmrcl_land', 'BMRCL (metro) land']]
-        .filter(([l]) => area(l)).map(([l, t]) => `<tr><td>${sq(PLAN_COLORS[l])} ${t}</td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
+        .filter(([l]) => area(l)).map(([l, t]) => `<tr><td><label class="plrow"><input type="checkbox" data-plan="${l}"${planOff.has(l) ? '' : ' checked'}> ${sq(PLAN_COLORS[l])} <span>${t}</span></label></td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
       const named = {};
       D.plans.features.filter(f => f.properties.kind === 'structure' && f.properties.conf).forEach(f => {
         const p = f.properties; (named[p.what] = named[p.what] || { conf: p.conf, area: 0 }).area += p.area_m2; });
@@ -888,9 +901,11 @@ const SCENES = [
       return `
         <h2 class="headline">A flyover deck over the loop, a tunnel beneath it and a metro station beside it</h2>
         <p class="lede">The elevated-corridor tender drawings show what is planned from the loop south to Bommanahalli. A Level-1 deck runs
-        above 100 Feet Road and Hosur Road, with a <strong>rotary above the Madiwala junction (B)</strong>, a loop and ramps. At Silk Board a
+        above 100 Feet Road and Hosur Road, with a four-lane <strong>rotary above the Madiwala junction (B)</strong>. On 100 Feet Road it
+        is a split flyover, one two-lane deck each side of the Ejipura ramp. On Hosur Road towards St John's it is the tender's
+        "Audgodi loop". At Silk Board a
         second level rises over it. A <strong>road tunnel</strong> runs under Hosur Road (the drawings call its tubes "Main Tunnel Tube 1" and "Tube 2"),
-        and it has ramps on the loop: <strong>Entry Ramp 08</strong> leaves Sarjapura Road by St John's, drops under the college
+        with ramps on the loop: <strong>Entry Ramp 08</strong> leaves Sarjapura Road by St John's, drops under the college
         playground and joins the tunnel at St John's junction (C); <strong>Exit Ramp 01</strong> brings tunnel traffic up onto Sarjapura
         Road at the same junction. The <strong>Metro Phase-3A</strong> line is separate: it runs along Sarjapura Road, with a station in
         the St John's sports ground beside the road at junction C, and on a viaduct east of junction A. The metro's survey sheets call
@@ -902,7 +917,7 @@ const SCENES = [
           ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Entry Ramp 08 into the road tunnel, underground'],
           [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land'],
         ])}
-        <table class="sidetab"><tr><th>What the drawings show</th><th>Area</th></tr>${rows}</table>
+        <table class="sidetab"><tr><th>What the drawings show <span style="font-weight:400">· untick to hide on the map</span></th><th>Area</th></tr>${rows}</table>
         ${fold('The parts, by name', `<p>The drawings label these with leader lines, not shape by shape. The names are our reading; click a
           shape on the map for the reason.</p>
           <table class="sidetab"><tr><th>Part</th><th>How sure</th></tr>${parts}</table>`)}
@@ -916,12 +931,15 @@ const SCENES = [
           <li><strong>Level-1 and the second level are drawn in the same colour.</strong> The second level is separated using the lines the
             drawings mark "Start / End of approach, second level". That is our reading, and a short piece of Level-1 deck at the start
             line is shown as second level.</li>
-          <li><strong>The tunnel is only partly on the map.</strong> The traced band is Entry Ramp 08, the ramp from Sarjapura Road into
-            the road tunnel; the corridor's loop plan ("Kendriya Sadana" sheet) points that label at it. The tunnel tubes under Hosur
-            Road and Exit Ramp 01 are on that plan but not traced yet, because it is a scanned image. We first labelled this band a metro
-            tunnel, then a road tunnel; the loop plan settles it.</li>
-          <li><strong>A pedestrian subway</strong> is marked under Sarjapura Road at the metro station on the loop plan. It is not on the
-            map or in the crossing counts.</li>
+          <li><strong>The tunnel is only partly on the map.</strong> Entry Ramp 08 comes from the tender drawings. Exit Ramp 01 and the
+            tunnel approach to the Audgodi loop are outlined by hand from the corridor's loop plan ("Kendriya Sadana" sheet), which is
+            an image: good to several metres. Exit Ramp 01 runs off the edge of that sheet, so only part is shown, and the tunnel
+            approach is drawn narrower than the 7 m the tender gives. The tubes under Hosur Road are not on the map yet. We first
+            labelled the Entry Ramp 08 band a metro tunnel, then a road tunnel; the loop plan settles it.</li>
+          <li><strong>Names of the deck's parts</strong> now follow the tender's own table of structures (Schedule B) where it lists
+            them: the split flyover on 100 Feet Road, the Audgodi loop on Hosur Road, the rotary and the tunnel approach.</li>
+          <li><strong>A pedestrian subway</strong> under Sarjapura Road at the metro station is marked on the loop plan and now on the map.
+            It is a planned link, so it is not in the crossing counts or the simulation.</li>
           <li><strong>The metro station comes from scans.</strong> The metro survey sheets ("BMRCL without tunnel") are scanned paper. The
             station box, the land around it, the parking area at the corner and the structure across Sarjapura Road were placed from the
             sheet's survey benchmark and outlined by hand: good to a few metres. The sheets do not say whether the station is underground
@@ -1099,6 +1117,11 @@ tabsEl.addEventListener('keydown', e => {
 });
 document.getElementById('prev').onclick = () => { const i = SCENES.indexOf(current); if (i > 0) show(SCENES[i - 1].id); };
 document.getElementById('next').onclick = () => { const i = SCENES.indexOf(current); if (i < SCENES.length - 1) show(SCENES[i + 1].id); };
+body.addEventListener('change', e => {
+  const l = e.target.dataset && e.target.dataset.plan; if (!l) return;
+  e.target.checked ? planOff.delete(l) : planOff.add(l);
+  applyPlanFilter();
+});
 body.addEventListener('click', e => {
   const go = e.target.closest('[data-go]'); if (go) return show(go.dataset.go);
   const side = e.target.closest('[data-side]'); if (side) return fitSide(side.dataset.side);

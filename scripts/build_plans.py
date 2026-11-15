@@ -8,7 +8,8 @@ into one site data file, rounding coordinates to ~10 cm:
     kind=structure  layer, what, area_m2; named parts also carry conf (high / medium / low) and basis (why that name)
                     layers: proposed_deck, proposed_deck_level2, existing_flyover, ejipura_flyover, underpass,
                     metro, metro_tunnel, bmrcl_land, land_acquisition, metro_station, metro_station_land
-                    (the last two from the scanned metro survey sheets: scan=true)
+                    tunnel_ramp, tunnel_strip, subway
+                    (the last five are picked by hand from scanned sheets: scan = 'metro' or 'loop')
     kind=label      label, source, ocr (true if the label is drawn as linework and was read by OCR),
                     moved (true if name_parts.py moved it from where the drawing writes it onto the structure it names)
 
@@ -30,12 +31,16 @@ for f in json.load(open(os.path.join(SRC, 'contract_structures.geojson')))['feat
     if p.get('name_confidence'): props.update(conf=p['name_confidence'], basis=p['name_basis'])
     feats.append({'type': 'Feature', 'properties': props,
                   'geometry': {'type': f['geometry']['type'], 'coordinates': rnd(f['geometry']['coordinates'])}})
-metro = os.path.join(SRC, 'metro_station.geojson')      # from the scanned metro survey sheets (pipeline step `metro`)
-if os.path.exists(metro):
-    for f in json.load(open(metro))['features']:
+# shapes picked by hand from scanned sheets: the metro station (pipeline step `metro`) and, from the corridor's plan of
+# the loop, Exit Ramp 01, the tunnel-end strip and the subway (step `loopplan`). scan = which sheet they come from.
+for fname, scan in (('metro_station.geojson', 'metro'), ('loop_plan.geojson', 'loop')):
+    path = os.path.join(SRC, fname)
+    if not os.path.exists(path): continue
+    for f in json.load(open(path))['features']:
         p = f['properties']
-        feats.append({'type': 'Feature', 'properties': {'kind': 'structure', 'layer': p['layer'], 'what': p['what'], 'area_m2': p['area_m2'],
-                      'scan': True}, 'geometry': {'type': 'Polygon', 'coordinates': rnd(f['geometry']['coordinates'])}})
+        props = {'kind': 'structure', 'layer': p['layer'], 'what': p['what'], 'area_m2': p['area_m2'], 'scan': scan}
+        if p.get('name_confidence'): props.update(conf=p['name_confidence'], basis=p['name_basis'])
+        feats.append({'type': 'Feature', 'properties': props, 'geometry': {'type': 'Polygon', 'coordinates': rnd(f['geometry']['coordinates'])}})
 for f in json.load(open(os.path.join(SRC, 'contract_labels.geojson')))['features']:
     p = f['properties']
     feats.append({'type': 'Feature', 'properties': {'kind': 'label', 'label': p['label'], 'source': p['source'].split(' (')[0],
