@@ -585,7 +585,7 @@ const POPUPS = {
     `<br><span class="pop-k">From OpenStreetMap · ${OSM(f.properties.osm)}</span>`],
   'cons-stripes': (f, e) => POPUPS.cons(f, e),
   'pl-label': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${esc(p.label)}</strong><br><span class="pop-k">Label on the tender drawings (${esc(p.source)})` +
-    `${p.ocr ? '. Drawn as linework, read by text recognition' : ''}. It sits where the text is on the drawing, which can be some way from what it points to.</span>`]; },
+    `${p.ocr ? '. Drawn as linework, read by text recognition' : ''}. ${p.moved ? 'Moved onto the structure we think it names: a best guess.' : 'It sits where the text is on the drawing, which can be some way from what it points to.'}</span>`]; },
   'pl-roads': (f, e) => planPopup(f, e), 'pl-metro': (f, e) => planPopup(f, e), 'pl-tunnel': (f, e) => planPopup(f, e), 'pl-land': (f, e) => planPopup(f, e),
 };
 function planPopup(f, e) {
@@ -593,7 +593,7 @@ function planPopup(f, e) {
     metro_tunnel: ' Underground: both tubes are drawn in one band.', bmrcl_land: ' The drawings do not say what it is for.',
     underpass: ' Only partly traced.' }[p.layer] || '';
   return [e.lngLat, `<strong>${esc(p.what)}</strong><br>About ${fmt(Math.round(p.area_m2 / 10) * 10)} m² on the drawings` +
-    `<br><span class="pop-k">Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.${note}</span>`];
+    `<br><span class="pop-k">Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
 }
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
@@ -829,6 +829,12 @@ const SCENES = [
         ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Metro Phase-3A tunnel (underground)'],
         ['land_acquisition', 'Land to be acquired'], ['bmrcl_land', 'BMRCL (metro) land']]
         .filter(([l]) => area(l)).map(([l, t]) => `<tr><td>${sq(PLAN_COLORS[l])} ${t}</td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
+      const named = {};
+      D.plans.features.filter(f => f.properties.kind === 'structure' && f.properties.conf).forEach(f => {
+        const p = f.properties; (named[p.what] = named[p.what] || { conf: p.conf, area: 0 }).area += p.area_m2; });
+      const order = { high: 0, medium: 1, low: 2 };
+      const parts = Object.entries(named).sort((a, b) => order[a[1].conf] - order[b[1].conf] || b[1].area - a[1].area)
+        .map(([n, v]) => `<tr><td>${esc(n)}</td><td>${v.conf}</td></tr>`).join('');
       return `
         <h2 class="headline">A flyover deck over the loop, and a metro tunnel beneath it</h2>
         <p class="lede">The elevated-corridor tender drawings show what is planned from the loop south to Bommanahalli. A Level-1 deck runs
@@ -843,6 +849,9 @@ const SCENES = [
           [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land'],
         ])}
         <table class="sidetab"><tr><th>What the drawings show</th><th>Area</th></tr>${rows}</table>
+        ${fold('The parts, by name', `<p>The drawings label these with leader lines, not shape by shape. The names are our reading; click a
+          shape on the map for the reason.</p>
+          <table class="sidetab"><tr><th>Part</th><th>How sure</th></tr>${parts}</table>`)}
         <p class="lede">For people on foot the deck is what matters at street level: on 100 Feet Road and Hosur Road any new crossing would sit
         beneath it. The tunnel does not change the street once it is built; building it will.</p>
         ${fold('Limits and caveats', `<ul>
@@ -857,7 +866,10 @@ const SCENES = [
           <li><strong>BMRCL land:</strong> the drawings do not say what it is for.</li>
           <li><strong>The Madiwala underpass is only partly traced</strong>: only some of it is drawn in a colour we can pick out.</li>
           <li><strong>Some labels are drawn as linework, not text.</strong> They were read by text recognition and matched to the drawings'
-            own wording. Labels sit where the text is on the drawing, which can be some way from what they point to.</li>
+            own wording.</li>
+          <li><strong>Names are our best guess.</strong> The drawings write most labels in clear space and point with a line. We cut the
+            deck into its parts and matched each to a label; nine labels were moved onto the part they name, the rest sit where the
+            drawing writes them, which can be some way from what they point to. The names at Silk Board are the least certain.</li>
           <li><strong>Land to be acquired:</strong> parcel outlines from the land acquisition plan, approximate.</li></ul>`, true)}
         ${fold('How we know this', `<ul>
           <li>B-SMILE elevated-corridor tender, Schedules A–I: topographical survey, general alignment drawing and land acquisition plan
