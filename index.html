@@ -251,10 +251,14 @@
   <label><input type="checkbox" data-g="construction"> Ejipura flyover (under construction)</label>
   <h4>Planned (flyover tender drawings)</h4>
   <label><input type="checkbox" data-g="plansRoads"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f76707;opacity:.75"></span> Flyover decks &amp; existing flyovers</label>
-  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#9c36b5;opacity:.75"></span> Metro line, stations &amp; tunnel</label>
+  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#9c36b5;opacity:.75"></span> Metro line &amp; stations, and the tunnel</label>
   <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#fab005;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
   <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
   <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
+  <h4>Simulation (today, 8–9 am)</h4>
+  <label><input type="checkbox" data-g="simWalk"> <span class="sw" style="width:16px;height:5px;border-radius:2px;background:#c92a2a"></span> Extra walking to cross each road</label>
+  <label><input type="checkbox" data-g="simCross"> <span class="sw" style="width:12px;height:12px;border-radius:50%;background:#1971c2;opacity:.6"></span> People crossing at junctions and foot bridges</label>
+  <p class="note">From a computer model, not counts. See <em>Simulation</em> for what it can and can't show.</p>
   <h4>Walking distance from the road</h4>
   <label><input type="checkbox" data-g="r300"> 300 m · about 4 min</label>
   <label><input type="checkbox" data-g="r500"> 500 m · about 7 min</label>
@@ -298,7 +302,8 @@ const CATS = {                                                // GIZ guidebook n
 const PRIVATE_BUS = '#e8590c';
 // planned and existing structures traced from the elevated-corridor tender drawings (data/plans.geojson)
 const PLAN_COLORS = { proposed_deck: '#f76707', proposed_deck_level2: '#e03131', existing_flyover: '#74b816', ejipura_flyover: '#4dabf7',
-  underpass: '#868e96', metro: '#9c36b5', metro_tunnel: '#d6336c', bmrcl_land: '#38d9a9', land_acquisition: '#fab005' };
+  underpass: '#868e96', metro: '#9c36b5', metro_tunnel: '#d6336c', bmrcl_land: '#38d9a9', land_acquisition: '#fab005',
+  metro_station: '#7048e8', metro_station_land: '#b197fc' };
 const PLAN_ROADS = ['proposed_deck', 'proposed_deck_level2', 'existing_flyover', 'ejipura_flyover', 'underpass'];     // private inter-city bus operators (shown with the bus layers)
 const CAT_LABEL = { 'Institutional': 'Schools & institutes', 'Healthcare': 'Hospitals & clinics',
   'Religious': 'Temples & mosques', 'Recreational': 'Parks & recreation', 'Public amenities': 'Public services', 'Commercial': 'Shops & food' };
@@ -334,12 +339,16 @@ const GROUPS = {
   r500:         ['ring-500-casing', 'ring-500', 'ring-500-label'],
   sat:          ['sat'],
   plansRoads:   ['pl-roads', 'pl-roads-line'],
-  plansMetro:   ['pl-metro', 'pl-tunnel', 'pl-tunnel-line'],
+  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line'],
   plansLand:    ['pl-land'],
   plansLabels:  ['pl-label'],
+  simWalk:      ['sim-walk-casing', 'sim-walk', 'sim-walk-label'],
+  simCross:     ['sim-cross', 'sim-cross-label'],
+  simSpeed:     ['sim-speed'],
 };
 const vis = { crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
-  plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false };
+  plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false,
+  simWalk: false, simCross: false, simSpeed: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
 let listedOn = true;   // include places that come only from business listings (Overture / Foursquare)
@@ -362,9 +371,10 @@ const load = Promise.all([
   'data/stretch.geojson', 'data/poi.geojson', 'data/catchments.geojson', 'data/crossings.geojson',
   'data/construction.geojson', 'data/scorecard.json', 'data/contract.json', 'data/contract.geojson',
   'data/bus_stops.geojson', 'data/bus_routes.geojson', 'data/bus_summary.json', 'data/plans.geojson',
+  'data/simulation.geojson',
 ].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
-  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans]) =>
-    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans }));
+  .then(([stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans, sim]) =>
+    (D = { stretch, poi, catchments, crossings, construction, scorecard, contract, contractGeo, busStops, busRoutes, busSummary, plans, sim }));
 
 function addOverlays() {
   const K = k => ['==', ['get', 'kind'], k];
@@ -425,7 +435,9 @@ function addOverlays() {
     paint: { 'fill-color': PLAN_COLORS.metro_tunnel, 'fill-opacity': 0.18 } });
   map.addLayer({ id: 'pl-tunnel-line', type: 'line', source: 'plans', filter: plIn(['metro_tunnel']), layout: hidden,
     paint: { 'line-color': PLAN_COLORS.metro_tunnel, 'line-width': 2, 'line-dasharray': [2, 1.5] } });
-  map.addLayer({ id: 'pl-metro', type: 'fill', source: 'plans', filter: plIn(['metro']), layout: hidden,
+  map.addLayer({ id: 'pl-station-land', type: 'fill', source: 'plans', filter: plIn(['metro_station_land']), layout: hidden,
+    paint: { 'fill-color': PLAN_COLORS.metro_station_land, 'fill-opacity': 0.3, 'fill-outline-color': PLAN_COLORS.metro_station } });
+  map.addLayer({ id: 'pl-metro', type: 'fill', source: 'plans', filter: plIn(['metro', 'metro_station']), layout: hidden,
     paint: { 'fill-color': PLAN_COLORS.metro, 'fill-opacity': 0.5, 'fill-outline-color': PLAN_COLORS.metro } });
   map.addLayer({ id: 'pl-roads', type: 'fill', source: 'plans', filter: plIn(PLAN_ROADS), layout: hidden,
     paint: { 'fill-color': plColor, 'fill-opacity': 0.5 } });
@@ -464,8 +476,8 @@ function addOverlays() {
       'circle-stroke-color': '#7048e8', 'circle-stroke-width': 3 } });
   map.addLayer({ id: 'xg-cross', type: 'circle', source: 'xing', filter: K('crossing'), layout: hidden,
     paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 6, 19, 11],
-      'circle-color': ['case', ['get', 'verified'], '#2f9e44', '#ffffff'],
-      'circle-stroke-color': ['case', ['get', 'verified'], '#1b7a3a', '#1d1d1b'], 'circle-stroke-width': 3 } });
+      'circle-color': ['case', ['get', 'fob'], '#74c0fc', ['get', 'verified'], '#2f9e44', '#ffffff'],
+      'circle-stroke-color': ['case', ['get', 'fob'], '#1864ab', ['get', 'verified'], '#1b7a3a', '#1d1d1b'], 'circle-stroke-width': 3 } });
 
   // footpath widths: one dot per side of the road at each surveyed point
   const fpColor = ['match', ['get', 'fp_flag'], 'none', '#c92a2a', 'below-1.8', '#f76707', 'below-2.5', '#fab005', 'ok', '#2f9e44', '#adb5bd'];
@@ -518,6 +530,29 @@ function addOverlays() {
     filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
     paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
 
+  // simulation results (data/simulation.geojson): baseline, weekday 8-9 am
+  src('sim', D.sim);
+  const simK = k => ['==', ['get', 'kind'], k];
+  map.addLayer({ id: 'sim-speed', type: 'line', source: 'sim', filter: simK('speed'), layout: { ...hidden, 'line-cap': 'round' },
+    paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2.5, 18, 7], 'line-offset': ['interpolate', ['linear'], ['zoom'], 14, 2, 18, 6],
+      'line-color': ['interpolate', ['linear'], ['get', 'speed_kmh'], 3, '#c92a2a', 12, '#f08c00', 25, '#2f9e44'] } });
+  map.addLayer({ id: 'sim-walk-casing', type: 'line', source: 'sim', filter: simK('road'), layout: { ...hidden, 'line-cap': 'round' },
+    paint: { 'line-color': '#fff', 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 9, 18, 20] } });
+  map.addLayer({ id: 'sim-walk', type: 'line', source: 'sim', filter: simK('road'), layout: { ...hidden, 'line-cap': 'round' },
+    paint: { 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 6, 18, 15],
+      'line-color': ['interpolate', ['linear'], ['get', 'extra_walk_m'], 30, '#f1c453', 120, '#f08c00', 250, '#c92a2a'] } });
+  map.addLayer({ id: 'sim-cross', type: 'circle', source: 'sim', filter: simK('crossing'), layout: hidden,
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['sqrt', ['get', 'people_h']], 0, 6, 50, 30], 'circle-color': '#1971c2',
+      'circle-opacity': 0.35, 'circle-stroke-color': '#1971c2', 'circle-stroke-width': 2 } });
+  map.addLayer({ id: 'sim-walk-label', type: 'symbol', source: 'sim', filter: simK('road'),
+    layout: { ...hidden, 'symbol-placement': 'line-center', 'text-field': ['concat', '+', ['to-string', ['round', ['get', 'extra_walk_m']]], ' m walk'],
+      'text-font': ['Noto Sans Bold'], 'text-size': 13, 'text-allow-overlap': true },
+    paint: { 'text-color': '#1d1d1b', 'text-halo-color': '#fff', 'text-halo-width': 2.2 } });
+  map.addLayer({ id: 'sim-cross-label', type: 'symbol', source: 'sim', filter: simK('crossing'),
+    layout: { ...hidden, 'text-field': ['concat', ['to-string', ['get', 'people_h']], ' /h'], 'text-font': ['Noto Sans Bold'], 'text-size': 12,
+      'text-offset': [0, 0], 'text-allow-overlap': true },
+    paint: { 'text-color': '#0b4a86', 'text-halo-color': '#fff', 'text-halo-width': 2 } });
+
   // labels from the tender drawings, above everything
   map.addLayer({ id: 'pl-label', type: 'symbol', source: 'plans', filter: ['==', ['get', 'kind'], 'label'], minzoom: 14.5,
     layout: { ...hidden, 'text-field': ['get', 'label'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-max-width': 14,
@@ -565,7 +600,7 @@ const POPUPS = {
     (p.hours ? `<br><strong>Open:</strong> ${esc(p.hours)}${p.hours_note ? `<br><span class="pop-k">${esc(p.hours_note)}</span>` : ''}` : '') +
     `<br><span class="pop-k">${p.listed ? 'Business listing, not checked on the ground' : 'Mapped place'} · from ${placeSources(p)}</span>`]; },
   'xg-cross': f => { const p = f.properties; return [f.geometry.coordinates,
-    `<strong>${esc(p.name)}</strong><br>${p.verified ? 'Marked zebra crossing' : esc(p.type.replace(' in OSM', ' on the map')) + ' — to check on the walk'}` +
+    `<strong>${esc(p.name)}</strong><br>${p.fob ? 'Stairs up and over the road. Not step-free: no use with a wheelchair or a pram, and hard for many older people.' : p.verified ? 'Marked zebra crossing' : esc(p.type.replace(' in OSM', ' on the map')) + ' — to check on the walk'}` +
     `<br><span class="pop-k">${esc(ROADS[p.side].name)}</span>`]; },
   'xg-gen': f => { const p = f.properties; return [f.geometry.coordinates,
     `<strong>${esc(p.name)}</strong><br>People cross ${esc(ROADS[p.side].name)} to reach this<br><span class="pop-k">${fromStart(p.side, p.chainage_m)} · ${esc(roadSide(p.side, p.road_side))}</span>`]; },
@@ -586,14 +621,22 @@ const POPUPS = {
   'cons-stripes': (f, e) => POPUPS.cons(f, e),
   'pl-label': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${esc(p.label)}</strong><br><span class="pop-k">Label on the tender drawings (${esc(p.source)})` +
     `${p.ocr ? '. Drawn as linework, read by text recognition' : ''}. ${p.moved ? 'Moved onto the structure we think it names: a best guess.' : 'It sits where the text is on the drawing, which can be some way from what it points to.'}</span>`]; },
+  'sim-cross': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${fmt(p.people_h)} people an hour ${p.fob ? `use the foot over bridge on ${esc(ROADS[p.side].name)}` : `cross at ${esc(JN[p.junction])} (${p.junction})`}</strong>` +
+    `<br><span class="pop-k">Simulated, weekday 8–9 am. A model estimate, not a count: the site walk's counts will replace it.</span>`]; },
+  'sim-walk': (f, e) => { const p = f.properties, R = ROADS[p.side]; return [e.lngLat, `<strong>${esc(R.name)}: ${Math.round(p.extra_walk_m)} m of extra walking to cross</strong>` +
+    `<br>${fmt(p.people)} people an hour cross it. The straight line is about ${Math.round(p.straight_m)} m; they walk ${Math.round(p.walk_m)} m, ` +
+    `taking ${Math.round(p.cross_s / 60 * 10) / 10} min on average.<br><span class="pop-k">Simulated, weekday 8–9 am. Assumes nobody crosses away from a crossing, so real detours are shorter and riskier.</span>`]; },
+  'sim-speed': (f, e) => { const p = f.properties; return [e.lngLat, `<strong>${p.speed_kmh} km/h</strong> · ${esc(ROADS[p.side].name)}, ${p.direction.replace('>', ' to ')}` +
+    `<br>${fmt(p.vehicles_h)} vehicles an hour, ${Math.round(p.delay_s)} s delay each<br><span class="pop-k">Provisional: traffic volumes and signal timings are assumed, not counted.</span>`]; },
   'pl-roads': (f, e) => planPopup(f, e), 'pl-metro': (f, e) => planPopup(f, e), 'pl-tunnel': (f, e) => planPopup(f, e), 'pl-land': (f, e) => planPopup(f, e),
+  'pl-station-land': (f, e) => planPopup(f, e),
 };
 function planPopup(f, e) {
   const p = f.properties, note = { proposed_deck_level2: ' Separated from Level-1 using the drawings\' second-level lines: an interpretation.',
-    metro_tunnel: ' Underground: both tubes are drawn in one band.', bmrcl_land: ' The drawings do not say what it is for.',
+    metro_tunnel: ' Underground: both tubes are drawn in one band.', bmrcl_land: ' The metro survey sheets show the Phase-3A line and a St John\'s Hospital station along Sarjapura Road here.',
     underpass: ' Only partly traced.' }[p.layer] || '';
   return [e.lngLat, `<strong>${esc(p.what)}</strong><br>About ${fmt(Math.round(p.area_m2 / 10) * 10)} m² on the drawings` +
-    `<br><span class="pop-k">Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
+    `<br><span class="pop-k">${p.scan ? 'From the scanned metro survey sheets: placed from a survey benchmark, outline picked by hand, good to a few metres. The sheets do not say whether the station is underground or at street level.' : 'Traced from the elevated-corridor tender drawings and placed on the map; about 1–2 m off, designs may change.'}${note}${p.conf ? ` The name is our reading of the drawings (confidence: ${esc(p.conf)}): ${esc(p.basis)}.` : ''}</span>`];
 }
 const CLICKABLE = Object.keys(POPUPS);
 const hitsAt = pt => map.queryRenderedFeatures([[pt.x - 5, pt.y - 5], [pt.x + 5, pt.y + 5]], { layers: CLICKABLE.filter(id => map.getLayer(id)) });
@@ -629,11 +672,13 @@ function gapStats() {
     const g = gaps.filter(p => p.side === sid);
     return { sid, name: ROADS[sid].name, len: X.find(p => p.kind === 'centreline' && p.side === sid).length_m,
       longest: Math.max(...g.map(p => p.length_m)), need: g.reduce((a, p) => a + p.crossings_needed, 0),
-      midblock: X.filter(p => p.kind === 'crossing' && p.side === sid && p.verified && p.name === 'Mid-block crossing').length };
+      midblock: X.filter(p => p.kind === 'crossing' && p.side === sid && p.verified && p.name === 'Mid-block crossing').length,
+      fob: X.filter(p => p.kind === 'crossing' && p.side === sid && p.fob).length };
   });
   const feas = D.contractGeo.features.find(f => f.properties.kind === 'zone' && f.properties.status === 'feasible').properties;
   return { sides, longest: Math.max(...sides.map(s => s.longest)), need: sides.reduce((a, s) => a + s.need, 0),
-    loop: sides.reduce((a, s) => a + s.len, 0), midblock: sides.reduce((a, s) => a + s.midblock, 0), feas, wall: D.contract.re_wall };
+    loop: sides.reduce((a, s) => a + s.len, 0), midblock: sides.reduce((a, s) => a + s.midblock, 0),
+    fob: new Set(X.filter(p => p.kind === 'crossing' && p.fob).map(p => p.osm)).size, feas, wall: D.contract.re_wall };
 }
 function fpStats() {
   const v = D.contract.inventory.rows.flatMap(r => [r.fp_lhs, r.fp_rhs]);
@@ -660,7 +705,7 @@ const SCENES = [
         sports grounds. Loops like this are what the tactical urbanism guidebooks say to test first. A tolled flyover is due over
         part of it from 2026.</p>
         <div class="kpis">
-          <button class="kpi" data-go="crossing"><b>${g.need}</b><span>safe crossings missing around the loop<small>No mid-block crossing on any side; the guidebook asks for one every 80–150 m</small></span></button>
+          <button class="kpi" data-go="crossing"><b>${g.need}</b><span>safe crossings missing around the loop<small>No street-level crossing between the junctions on any side; the guidebook asks for one every 80–150 m</small></span></button>
           <button class="kpi" data-go="buses"><b>~${fmt(Math.round(D.busSummary.buses_day_at_loop_stops / 100) * 100)}</b><span>buses stop on the loop every weekday<small>Up to one every ${Math.round(3600 / Math.max(...D.busStops.features.filter(f => f.properties.on_loop).map(f => f.properties.buses_peak)))} seconds in the morning peak</small></span></button>
           <button class="kpi" data-go="footpaths"><b>${fp.below}/${fp.total}</b><span>footpath measurements below standard on 100 Ft Road<small>No footpath at all at ${fp.none.join(', ')} m; the other sides are still to be measured</small></span></button>
           <button class="kpi" data-go="street"><b>~½</b><span>of today's traffic expected to move up to the flyover<small>A chance to give street space back to people</small></span></button>
@@ -688,10 +733,11 @@ const SCENES = [
       const g = gapStats();
       const gens = D.crossings.features.filter(f => f.properties.kind === 'generator');
       return `
-        <h2 class="headline">No safe place to cross between the junctions — on any side</h2>
-        <p class="lede">All the mapped crossings are at the three junctions. In between are bus stops, St John's Hospital, a mosque and
-        a school that people cross to reach every day. The guidebook asks for a crossing every <strong>80–150 m</strong> on streets like
-        these — that's <strong>${g.need} missing</strong> around the loop.</p>
+        <h2 class="headline">No street-level crossing between the junctions, on any side</h2>
+        <p class="lede">All the mapped street-level crossings are at the three junctions. Away from them, the only way across is
+        <strong>${g.fob === 1 ? 'one foot over bridge' : g.fob + ' foot over bridges'}</strong>, by stairs, near St John's Hospital. In between
+        are bus stops, the hospital, a mosque and a school that people cross to reach every day. The guidebook asks for a crossing every
+        <strong>80–150 m</strong> on streets like these. Even counting the bridges, that's <strong>${g.need} missing</strong> around the loop.</p>
         <table class="sidetab"><tr><th>Road</th><th>Length</th><th>No crossing for</th><th>Missing</th></tr>
           ${g.sides.map(s => `<tr data-side="${s.sid}"><td><b>${s.sid[0]}–${s.sid[1]}</b> ${esc(s.name)}</td><td>${s.len} m</td><td>${s.longest} m</td><td><b>${s.need}</b></td></tr>`).join('')}</table>
         <p class="lede">On 100 Feet Road the flyover ramp wall fills the middle of the road, so new crossings there can only go
@@ -702,6 +748,7 @@ const SCENES = [
           ['<span class="sw sw-wall"></span>', 'Flyover ramp wall — no crossing possible'],
           ['<span class="sw sw-need"></span>', 'Places people cross the road to reach'],
           ['<span class="sw sw-cross"></span>', 'Zebra crossing · <span class="sw sw-jn" style="margin-left:4px"></span>&nbsp;junction, crossing unclear'],
+          ['<span class="sw" style="width:12px;height:12px;border-radius:50%;background:#74c0fc;border:3px solid #1864ab;box-sizing:border-box"></span>', 'Foot over bridge: stairs only, not step-free'],
         ])}
         ${fold('Where people need to cross', Object.keys(ROADS).map(sid => {
           const rows = gens.filter(f => f.properties.side === sid);
@@ -712,6 +759,8 @@ const SCENES = [
           `<p class="small" style="margin-top:8px">Distances are along each road from its first junction. Tap a row to zoom in.</p>`, false, gens.length)}
         ${fold('How we know this', `<ul>
           <li>Existing crossings and side streets: OpenStreetMap. Zebras at junction A are mapped; junctions B and C have signals but no mapped crossing on these roads — to check on the walk.</li>
+          <li>Foot over bridges: OpenStreetMap, and they also appear on the metro survey sheets for Sarjapura Road. They count as crossing
+            points when measuring the gaps, although stairs rule them out for many people.</li>
           <li>Ramp wall (${g.wall.from}–${g.wall.to} m, ${g.wall.width} m wide): B-SMILE flyover contract, Schedule A.</li>
           <li>Crossing spacing of 80–150 m for mixed-use streets: GIZ/MoHUA Tactical Urbanism Guidebook (after IRC 103).</li>
           <li>Places people cross to reach: bus stops, side streets and destinations within 80 m of the road.</li></ul>`)}`;
@@ -826,7 +875,8 @@ const SCENES = [
       const sq = (c, o = 0.55) => `<span class="sw" style="width:22px;height:10px;border-radius:2px;background:${c};opacity:${o}"></span>`;
       const rows = [['proposed_deck', 'Proposed deck, Level-1: loops, rotary, ramps'], ['proposed_deck_level2', 'Proposed deck, second level over Level-1 (Silk Board)'],
         ['existing_flyover', 'Existing flyovers, incl. the Silk Board double-decker'], ['ejipura_flyover', 'Ejipura flyover approach (under construction)'],
-        ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Metro Phase-3A tunnel (underground)'],
+        ['metro', 'Metro line and stations (elevated)'], ['metro_tunnel', 'Tunnel, most likely the North–South road tunnel (underground)'],
+        ['metro_station', "St John's Hospital metro station box (from the metro survey sheets)"], ['metro_station_land', 'Land, parking and north-side structure for that station'],
         ['land_acquisition', 'Land to be acquired'], ['bmrcl_land', 'BMRCL (metro) land']]
         .filter(([l]) => area(l)).map(([l, t]) => `<tr><td>${sq(PLAN_COLORS[l])} ${t}</td><td>${fmt(Math.round(area(l) / 100) * 100)} m²</td></tr>`).join('');
       const named = {};
@@ -836,16 +886,19 @@ const SCENES = [
       const parts = Object.entries(named).sort((a, b) => order[a[1].conf] - order[b[1].conf] || b[1].area - a[1].area)
         .map(([n, v]) => `<tr><td>${esc(n)}</td><td>${v.conf}</td></tr>`).join('');
       return `
-        <h2 class="headline">A flyover deck over the loop, and a metro tunnel beneath it</h2>
+        <h2 class="headline">A flyover deck over the loop, a tunnel beneath it and a metro station beside it</h2>
         <p class="lede">The elevated-corridor tender drawings show what is planned from the loop south to Bommanahalli. A Level-1 deck runs
         above 100 Feet Road and Hosur Road, with a <strong>rotary above the Madiwala junction (B)</strong>, a loop and ramps. At Silk Board a
-        second level rises over it. The <strong>Metro Phase-3A</strong> line runs in a tunnel under Hosur Road and the St John's grounds,
-        near St John's junction (C).</p>
+        second level rises over it. A <strong>tunnel</strong> passes under Hosur Road and the St John's grounds near St John's junction (C).
+        The drawings call its tubes "Main Tunnel Tube 1" and "Tube 2", and the corridor's concept drawing names a North–South tunnel with
+        vehicle cross-passages, so it is most likely a <strong>road tunnel</strong>. The <strong>Metro Phase-3A</strong> line is separate:
+        the metro's own survey sheets run it along Sarjapura Road, with a <strong>St John's Hospital station</strong> in the St John's
+        sports ground beside the road at junction C, and on a viaduct east of junction A.</p>
         ${key([
           [sq(PLAN_COLORS.proposed_deck), 'Proposed deck, Level-1 · ' + sq(PLAN_COLORS.proposed_deck_level2) + '&nbsp;second level'],
           [sq(PLAN_COLORS.existing_flyover), 'Existing flyovers · ' + sq(PLAN_COLORS.ejipura_flyover) + '&nbsp;Ejipura flyover'],
-          [sq(PLAN_COLORS.metro), 'Metro line and stations'],
-          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Metro Phase-3A tunnel, underground'],
+          [sq(PLAN_COLORS.metro), 'Metro line and stations · ' + sq(PLAN_COLORS.metro_station) + "&nbsp;St John's Hospital station"],
+          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Tunnel, most likely a road tunnel, underground'],
           [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land'],
         ])}
         <table class="sidetab"><tr><th>What the drawings show</th><th>Area</th></tr>${rows}</table>
@@ -853,7 +906,8 @@ const SCENES = [
           shape on the map for the reason.</p>
           <table class="sidetab"><tr><th>Part</th><th>How sure</th></tr>${parts}</table>`)}
         <p class="lede">For people on foot the deck is what matters at street level: on 100 Feet Road and Hosur Road any new crossing would sit
-        beneath it. The tunnel does not change the street once it is built; building it will.</p>
+        beneath it. A metro station at junction C would bring crowds on foot to the corner where crossing is already hardest. The tunnel
+        does not change the street above it once built, unless it surfaces nearby; building any of this will.</p>
         ${fold('Limits and caveats', `<ul>
           <li><strong>Tender drawings, not final designs.</strong> They are from the tender stage (October 2026) and may change.</li>
           <li><strong>Positions are approximate.</strong> The drawings were placed on the map by matching their roads to OpenStreetMap: usually
@@ -861,9 +915,16 @@ const SCENES = [
           <li><strong>Level-1 and the second level are drawn in the same colour.</strong> The second level is separated using the lines the
             drawings mark "Start / End of approach, second level". That is our reading, and a short piece of Level-1 deck at the start
             line is shown as second level.</li>
-          <li><strong>The tunnel's two tubes are drawn as one band.</strong> The drawings do not show metro stations, entrances or
-            construction sites near the loop.</li>
-          <li><strong>BMRCL land:</strong> the drawings do not say what it is for.</li>
+          <li><strong>Road tunnel or metro tunnel?</strong> The tender drawings label the band both "Main Tunnel Tube" and "Metro Line
+            (Phase-3A)". Its chainage (16+300) does not match the metro's at St John's (20+256), which is why we read it as the road
+            tunnel. That is a judgement, not something the drawings state. Both tubes are drawn as one band, and where the tunnel
+            surfaces is not traced.</li>
+          <li><strong>The metro station comes from scans.</strong> The metro survey sheets ("BMRCL without tunnel") are scanned paper. The
+            station box, the land around it, the parking area at the corner and the structure across Sarjapura Road were placed from the
+            sheet's survey benchmark and outlined by hand: good to a few metres. The sheets do not say whether the station is underground
+            or at street level, or where its entrances are.</li>
+          <li><strong>BMRCL land:</strong> the tender drawings do not say what it is for. It lies along Sarjapura Road where the metro survey
+            sheets put the line and the station.</li>
           <li><strong>The Madiwala underpass is only partly traced</strong>: only some of it is drawn in a colour we can pick out.</li>
           <li><strong>Some labels are drawn as linework, not text.</strong> They were read by text recognition and matched to the drawings'
             own wording.</li>
@@ -874,10 +935,66 @@ const SCENES = [
         ${fold('How we know this', `<ul>
           <li>B-SMILE elevated-corridor tender, Schedules A–I: topographical survey, general alignment drawing and land acquisition plan
             sheets (17 sheets at 1:2000), traced by the colours the drawings use for each structure.</li>
+          <li>Corridor concept drawing, Old Madras Road to Silk Board (September 2025), and the metro survey sheets for Sarjapura Road
+            ("BMRCL without tunnel", 8 sheets), read by eye for the tunnel and the St John's Hospital station.</li>
           <li>The sheets are vector drawings. All were fitted together to OpenStreetMap roads in one go; the median distance between the
             drawings' road edges and the mapped roads is 1–1.5 m.</li>
-          <li>Rebuild: the SUMO repo's <code>qgis/contract/</code> scripts trace the drawings; <code>scripts/build_plans.py</code> copies the
+          <li>Rebuild: the PDF pipeline repo (<code>corridor_pdf_pipeline</code>) traces the drawings; <code>scripts/build_plans.py</code> copies the
             result into <code>data/plans.geojson</code>.</li></ul>`)}`;
+    } },
+
+  { id: 'sim', tab: 'Simulation',
+    layers: { simWalk: true, simCross: true, crossings: true },
+    view: fitRoad,
+    render() {
+      const M = D.sim.meta, F = D.sim.features.map(f => f.properties);
+      const R = F.filter(p => p.kind === 'road').sort((a, b) => b.extra_walk_m - a.extra_walk_m), worst = R[0];
+      const X = F.filter(p => p.kind === 'crossing').sort((a, b) => b.people_h - a.people_h);
+      const mins = s => (Math.round(s / 6) / 10).toFixed(1);
+      const rows = R.map(p => `<tr data-side="${p.side}"><td><b>${ROADS[p.side].from}–${ROADS[p.side].to}</b> ${esc(ROADS[p.side].name)}</td>` +
+        `<td>${Math.round(p.extra_walk_m)} m</td><td>${mins(p.cross_s)} min</td><td>${fmt(p.people)}</td></tr>`).join('');
+      const J = X.filter(p => !p.fob), FB = X.filter(p => p.fob);
+      const xrows = X.map(p => `<tr><td>${p.fob ? `Foot over bridge, ${esc(ROADS[p.side].name)}` : `<b>${p.junction}</b> ${esc(JN[p.junction])}`}</td><td>${fmt(p.people_h)}</td></tr>`).join('');
+      return `
+        <h2 class="headline">To cross ${esc(ROADS[worst.side].name)}, people walk ${Math.round(worst.extra_walk_m / 10) * 10} m out of their way</h2>
+        <p class="lede">A computer model of the loop on a weekday morning, <strong>8 to 9 am</strong>, as the streets are today. It moves about
+        <strong>${fmt(Math.round(M.people / 100) * 100)}</strong> people who need to cross one of the three roads, with traffic and the real bus
+        timetable. People can only cross where there is a crossing: today that means the junctions and ${FB.length === 1 ? 'one foot over bridge' : FB.length + ' foot over bridges'}
+        near St John's Hospital. On average a crossing trip is
+        <strong>${M.detour} times</strong> the straight-line distance.</p>
+        <div class="kpis">
+          <div class="kpi"><b>${Math.round(M.extra_walk_m)} m</b><span>extra walking to reach a crossing<small>average over all three roads</small></span></div>
+          <div class="kpi"><b>${mins(M.cross_s)} min</b><span>to cross and reach the place<small>for a trip of about 35 m in a straight line</small></span></div>
+          <div class="kpi"><b>${fmt(J[0].people_h)}</b><span>people an hour crossing at ${esc(JN[J[0].junction])}<small>the busiest junction on the loop</small></span></div>
+        </div>
+        ${key([
+          ['<span class="sw" style="width:22px;height:6px;border-radius:3px;background:linear-gradient(90deg,#f1c453,#f08c00,#c92a2a)"></span>', 'Road coloured by extra walking: yellow under 50 m, red over 200 m'],
+          ['<span class="sw" style="width:12px;height:12px;border-radius:50%;background:#1971c2;opacity:.6"></span>', 'People crossing at a junction or foot over bridge each hour: bigger circle, more people'],
+        ])}
+        <table class="sidetab"><tr><th>Road</th><th>Extra walk</th><th>Time</th><th>People /h</th></tr>${rows}</table>
+        <table class="sidetab"><tr><th>Where</th><th>People crossing /h</th></tr>${xrows}</table>
+        <p class="lede">This is the "before" picture. Changes such as new mid-block crossings are tested against it, on the same people and
+        the same traffic.</p>
+        ${fold('What it can and can\'t show', `<ul>
+          <li><strong>It is a model, not a count.</strong> The number of people crossing is estimated from bus timetables and the places
+            along each road. The site walk's counts will replace those estimates.</li>
+          <li><strong>Foot over bridges are included, with slow stairs.</strong> The model lets everyone climb them. In reality stairs
+            rule them out for wheelchair users, prams and many older people.</li>
+          <li><strong>Nobody jaywalks in the model.</strong> In reality many people cross through gaps in traffic. So the detours here are
+            longer than most people really walk; they show what the street asks of someone who crosses only where it is safe.</li>
+          <li><strong>Traffic is provisional.</strong> The amount of traffic is taken from a survey for 100 Feet Road only. For Hosur Road
+            and Sarjapura Road it is our estimate, until the site walk counts it. The signal timings at A, B and C are also assumed.
+            With those guesses the model's traffic jams far worse than the real street, so vehicle speeds and delays are not shown.</li>
+          <li><strong>One morning, one run.</strong> Small differences are within the noise.</li></ul>`, true)}
+        ${fold('How we know this', `<ul>
+          <li>Simulated with SUMO (Eclipse Foundation, open source) on the OpenStreetMap road network, with the underpass, footpaths and
+            junction crossings. Run of ${esc(M.built)}.</li>
+          <li>Buses: the BMTC timetable (unofficial GTFS feed), every bus between 7:30 and 9:15 am.</li>
+          <li>People: bus passengers crossing to and from stops, plus trips to the hospitals, schools, places of worship and side streets
+            in the Crossing tab.</li>
+          <li>Vehicle mix and the 100 Feet Road volume: the elevated corridor's origin–destination study.</li>
+          <li>Rebuild: run the simulation repo, then <code>scripts/build_simulation.py</code> copies the result into
+            <code>data/simulation.geojson</code>.</li></ul>`)}`;
     } },
 
   { id: 'check', tab: 'Site check',
@@ -1072,7 +1189,7 @@ function startTour() {
       { popover: { title: 'Welcome',
           description: 'This page studies a loop of three busy roads around Madiwala — 100 Feet Road, Hosur Road and Sarjapura Road — and asks how they could work better for people on foot. This quick tour shows you around — it takes under a minute.' } },
       { element: '#tabs', popover: { title: 'Seven short chapters', side: 'bottom', align: 'start',
-          description: 'Each tab tells one part of the story — the loop, crossing it, its buses, its footpaths, the flyover plans, what else is planned and whether it is ready for a trial. The map changes to match.' } },
+          description: 'Each tab tells one part of the story — the loop, crossing it, its buses, its footpaths, the flyover plans, what else is planned, a simulation of today and whether it is ready for a trial. The map changes to match.' } },
       { element: '.kpis', popover: { title: 'The key findings', side: phone ? 'top' : 'right', align: 'start',
           description: 'The three numbers that matter most. Tap any card to jump to its chapter.' } },
       { element: '#body .key', popover: { title: 'What the map is showing', side: phone ? 'top' : 'right', align: 'start',

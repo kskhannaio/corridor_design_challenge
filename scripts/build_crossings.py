@@ -3,7 +3,8 @@
 Reads data/stretch.geojson (built by build_loop.py) and an Overpass response of
 scripts/loop_query.overpassql, and writes:
   data/crossings.geojson    - per side: centreline with distances from the side's first junction,
-                              existing crossings, gap segments, 50 m ticks, places people cross to reach
+                              existing crossings (junctions, marked crossings and foot over bridges), gap segments,
+                              50 m ticks, places people cross to reach
                               (+ desire lines to the road)
   data/construction.geojson - flyover works mapped as construction in OSM
 
@@ -159,10 +160,27 @@ for sid, S in sides.items():
         crossings.append(dict(xy=S.at(end), ch=end, osm=f"node/{near[0]['id']}" if near else '', verified=False,
                               name=f"Junction {jid} ({JNAME[jid]})",
                               type='Traffic signals - no marked pedestrian crossing in OSM' if near else 'No signals or crossing mapped'))
+    # foot over bridges that span this side: a footway bridge whose line crosses the road's centreline.
+    # They let people cross, by stairs only, so they count as crossing points and are flagged as not step-free.
+    for w in ways.values():
+        if w['tags'].get('highway') != 'footway' or w['tags'].get('bridge') in (None, 'no'): continue
+        line = [P(g['lon'], g['lat']) for g in w['geometry']]
+        hit = None
+        for p1, p2 in zip(line, line[1:]):
+            for q1, q2 in zip(S.centre, S.centre[1:]):
+                d = (p2[0] - p1[0]) * (q2[1] - q1[1]) - (p2[1] - p1[1]) * (q2[0] - q1[0])
+                if not d: continue
+                t = ((q1[0] - p1[0]) * (q2[1] - q1[1]) - (q1[1] - p1[1]) * (q2[0] - q1[0])) / d
+                u = ((q1[0] - p1[0]) * (p2[1] - p1[1]) - (q1[1] - p1[1]) * (p2[0] - p1[0])) / d
+                if 0 <= t <= 1 and 0 <= u <= 1: hit = (p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1]))
+        if hit is None: continue
+        ch = S.project(hit)[0]
+        crossings.append(dict(xy=hit, ch=ch, osm=f"way/{w['id']}", verified=True, fob=True, name='Foot over bridge',
+                              type='Foot over bridge (stairs only, not step-free)'))
     crossings.sort(key=lambda c: c['ch'])
     for c in crossings:
         F(pt(c['xy']), kind='crossing', side=sid, name=c['name'], type=c['type'], osm=c['osm'],
-          chainage_m=round(c['ch']), verified=c['verified'],
+          chainage_m=round(c['ch']), verified=c['verified'], fob=c.get('fob', False),
           status='Mapped in OSM' if c['verified'] else 'Unverified - check on the walk')
 
     # gaps between consecutive crossing points
