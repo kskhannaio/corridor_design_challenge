@@ -282,7 +282,7 @@
   <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#fab005;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
   <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
   <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
-  <h4>Simulation (today, 8–9 am)</h4>
+  <h4>Simulation (today, morning peak)</h4>
   <label><input type="checkbox" data-g="simWalk"> <span class="sw" style="width:16px;height:5px;border-radius:2px;background:#c92a2a"></span> Extra walking to cross each road</label>
   <label><input type="checkbox" data-g="simCross"> <span class="sw" style="width:12px;height:12px;border-radius:50%;background:#1971c2;opacity:.6"></span> People crossing at junctions and foot bridges</label>
   <p class="note">From a computer model, not counts. See <em>Simulation</em> for what it can and can't show.</p>
@@ -345,6 +345,14 @@ const CAT_LABEL = { 'Institutional': 'Schools & institutes', 'Healthcare': 'Hosp
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const fmt = n => Number(n).toLocaleString('en-IN');
+// the simulated hour, e.g. "09:30-10:30" -> "9:30–10:30 am"
+function simHour() {
+  const h = (D.sim && D.sim.meta && D.sim.meta.hour) || '';
+  const t = h.split('-').map(x => x.replace(/^0/, '').replace(/:00$/, ''));
+  if (t.length !== 2) return 'morning peak';
+  const pm = parseInt(t[1], 10) >= 12;
+  return `${t[0]}–${t[1]} ${pm ? 'pm' : 'am'}`;
+}
 const fromStart = (side, m) => `${m} m from the ${JN[ROADS[side].from]}`;
 const fromA = m => fromStart('AB', m);
 const roadSide = (side, where) => ROADS[side]?.[where] || where;
@@ -572,7 +580,7 @@ function addOverlays() {
     filter: ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']],
     paint: { 'text-color': '#222', 'text-halo-color': '#fff', 'text-halo-width': 1.4 } });
 
-  // simulation results (data/simulation.geojson): baseline, weekday 8-9 am
+  // simulation results (data/simulation.geojson): baseline, weekday morning peak (hour in D.sim.meta.hour)
   src('sim', D.sim);
   const simK = k => ['==', ['get', 'kind'], k];
   map.addLayer({ id: 'sim-speed', type: 'line', source: 'sim', filter: simK('speed'), layout: { ...hidden, 'line-cap': 'round' },
@@ -665,10 +673,10 @@ const POPUPS = {
   'pl-label': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${esc(p.label)}</strong><br><span class="pop-k">Label on the tender drawings (${esc(p.source)})` +
     `${p.ocr ? '. Drawn as linework, read by text recognition' : ''}. ${p.moved ? 'Moved onto the structure we think it names: a best guess.' : 'It sits where the text is on the drawing, which can be some way from what it points to.'}</span>`]; },
   'sim-cross': f => { const p = f.properties; return [f.geometry.coordinates, `<strong>${fmt(p.people_h)} people an hour ${p.fob ? `use the foot over bridge on ${esc(ROADS[p.side].name)}` : `cross at ${esc(JN[p.junction])} (${p.junction})`}</strong>` +
-    `<br><span class="pop-k">Simulated, weekday 8–9 am. A model estimate, not a count: the site walk's counts will replace it.</span>`]; },
+    `<br><span class="pop-k">Simulated, weekday ${simHour()}. A model estimate, not a count: the site walk's counts will replace it.</span>`]; },
   'sim-walk': (f, e) => { const p = f.properties, R = ROADS[p.side]; return [e.lngLat, `<strong>${esc(R.name)}: ${Math.round(p.extra_walk_m)} m of extra walking to cross</strong>` +
     `<br>${fmt(p.people)} people an hour cross it. The straight line is about ${Math.round(p.straight_m)} m; they walk ${Math.round(p.walk_m)} m, ` +
-    `taking ${Math.round(p.cross_s / 60 * 10) / 10} min on average.<br><span class="pop-k">Simulated, weekday 8–9 am. Assumes nobody crosses away from a crossing, so real detours are shorter and riskier.</span>`]; },
+    `taking ${Math.round(p.cross_s / 60 * 10) / 10} min on average.<br><span class="pop-k">Simulated, weekday ${simHour()}. Assumes nobody crosses away from a crossing, so real detours are shorter and riskier.</span>`]; },
   'sim-speed': (f, e) => { const p = f.properties; return [e.lngLat, `<strong>${p.speed_kmh} km/h</strong> · ${esc(ROADS[p.side].name)}, ${p.direction.replace('>', ' to ')}` +
     `<br>${fmt(p.vehicles_h)} vehicles an hour, ${Math.round(p.delay_s)} s delay each<br><span class="pop-k">Provisional: traffic volumes and signal timings are assumed, not counted.</span>`]; },
   'pl-roads': (f, e) => planPopup(f, e), 'pl-metro': (f, e) => planPopup(f, e), 'pl-tunnel': (f, e) => planPopup(f, e), 'pl-land': (f, e) => planPopup(f, e),
@@ -898,15 +906,15 @@ const SCENES = [
           ['<span class="sw sw-wall"></span>', 'Its ramp wall down the middle of 100 Feet Road'],
         ])}
         ${sectionsHTML()}
-        <div class="callout"><strong>Why a narrower road could work:</strong> about ${fmt(tr.t.adt_2025)} vehicles a day use this corridor now.
-        The flyover's traffic study expects ${fmt(tr.t.diverted_tollable)}–${fmt(tr.t.diverted_od)} of them to use the tolled flyover from ${tr.t.toll_from},
-        leaving roughly ${fmt(tr.low)}–${fmt(tr.high)} at street level — about half of today.</div>
+        <div class="callout"><strong>Why a narrower road could work:</strong> the flyover's traffic study counted about ${fmt(tr.t.adt_2025)} motor vehicles in 14 hours (6 am to 8 pm, 25 April 2025) between Indiranagar and Domlur,
+        about 6 km north on the same corridor. It expects ${fmt(tr.t.diverted_tollable)}–${fmt(tr.t.diverted_od)} of them to use the tolled flyover from ${tr.t.toll_from},
+        leaving roughly ${fmt(tr.low)}–${fmt(tr.high)} at street level — about half. Nothing has been counted on this stretch yet.</div>
         ${fold('How we know this', `<ul>
           <li><em>Today</em>: existing cross-section at 330 m, contract Schedule A, Annex V.</li>
           <li><em>Contract drawing</em>: typical cross-section TCS-09 at 330 m, with a 17.2 m flyover deck 5.5 m above.</li>
           <li><em>Contract text</em>: Schedule B, clause 4(ii) — an 18 m road of 3 m footpath, 1.5 m buffer, 9 m carriageway, 1.5 m buffer, 3 m footpath. It does not say how this fits the ~30 m width or the flyover pillars.</li>
           <li><em>Trial option</em>: our proposal, using cones, barricades and paint as in DULT's Siddaiah Road trial; lane width 3.5 m per IRC.</li>
-          <li>Traffic: the flyover's OD and toll analysis, for the whole Indiranagar–Silk Board corridor, not a count on this stretch.</li></ul>`)}`;
+          <li>Traffic: the flyover's OD and toll analysis. Its count was taken between Indiranagar and Domlur (14 hours, 25 April 2025), about 6 km north; it is not a count on this stretch.</li></ul>`)}`;
     } },
 
   { id: 'plans', tab: "What's planned",
@@ -1018,7 +1026,7 @@ const SCENES = [
       const xrows = X.map(p => `<tr><td>${p.fob ? `Foot over bridge, ${esc(ROADS[p.side].name)}` : `<b>${p.junction}</b> ${esc(JN[p.junction])}`}</td><td>${fmt(p.people_h)}</td></tr>`).join('');
       return `
         <h2 class="headline">To cross ${esc(ROADS[worst.side].name)}, people walk ${Math.round(worst.extra_walk_m / 10) * 10} m out of their way</h2>
-        <p class="lede">A computer model of the loop on a weekday morning, <strong>8 to 9 am</strong>, as the streets are today. It moves about
+        <p class="lede">A computer model of the loop on a weekday morning, <strong>${simHour()}</strong>, the busiest hour, as the streets are today. It moves about
         <strong>${fmt(Math.round(M.people / 100) * 100)}</strong> people who need to cross one of the three roads, with traffic and the real bus
         timetable. People can only cross where there is a crossing: today that means the junctions and ${FB.length === 1 ? 'one foot over bridge' : FB.length + ' foot over bridges'}
         near St John's Hospital. On average a crossing trip is
@@ -1043,17 +1051,20 @@ const SCENES = [
             rule them out for wheelchair users, prams and many older people.</li>
           <li><strong>Nobody jaywalks in the model.</strong> In reality many people cross through gaps in traffic. So the detours here are
             longer than most people really walk; they show what the street asks of someone who crosses only where it is safe.</li>
-          <li><strong>Traffic is provisional.</strong> The amount of traffic is taken from a survey for 100 Feet Road only. For Hosur Road
-            and Sarjapura Road it is our estimate, until the site walk counts it. The signal timings at A, B and C are also assumed.
+          <li><strong>Traffic is provisional.</strong> Nobody has counted traffic on the loop. The amount on 100 Feet Road is borrowed from
+            a count taken between Indiranagar and Domlur, about 6 km north; the rest is our estimate, until the site walk counts it.
+            The signal timings at A and C are assumed, and B has no signal in the model, as the official drawings show.
             With those guesses the model's traffic jams far worse than the real street, so vehicle speeds and delays are not shown.</li>
-          <li><strong>One morning, one run.</strong> Small differences are within the noise.</li></ul>`, true)}
+          <li><strong>One morning, one run.</strong> Five repeat runs moved the walking distances and the junction counts by less than a tenth,
+            but the times by much more, so read the times as rough.</li></ul>`, true)}
         ${fold('How we know this', `<ul>
           <li>Simulated with SUMO (Eclipse Foundation, open source) on the OpenStreetMap road network, with the underpass, footpaths and
             junction crossings. Run of ${esc(M.built)}.</li>
-          <li>Buses: the BMTC timetable (unofficial GTFS feed), every bus between 7:30 and 9:15 am.</li>
+          <li>Buses: the BMTC timetable (unofficial GTFS feed), every bus in the simulated hour and the half hour before it.</li>
           <li>People: bus passengers crossing to and from stops, plus trips to the hospitals, schools, places of worship and side streets
             in the Crossing tab.</li>
-          <li>Vehicle mix and the 100 Feet Road volume: the elevated corridor's origin–destination study.</li>
+          <li>Vehicle mix and the 100 Feet Road volume: the elevated corridor's origin–destination study, whose count was taken between
+            Indiranagar and Domlur on 25 April 2025.</li>
           <li>Rebuild: run the simulation repo, then <code>scripts/build_simulation.py</code> copies the result into
             <code>data/simulation.geojson</code>.</li></ul>`)}`;
     } },
@@ -1563,7 +1574,7 @@ document.getElementById('about-open').onclick = () => {
       <li>The contract is a tender: chainages and designs may change.</li>
       <li>The contract's width survey covers 100 Feet Road (A–B) only; Hosur Road and Sarjapura Road need measuring on the walk.</li>
       <li>Footpath sides are inferred from the contract's LHS/RHS labels.</li>
-      <li>Traffic figures cover the whole Indiranagar–Silk Board corridor and are projections.</li>
+      <li>Traffic figures come from one 14-hour count between Indiranagar and Domlur, about 6 km north of the loop, and from projections. No traffic count exists for the loop itself.</li>
       <li>Planned structures are traced from tender drawings and placed by matching roads to OpenStreetMap (about 1–2 m); the second
       level, the underpass and labels drawn as linework are approximate — see <em>What's planned</em>.</li>
       <li>Bus timetables come from BMTC's app, which is known to have errors; counts are indicative. The data shows no southbound buses on Hosur Road between St John's and Madiwala — to check on the walk.</li>

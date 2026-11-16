@@ -94,7 +94,7 @@
     ]
   },
   "traffic": {
-    "ref": "OD and Toll Analysis - Indiranagar to Silk Board corridor (to & fro), whole route rather than this stretch",
+    "ref": "OD and Toll Analysis - Indiranagar to Silk Board corridor. adt_2025 is a 14-hour count (6 am-8 pm, 25 Apr 2025) of motor vehicles between Indiranagar and Domlur, about 6 km north of the loop; not a count on this stretch",
     "adt_2025": 27300,
     "share": { "two_wheelers": 0.43, "cars": 0.29, "autos": 0.13, "buses": 0.03 },
     "diverted_od": 16842,
