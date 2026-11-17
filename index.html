@@ -296,6 +296,7 @@
   </div>
   <h4 class="draw-only">Your proposal</h4>
   <label class="draw-only"><input type="checkbox" data-g="drawn"> My drawing (from the Draw tab)</label>
+  <label title="Tabs stop zooming and moving the map, so screenshots keep the same framing"><input type="checkbox" id="keep-still"> Keep the map still when changing tabs</label>
   <h4>Study</h4>
   <label><input type="checkbox" data-g="loop"> <span class="sw" style="width:16px;height:5px;border-radius:3px;background:#e4572e"></span> The loop (A–B–C)</label>
   <label><input type="checkbox" data-g="junctions"> <span class="sw" style="width:14px;height:14px;border-radius:50%;background:#1d1d1b"></span> Junction markers A, B, C</label>
@@ -305,7 +306,8 @@
   <label><input type="checkbox" data-g="construction"> Ejipura flyover (under construction)</label>
   <h4>Planned (flyover tender drawings)</h4>
   <label><input type="checkbox" data-g="plansRoads"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#1971c2;opacity:.75"></span> Flyover decks &amp; existing flyovers</label>
-  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#862e9c;opacity:.75"></span> Metro line &amp; stations, and the tunnel</label>
+  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#862e9c;opacity:.75"></span> Metro line, stations &amp; subway</label>
+  <label><input type="checkbox" data-g="plansTunnel"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:repeating-linear-gradient(135deg,#c2255c 0 3px,#f8d7e3 3px 6px)"></span> Road tunnel &amp; its ramps</label>
   <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f59f00;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
   <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
   <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
@@ -416,7 +418,8 @@ const GROUPS = {
   junctions:    [],                                             // DOM markers, shown or hidden in applyVis
   drawn:        [],                                             // the Draw tab's shapes (Terra Draw's layers), see drawVisible
   plansRoads:   ['pl-roads', 'pl-roads-line'],
-  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-metro-edge', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
+  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-metro-edge', 'pl-subway'],
+  plansTunnel:  ['pl-tunnel', 'pl-tunnel-line'],
   plansLand:    ['pl-land', 'pl-land-edge'],
   plansLabels:  ['pl-label'],
   simWalk:      ['sim-walk-casing', 'sim-walk', 'sim-walk-label'],
@@ -424,7 +427,7 @@ const GROUPS = {
   simSpeed:     ['sim-speed'],
 };
 const vis = { loop: true, junctions: true, drawn: false, crossings: false, busRoutes: false, busStops: false, busPrivate: false, footpaths: false, wall: false, construction: false, places: false, r300: false, r500: false, sat: false,
-  plansRoads: false, plansMetro: false, plansLand: false, plansLabels: false,
+  plansRoads: false, plansMetro: false, plansTunnel: false, plansLand: false, plansLabels: false,
   simWalk: false, simCross: false, simSpeed: false };
 const catOn = Object.fromEntries(Object.keys(CATS).map(k => [k, true]));
 const poiRange = () => vis.r500 ? 500 : vis.r300 ? 300 : 500;
@@ -752,6 +755,9 @@ function loopFade(on) {
   map.setPaintProperty('stretch-halo', 'line-opacity', on ? 0.06 : 0.2);
   map.setPaintProperty('stretch-arrows', 'text-opacity', on ? 0.3 : 1);
 }
+// "Keep the map still": tabs stop moving the map, so screenshots keep one framing (remembered in this browser)
+const STILL_KEY = 'madiwala-keep-still';
+const keepStill = () => document.getElementById('keep-still')?.checked;
 const boundsOf = coords => coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
 const roadCoords = () => D.stretch.features.flatMap(f => f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates);
 const fitRoad = () => map.fitBounds(boundsOf(roadCoords()), { padding: pad(), maxZoom: 18, duration: 900 });
@@ -964,7 +970,7 @@ const SCENES = [
     } },
 
   { id: 'plans', tab: "What's planned",
-    layers: { plansRoads: true, plansMetro: true, plansLand: true, plansLabels: true, construction: true },
+    layers: { plansRoads: true, plansMetro: true, plansTunnel: true, plansLand: true, plansLabels: true, construction: true },
     enter() { loopFade(true); },
     leave() { loopFade(false); },
     view: () => map.fitBounds(boundsOf(D.plans.features.filter(f => f.properties.kind === 'structure').flatMap(f => f.geometry.coordinates.flat(1))),
@@ -1541,7 +1547,7 @@ function show(id, { fly = true } = {}) {
   Object.keys(vis).forEach(g => { if (g !== 'sat' && g !== 'loop' && g !== 'junctions') vis[g] = !!s.layers[g]; });   // base map and the loop stay as the reader set them
   if (map.getLayer('poi')) applyVis(); else refreshCats();
   if (entering) s.enter?.();
-  if (fly) s.view();
+  if (fly && !keepStill()) s.view();
   document.getElementById('prev').disabled = i === 0;
   document.getElementById('next').disabled = i === SCENES.length - 1;
   document.getElementById('next').textContent = i < SCENES.length - 1 ? `${SCENES[i + 1].tab} →` : 'Next →';
@@ -1584,6 +1590,10 @@ document.getElementById('hide-panel').onclick = () => setPanel(true);
 document.getElementById('show-panel').onclick = () => setPanel(false);
 try { if (localStorage.getItem(PANEL_KEY) === '1' && innerWidth > 720) { document.body.classList.add('panel-hidden');
   document.getElementById('hide-panel').setAttribute('aria-expanded', 'false'); document.getElementById('show-panel').setAttribute('aria-expanded', 'false'); } } catch (e) {}
+
+{ const ks = document.getElementById('keep-still');                    // remember "Keep the map still" in this browser
+  try { ks.checked = localStorage.getItem(STILL_KEY) === '1'; } catch (e) {}
+  ks.addEventListener('change', () => { try { localStorage.setItem(STILL_KEY, ks.checked ? '1' : '0'); } catch (e) {} }); }
 
 // phones: tap the handle to collapse/expand the sheet
 document.getElementById('grab').onclick = () => document.getElementById('story').classList.toggle('collapsed');
