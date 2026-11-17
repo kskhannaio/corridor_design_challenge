@@ -44,6 +44,21 @@
   .driver-popover-progress-text { font-size: 12px; }
   .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
   .story-head h1 { font-size: 17px; margin: 0; line-height: 1.3; }
+  /* desktop: the panel can be slid away to see the whole map */
+  .story { transition: transform .25s ease; }
+  body.panel-hidden .story { transform: translateX(calc(-100% - 24px)); visibility: hidden; transition: transform .25s ease, visibility 0s .25s; }
+  body.panel-hidden #map-area { left: 16px; }
+  .head-btns { display: flex; gap: 6px; flex: none; }
+  .hide-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 28px; flex: none; margin-top: 2px;
+    border: 1px solid var(--line); background: var(--panel); border-radius: 999px; color: var(--muted); cursor: pointer; }
+  .hide-btn:hover { color: var(--ink); background: var(--soft); }
+  .hide-btn svg, .show-btn svg { width: 16px; height: 16px; }
+  .show-btn { position: absolute; top: 16px; left: 16px; z-index: 2; display: none; align-items: center; gap: 6px;
+    border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 8px 12px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14); font-size: 14px; font-weight: 600; }
+  .show-btn:hover { background: var(--soft); }
+  body.panel-hidden .show-btn { display: inline-flex; }
+  .hide-btn:focus-visible, .show-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .grab { display: none; }
   .tabs { display: flex; gap: 2px; padding: 12px 14px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -223,6 +238,8 @@
     .grab { display: block; width: 100%; border: 0; background: none; padding: 8px 0 0; cursor: pointer; }
     .grab::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto; }
     .story-head { padding-top: 6px; }
+    .hide-btn, .show-btn { display: none !important; }
+    body.panel-hidden .story { transform: none; visibility: visible; }
     .layers-btn { top: 12px; right: 12px; }
     .layers { top: 58px; right: 12px; left: 12px; width: auto; max-height: 40vh; }
     .maplibregl-ctrl-top-right { top: 52px; }
@@ -242,10 +259,15 @@
       <p class="eyebrow">Tactical urbanism study · Bengaluru</p>
       <h1>The Madiwala loop</h1>
     </div>
+    <div class="head-btns">
     <button class="tour-btn" id="tour-btn" title="Take a quick tour of this page">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg>
       Tour
     </button>
+    <button class="hide-btn" id="hide-panel" title="Hide this panel to see the whole map" aria-label="Hide the panel" aria-controls="story" aria-expanded="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    </div>
   </div>
   <nav class="tabs" role="tablist" id="tabs"></nav>
   <div class="story-body" id="body" role="tabpanel" tabindex="0"></div>
@@ -255,6 +277,11 @@
     <button class="btn" id="next">Next →</button>
   </div>
 </aside>
+
+<button class="show-btn" id="show-panel" aria-controls="story" aria-expanded="false" title="Show the panel">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  The Madiwala loop
+</button>
 
 <!-- layers control -->
 <button class="layers-btn" id="layers-btn" aria-expanded="false" aria-controls="layers">
@@ -277,9 +304,9 @@
   <label><input type="checkbox" data-g="wall"> Flyover ramp wall</label>
   <label><input type="checkbox" data-g="construction"> Ejipura flyover (under construction)</label>
   <h4>Planned (flyover tender drawings)</h4>
-  <label><input type="checkbox" data-g="plansRoads"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f76707;opacity:.75"></span> Flyover decks &amp; existing flyovers</label>
-  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#9c36b5;opacity:.75"></span> Metro line &amp; stations, and the tunnel</label>
-  <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#fab005;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
+  <label><input type="checkbox" data-g="plansRoads"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#1971c2;opacity:.75"></span> Flyover decks &amp; existing flyovers</label>
+  <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#862e9c;opacity:.75"></span> Metro line &amp; stations, and the tunnel</label>
+  <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f59f00;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
   <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
   <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
   <h4>Simulation (today, morning peak)</h4>
@@ -328,13 +355,17 @@ const CATS = {                                                // GIZ guidebook n
 };
 const PRIVATE_BUS = '#e8590c';
 // planned and existing structures traced from the elevated-corridor tender drawings (data/plans.geojson)
-const PLAN_COLORS = { proposed_deck: '#f76707', proposed_deck_level2: '#e03131', existing_flyover: '#74b816', ejipura_flyover: '#4dabf7',
-  underpass: '#868e96', metro: '#9c36b5', metro_tunnel: '#d6336c', bmrcl_land: '#38d9a9', land_acquisition: '#fab005',
-  metro_station: '#7048e8', metro_station_land: '#b197fc', tunnel_ramp: '#d6336c', tunnel_strip: '#f06595', subway: '#1864ab',
-  tunnel_tube: '#a61e4d', tunnel_portal: '#e64980', metro_line: '#5f3dc4', metro_structure: '#845ef7', tunnel_land: '#c2255c' };
+const PLAN_COLORS = {                                          // one hue per group, strong enough to read on the street map and on satellite
+  proposed_deck: '#1971c2', proposed_deck_level2: '#0b3a75', existing_flyover: '#495057', ejipura_flyover: '#0c8599', underpass: '#212529',
+  metro: '#862e9c', metro_station: '#5f3dc4', metro_station_land: '#7950f2', metro_line: '#5f3dc4', metro_structure: '#7048e8',
+  metro_tunnel: '#c2255c', tunnel_ramp: '#c2255c', tunnel_strip: '#e64980', tunnel_tube: '#a61e4d', tunnel_portal: '#a61e4d',
+  subway: '#2b8a3e', land_acquisition: '#f59f00', bmrcl_land: '#099268', tunnel_land: '#8c5a2b' };
+// a darker edge for each colour, so pale fills still have a crisp outline
+const PLAN_EDGE = c => '#' + [1, 3, 5].map(k => Math.round(parseInt(c.slice(k, k + 2), 16) * 0.55).toString(16).padStart(2, '0')).join('');
 // each kind of planned structure can be hidden from the "What's planned" table; these are the map layers that draw them
 const planOff = new Set();
-const PLAN_SETS = { 'pl-land': ['bmrcl_land', 'land_acquisition', 'tunnel_land'], 'pl-tunnel': ['metro_tunnel', 'tunnel_ramp', 'tunnel_strip', 'tunnel_tube', 'tunnel_portal'],
+const PLAN_SETS = { 'pl-land': ['bmrcl_land', 'land_acquisition', 'tunnel_land'], 'pl-land-edge': ['bmrcl_land', 'land_acquisition', 'tunnel_land'],
+  'pl-metro-edge': ['metro', 'metro_station', 'metro_line', 'metro_structure', 'metro_station_land', 'subway'], 'pl-tunnel': ['metro_tunnel', 'tunnel_ramp', 'tunnel_strip', 'tunnel_tube', 'tunnel_portal'],
   'pl-tunnel-line': ['metro_tunnel', 'tunnel_ramp', 'tunnel_strip', 'tunnel_tube', 'tunnel_portal'], 'pl-subway': ['subway'], 'pl-station-land': ['metro_station_land'],
   'pl-metro': ['metro', 'metro_station', 'metro_line', 'metro_structure'], 'pl-roads': null, 'pl-roads-line': null };      // null = PLAN_ROADS
 const planFilter = ls => ['all', ['==', ['get', 'kind'], 'structure'], ['in', ['get', 'layer'], ['literal', ls.filter(l => !planOff.has(l))]]];
@@ -385,8 +416,8 @@ const GROUPS = {
   junctions:    [],                                             // DOM markers, shown or hidden in applyVis
   drawn:        [],                                             // the Draw tab's shapes (Terra Draw's layers), see drawVisible
   plansRoads:   ['pl-roads', 'pl-roads-line'],
-  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
-  plansLand:    ['pl-land'],
+  plansMetro:   ['pl-station-land', 'pl-metro', 'pl-metro-edge', 'pl-tunnel', 'pl-tunnel-line', 'pl-subway'],
+  plansLand:    ['pl-land', 'pl-land-edge'],
   plansLabels:  ['pl-label'],
   simWalk:      ['sim-walk-casing', 'sim-walk', 'sim-walk-label'],
   simCross:     ['sim-cross', 'sim-cross-label'],
@@ -477,22 +508,29 @@ function addOverlays() {
   src('plans', D.plans);
   const plIn = ls => ['all', ['==', ['get', 'kind'], 'structure'], ['in', ['get', 'layer'], ['literal', ls]]];
   const plColor = ['match', ['get', 'layer'], ...Object.entries(PLAN_COLORS).flat(), '#888'];
+  const plEdge = ['match', ['get', 'layer'], ...Object.entries(PLAN_COLORS).flatMap(([k, c]) => [k, PLAN_EDGE(c)]), '#333'];
+  const edgeW = ['interpolate', ['linear'], ['zoom'], 14, 1.2, 18, 2.4];
   map.addLayer({ id: 'pl-land', type: 'fill', source: 'plans', filter: plIn(['bmrcl_land', 'land_acquisition', 'tunnel_land']), layout: hidden,
-    paint: { 'fill-color': plColor, 'fill-opacity': 0.4, 'fill-outline-color': plColor } });
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.45 } });
+  map.addLayer({ id: 'pl-land-edge', type: 'line', source: 'plans', filter: plIn(['bmrcl_land', 'land_acquisition', 'tunnel_land']), layout: hidden,
+    paint: { 'line-color': plEdge, 'line-width': edgeW } });
   map.addLayer({ id: 'pl-tunnel', type: 'fill', source: 'plans', filter: plIn(['metro_tunnel', 'tunnel_ramp', 'tunnel_strip', 'tunnel_tube', 'tunnel_portal']), layout: hidden,
-    paint: { 'fill-color': plColor, 'fill-opacity': 0.18 } });
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.32 } });
   map.addLayer({ id: 'pl-tunnel-line', type: 'line', source: 'plans', filter: plIn(['metro_tunnel', 'tunnel_ramp', 'tunnel_strip', 'tunnel_tube', 'tunnel_portal']), layout: hidden,
-    paint: { 'line-color': plColor, 'line-width': 2, 'line-dasharray': [2, 1.5] } });
+    paint: { 'line-color': plEdge, 'line-width': edgeW, 'line-dasharray': [2.5, 1.5] } });
   map.addLayer({ id: 'pl-subway', type: 'fill', source: 'plans', filter: plIn(['subway']), layout: hidden,
-    paint: { 'fill-color': PLAN_COLORS.subway, 'fill-opacity': 0.55, 'fill-outline-color': PLAN_COLORS.subway } });
+    paint: { 'fill-color': PLAN_COLORS.subway, 'fill-opacity': 0.6 } });
   map.addLayer({ id: 'pl-station-land', type: 'fill', source: 'plans', filter: plIn(['metro_station_land']), layout: hidden,
-    paint: { 'fill-color': PLAN_COLORS.metro_station_land, 'fill-opacity': 0.3, 'fill-outline-color': PLAN_COLORS.metro_station } });
+    paint: { 'fill-color': PLAN_COLORS.metro_station_land, 'fill-opacity': 0.4 } });
   map.addLayer({ id: 'pl-metro', type: 'fill', source: 'plans', filter: plIn(['metro', 'metro_station', 'metro_line', 'metro_structure']), layout: hidden,
-    paint: { 'fill-color': plColor, 'fill-opacity': 0.5, 'fill-outline-color': plColor } });
+    paint: { 'fill-color': plColor, 'fill-opacity': 0.6 } });
+  map.addLayer({ id: 'pl-metro-edge', type: 'line', source: 'plans',
+    filter: plIn(['metro', 'metro_station', 'metro_line', 'metro_structure', 'metro_station_land', 'subway']), layout: hidden,
+    paint: { 'line-color': plEdge, 'line-width': edgeW } });
   map.addLayer({ id: 'pl-roads', type: 'fill', source: 'plans', filter: plIn(PLAN_ROADS), layout: hidden,
     paint: { 'fill-color': plColor, 'fill-opacity': 0.5 } });
   map.addLayer({ id: 'pl-roads-line', type: 'line', source: 'plans', filter: plIn(PLAN_ROADS), layout: hidden,
-    paint: { 'line-color': plColor, 'line-width': 1 } });
+    paint: { 'line-color': plEdge, 'line-width': edgeW } });
 
   // study road
   const isCW = K('carriageway');
@@ -504,6 +542,7 @@ function addOverlays() {
     layout: { 'symbol-placement': 'line', 'symbol-spacing': 90, 'text-field': '>', 'text-size': 13, 'text-font': ['Noto Sans Bold'],
       'text-keep-upright': false, 'text-allow-overlap': true },
     paint: { 'text-color': '#ffffff' } });
+  if (typeof current !== 'undefined' && current?.id === 'plans') loopFade(true);   // page opened straight on "What's planned"
 
   // crossings & gaps
   map.addLayer({ id: 'xg-gap', type: 'line', source: 'xing', filter: K('gap'), layout: { ...hidden, 'line-cap': 'round' },
@@ -705,7 +744,14 @@ map.on('mousemove', e => { if (D2.on) return; map.getCanvas().style.cursor = hit
    ===================================================================== */
 const pad = () => innerWidth <= 720
   ? { top: 70, bottom: innerHeight * 0.58, left: 24, right: 24 }
-  : { top: 70, bottom: 50, left: 420, right: 60 };
+  : { top: 70, bottom: 50, left: document.body.classList.contains('panel-hidden') ? 60 : 420, right: 60 };
+// fade the loop's own lines (used on "What's planned", where they would hide the planned structures underneath)
+function loopFade(on) {
+  if (!map.getLayer('stretch-line')) return;
+  map.setPaintProperty('stretch-line', 'line-opacity', on ? 0.35 : 1);
+  map.setPaintProperty('stretch-halo', 'line-opacity', on ? 0.06 : 0.2);
+  map.setPaintProperty('stretch-arrows', 'text-opacity', on ? 0.3 : 1);
+}
 const boundsOf = coords => coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
 const roadCoords = () => D.stretch.features.flatMap(f => f.geometry.type === 'Point' ? [f.geometry.coordinates] : f.geometry.coordinates);
 const fitRoad = () => map.fitBounds(boundsOf(roadCoords()), { padding: pad(), maxZoom: 18, duration: 900 });
@@ -919,6 +965,8 @@ const SCENES = [
 
   { id: 'plans', tab: "What's planned",
     layers: { plansRoads: true, plansMetro: true, plansLand: true, plansLabels: true, construction: true },
+    enter() { loopFade(true); },
+    leave() { loopFade(false); },
     view: () => map.fitBounds(boundsOf(D.plans.features.filter(f => f.properties.kind === 'structure').flatMap(f => f.geometry.coordinates.flat(1))),
       { padding: pad(), duration: 900 }),
     render() {
@@ -959,7 +1007,7 @@ const SCENES = [
           [sq(PLAN_COLORS.proposed_deck), 'Proposed deck, Level-1 · ' + sq(PLAN_COLORS.proposed_deck_level2) + '&nbsp;second level'],
           [sq(PLAN_COLORS.existing_flyover), 'Existing flyovers · ' + sq(PLAN_COLORS.ejipura_flyover) + '&nbsp;Ejipura flyover'],
           [sq(PLAN_COLORS.metro), 'Metro line and stations · ' + sq(PLAN_COLORS.metro_station) + "&nbsp;St John's Hospital station"],
-          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#d6336c 0 3px,#fbe4ec 3px 6px)"></span>', 'Road tunnel: tubes, the box they end in, ramps and Entry Ramp 08'],
+          ['<span class="sw" style="width:22px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,#c2255c 0 3px,#f8d7e3 3px 6px)"></span>', 'Road tunnel: tubes, the box they end in, ramps and Entry Ramp 08'],
           [sq(PLAN_COLORS.land_acquisition), 'Land to be acquired · ' + sq(PLAN_COLORS.bmrcl_land) + '&nbsp;BMRCL land · ' + sq(PLAN_COLORS.tunnel_land) + '&nbsp;land for the road tunnel'],
         ])}
         <table class="sidetab"><tr><th>What the drawings show <span style="font-weight:400">· untick to hide on the map</span></th><th>Area</th></tr>${rows}</table>
@@ -1048,16 +1096,16 @@ const SCENES = [
         ${fold('What it can and can\'t show', `<ul>
           <li><strong>It is a model, not a count.</strong> The number of people crossing is estimated from bus timetables and the places
             along each road. The site walk's counts will replace those estimates.</li>
-          <li><strong>Foot over bridges are included, with slow stairs.</strong> The model lets everyone climb them. In reality stairs
-            rule them out for wheelchair users, prams and many older people.</li>
+          <li><strong>Foot over bridges are included, with slow stairs.</strong> One in ten people in the model cannot use stairs
+            (wheelchair users, prams, many older people), so they never use the bridges and must walk to a street-level crossing.</li>
           <li><strong>Nobody jaywalks in the model.</strong> In reality many people cross through gaps in traffic. So the detours here are
             longer than most people really walk; they show what the street asks of someone who crosses only where it is safe.</li>
           <li><strong>Traffic is provisional.</strong> Nobody has counted traffic on the loop. The amount on 100 Feet Road is borrowed from
             a count taken between Indiranagar and Domlur, about 6 km north; the rest is our estimate, until the site walk counts it.
             The signal timings at A and C are assumed, and B has no signal in the model, as the official drawings show.
             With those guesses the model's traffic jams far worse than the real street, so vehicle speeds and delays are not shown.</li>
-          <li><strong>One morning, one run.</strong> Five repeat runs moved the walking distances and the junction counts by less than a tenth,
-            but the times by much more, so read the times as rough.</li></ul>`, true)}
+          <li><strong>One morning, one run.</strong> Ten repeat runs moved the walking distances and the junction counts by less than
+            a tenth, but the times by much more, so read the times as rough.</li></ul>`, true)}
         ${fold('How we know this', `<ul>
           <li>Simulated with SUMO (Eclipse Foundation, open source) on the OpenStreetMap road network, with the underpass, footpaths and
             junction crossings. Run of ${esc(M.built)}.</li>
@@ -1521,6 +1569,22 @@ body.addEventListener('click', e => {
 });
 addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== current?.id) show(id); });
 
+// desktop: hide the panel to see the whole map; the choice is remembered in this browser
+const PANEL_KEY = 'madiwala-panel-hidden';
+function setPanel(hidden, remember = true) {
+  if (innerWidth <= 720 || hidden === document.body.classList.contains('panel-hidden')) return;
+  document.body.classList.toggle('panel-hidden', hidden);
+  document.getElementById('hide-panel').setAttribute('aria-expanded', String(!hidden));
+  document.getElementById('show-panel').setAttribute('aria-expanded', String(!hidden));
+  map.panBy([hidden ? 180 : -180, 0], { duration: 250 });      // keep what was centred in the free area centred
+  if (remember) { try { localStorage.setItem(PANEL_KEY, hidden ? '1' : '0'); } catch (e) { /* private window: not remembered */ } }
+  (hidden ? document.getElementById('show-panel') : document.getElementById('hide-panel')).focus();
+}
+document.getElementById('hide-panel').onclick = () => setPanel(true);
+document.getElementById('show-panel').onclick = () => setPanel(false);
+try { if (localStorage.getItem(PANEL_KEY) === '1' && innerWidth > 720) { document.body.classList.add('panel-hidden');
+  document.getElementById('hide-panel').setAttribute('aria-expanded', 'false'); document.getElementById('show-panel').setAttribute('aria-expanded', 'false'); } } catch (e) {}
+
 // phones: tap the handle to collapse/expand the sheet
 document.getElementById('grab').onclick = () => document.getElementById('story').classList.toggle('collapsed');
 
@@ -1595,6 +1659,7 @@ function startTour() {
   if (!window.driver?.js?.driver) return;                 // library failed to load: page still works without the tour
   if (current?.id !== 'overview') show('overview');
   document.getElementById('story').classList.remove('collapsed');
+  setPanel(false, false);
   if (!layersEl.hidden) layersBtn.click();
   const phone = innerWidth <= 720;
   const tour = window.driver.js.driver({
