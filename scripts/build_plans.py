@@ -1,55 +1,27 @@
-"""Planned and existing structures from the elevated-corridor tender drawings, for the "What's planned" tab.
+"""Planned and existing structures for the "What's planned" tab: copied from the PDF pipeline repo's exports.
 
-The drawings (B-SMILE tender, Schedule A-I, 17 vector CAD sheets at 1:2000) are georeferenced and traced in the
-PDF pipeline repo (src/corridor_pdf_pipeline, `python main.py`). This script copies its two outputs
-into one site data file, rounding coordinates to ~10 cm:
+The drawings (the B-SMILE tender's 17 vector CAD sheets, the metro survey scans, the corridor's plan of the loop, the
+corridor concept drawing and the tunnel's land acquisition plan) are traced and placed on the map in the pipeline repo
+(github.com/kskhannaio/cad_drawings_extraction; `python main.py`). Its export step writes exports/website/plans.geojson
+in exactly the form this site reads, so this script only checks it and copies it to data/plans.geojson:
 
-  data/plans.geojson
-    kind=structure  layer, what, area_m2; named parts also carry conf (high / medium / low) and basis (why that name)
-                    layers: proposed_deck, proposed_deck_level2, existing_flyover, ejipura_flyover, underpass,
-                    metro, metro_tunnel, bmrcl_land, land_acquisition, metro_station, metro_station_land
-                    tunnel_ramp, tunnel_strip, subway, tunnel_tube, tunnel_portal, tunnel_land
-                    (these come from other sheets: scan = 'metro', 'loop', 'concept' or 'land'; tunnel_land also carries
-                    statement and statement_total_m2, the sheet's own area statement)
-    kind=label      label, source, ocr (true if the label is drawn as linework and was read by OCR),
-                    moved (true if name_parts.py moved it from where the drawing writes it onto the structure it names)
+  kind=structure  layer, what, area_m2; named parts also carry conf (high / medium / low) and basis (why that name);
+                  shapes from sheets other than the tender carry scan = 'metro', 'loop', 'concept' or 'land';
+                  the tunnel land carries statement and statement_total_m2 (the sheet's own area statement)
+  kind=label      label, source, ocr (read by OCR from linework), moved (moved onto the structure it names)
 
-Usage: python3 scripts/build_plans.py [path/to/corridor_pdf_pipeline/out]
+Usage: python3 scripts/build_plans.py [path/to/pipeline/exports/website/plans.geojson]
 """
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, '..', 'data')
-SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, '..', '..', 'corridor_pdf_pipeline', 'out')
+SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, '..', '..', 'corridor_pdf_pipeline', 'exports', 'website', 'plans.geojson')
+OUT = os.path.join(HERE, '..', 'data', 'plans.geojson')
+if not os.path.exists(SRC): sys.exit(f'missing {SRC} - run `python main.py --only export` in the pipeline repo')
 
-def rnd(c):
-    return [rnd(x) for x in c] if isinstance(c[0], list) else [round(c[0], 6), round(c[1], 6)]
-
-feats = []
-for f in json.load(open(os.path.join(SRC, 'contract_structures.geojson')))['features']:
-    p = f['properties']
-    props = {'kind': 'structure', 'layer': p['layer'], 'what': p['what'], 'area_m2': p['area_m2']}
-    if p.get('name_confidence'): props.update(conf=p['name_confidence'], basis=p['name_basis'])
-    feats.append({'type': 'Feature', 'properties': props,
-                  'geometry': {'type': f['geometry']['type'], 'coordinates': rnd(f['geometry']['coordinates'])}})
-# shapes picked by hand from scanned sheets: the metro station (pipeline step `metro`) and, from the corridor's plan of
-# the loop, the tunnel approach and the subway (step `loopplan`); and, traced from the vector concept drawing, the road
-# tunnel's tubes, the box they end in and the ramps to St John's junction (step `concept`). scan = which sheet they come from.
-for fname, scan in (('metro_station.geojson', 'metro'), ('loop_plan.geojson', 'loop'), ('concept_tunnel.geojson', 'concept'),
-                    ('tunnel_land.geojson', 'land')):
-    path = os.path.join(SRC, fname)
-    if not os.path.exists(path): continue
-    for f in json.load(open(path))['features']:
-        p = f['properties']
-        props = {'kind': 'structure', 'layer': p['layer'], 'what': p['what'], 'area_m2': p['area_m2'], 'scan': scan}
-        if p.get('name_confidence'): props.update(conf=p['name_confidence'], basis=p['name_basis'])
-        if p.get('statement'): props.update(statement=p['statement'], statement_total_m2=p['statement_total_m2'])
-        feats.append({'type': 'Feature', 'properties': props, 'geometry': {'type': f['geometry']['type'], 'coordinates': rnd(f['geometry']['coordinates'])}})
-for f in json.load(open(os.path.join(SRC, 'contract_labels.geojson')))['features']:
-    p = f['properties']
-    feats.append({'type': 'Feature', 'properties': {'kind': 'label', 'label': p['label'], 'source': p['source'].split(' (')[0],
-                  'ocr': 'OCR' in p['source'], 'moved': 'drawn_lon' in p}, 'geometry': {'type': 'Point', 'coordinates': rnd(f['geometry']['coordinates'])}})
-out = os.path.join(DATA, 'plans.geojson')
-json.dump({'type': 'FeatureCollection', 'features': feats}, open(out, 'w'), separators=(',', ':'))
-n = sum(f['properties']['kind'] == 'structure' for f in feats)
-print(f'wrote {out}: {n} structures, {len(feats) - n} labels, {os.path.getsize(out) // 1024} KB')
+d = json.load(open(SRC))
+kinds = {f['properties'].get('kind') for f in d['features']}
+if d.get('type') != 'FeatureCollection' or not kinds <= {'structure', 'label'}: sys.exit(f'{SRC} is not the pipeline\'s website export')
+json.dump(d, open(OUT, 'w'), separators=(',', ':'))
+n = sum(f['properties']['kind'] == 'structure' for f in d['features'])
+print(f'wrote {OUT}: {n} structures, {len(d["features"]) - n} labels, {os.path.getsize(OUT) // 1024} KB')
