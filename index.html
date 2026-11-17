@@ -309,7 +309,7 @@
   <label><input type="checkbox" data-g="plansMetro"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#862e9c;opacity:.75"></span> Metro line, stations &amp; subway</label>
   <label><input type="checkbox" data-g="plansTunnel"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:repeating-linear-gradient(135deg,#c2255c 0 3px,#f8d7e3 3px 6px)"></span> Road tunnel &amp; its ramps</label>
   <label><input type="checkbox" data-g="plansLand"> <span class="sw" style="width:16px;height:9px;border-radius:2px;background:#f59f00;opacity:.75"></span> Land to be acquired &amp; BMRCL land</label>
-  <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings</label>
+  <label><input type="checkbox" data-g="plansLabels"> Labels from the drawings <span class="note" style="display:inline">(for the layers ticked above)</span></label>
   <p class="note">Traced from tender drawings; positions approximate. See <em>What's planned</em> for the limits.</p>
   <h4>Simulation (today, morning peak)</h4>
   <label><input type="checkbox" data-g="simWalk"> <span class="sw" style="width:16px;height:5px;border-radius:2px;background:#c92a2a"></span> Extra walking to cross each road</label>
@@ -440,6 +440,9 @@ function applyVis() {
   drawVisible(vis.drawn);
   for (const [g, ids] of Object.entries(GROUPS))
     ids.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', vis[g] ? 'visible' : 'none'));
+  // drawing labels show only with the layer they name (flyover decks, metro, road tunnel)
+  const lg = [vis.plansRoads && 'roads', vis.plansMetro && 'metro', vis.plansTunnel && 'tunnel'].filter(Boolean);
+  map.getLayer('pl-label') && map.setFilter('pl-label', ['all', ['==', ['get', 'kind'], 'label'], ['in', ['get', 'group'], ['literal', lg]]]);
   map.getLayer('poi') && map.setFilter('poi', poiFilter());
   map.getLayer('poi-label') && map.setFilter('poi-label', ['all', poiFilter(), ['!=', ['get', 'category'], 'Commercial']]);
   document.querySelectorAll('#layers [data-g]').forEach(i => i.checked = vis[i.dataset.g]);
@@ -649,7 +652,8 @@ function addOverlays() {
   map.addLayer({ id: 'pl-label', type: 'symbol', source: 'plans', filter: ['==', ['get', 'kind'], 'label'], minzoom: 14.5,
     layout: { ...hidden, 'text-field': ['get', 'label'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-max-width': 14,
       'text-anchor': 'left', 'text-offset': [0.6, 0] },
-    paint: { 'text-color': '#862e9c', 'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
+    paint: { 'text-color': ['match', ['get', 'group'], 'roads', '#0b3a75', 'metro', '#5f3dc4', 'tunnel', '#a61e4d', '#495057'],
+             'text-halo-color': '#fff', 'text-halo-width': 1.8 } });
 
   applyVis();
   drawInit();
